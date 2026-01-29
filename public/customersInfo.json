@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1",
+    "name": "Alice Wonderland",
+    "email": "alice@example.com",
+    "phone": "+1 234 567 1111",
+    "lastrequest": "2024-03-20",
+    "location": "123 Tea Party Ln, Queens, NY",
+    "status": "Active"
+  },
+  {
+    "id": "2",
+    "name": "Bob Builder",
+    "email": "bob@example.com",
+    "phone": "+1 234 567 2222",
+    "lastrequest": "2024-03-19",
+    "location": "456 Construction St, Brooklyn, NY",
+    "status": "Active"
+  },
+  {
+    "id": "3",
+    "name": "Charlie Bucket",
+    "email": "charlie@example.com",
+    "phone": "+1 234 567 3333",
+    "lastrequest": "2024-03-15",
+    "location": "789 Chocolate Ave, Manhattan, NY",
+    "status": "Inactive"
+  }
+]

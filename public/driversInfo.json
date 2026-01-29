@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "driverName": "Sarah Wilson",
+    "driverId": "DRV-001",
+    "email": "sarah.w@example.com",
+    "phone": "+1 234 567 0001",
+    "status": "Active",
+    "shift": "Day",
+    "zone": "Manhattan"
+  },
+  {
+    "id": "2",
+    "driverName": "James Brown",
+    "driverId": "DRV-002",
+    "email": "james.b@example.com",
+    "phone": "+1 234 567 0002",
+    "status": "Active",
+    "shift": "Night",
+    "zone": "Brooklyn"
+  },
+  {
+    "id": "3",
+    "driverName": "Michael Chen",
+    "driverId": "DRV-003",
+    "email": "michael.c@example.com",
+    "phone": "+1 234 567 0003",
+    "status": "Inactive",
+    "shift": "Day",
+    "zone": "Queens"
+  },
+  {
+    "id": "4",
+    "driverName": "Emma Davis",
+    "driverId": "DRV-004",
+    "email": "emma.d@example.com",
+    "phone": "+1 234 567 0004",
+    "status": "Trial",
+    "shift": "Day",
+    "zone": "Bronx"
+  }
+]
