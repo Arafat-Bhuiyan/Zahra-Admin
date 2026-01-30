@@ -1,6 +1,6 @@
-import React from "react";
 import { Users, BookOpen, DollarSign } from "lucide-react";
-import ChartsSection from "./ChartsSection";
+import TopPerformingCourses from "./TopPerformingCourses";
+import ScheduleRescheduleSection from "./ScheduleRescheduleSection";
 
 const cards = [
   {
@@ -49,9 +49,12 @@ const MainDashboard = () => {
                 <h2 className="font-semibold text-sm">{card.title}</h2>
                 <p className="font-bold text-xl">{card.number}</p>
               </div>
-              <div className="w-12 h-12 p-3 rounded-lg" style={{
-                    backgroundColor: card.bgColor,
-                  }}>
+              <div
+                className="w-12 h-12 p-3 rounded-lg"
+                style={{
+                  backgroundColor: card.bgColor,
+                }}
+              >
                 <Icon
                   className="w-6 h-6"
                   style={{
@@ -64,8 +67,11 @@ const MainDashboard = () => {
         })}
       </div>
 
-      {/* Additional dashboard content can go here */}
-      <ChartsSection />
+      {/* Top Performing Courses */}
+      <TopPerformingCourses />
+
+      {/* Schedule and Reschedule */}
+      <ScheduleRescheduleSection />
     </div>
   );
 };
