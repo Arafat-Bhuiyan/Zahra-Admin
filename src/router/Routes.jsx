@@ -3,6 +3,7 @@ import MainDashboard from "@/Admin/Dashboard/MainDashboard";
 import AdminLayout from "@/layouts/AdminLayout";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import TermsAndPolicies from "@/Admin/Settings/Settings";
+import User from "../Admin/User/User";
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,7 @@ const router = createBrowserRouter([
         index: true,
         element: <MainDashboard />,
       },
-      { path: "users-management", element: <>Users</> },
+      { path: "users-management", element: <User /> },
       { path: "courses-management", element: <>Courses</> },
       { path: "submissions", element: <>Submissions</> },
       { path: "settings", element: <TermsAndPolicies /> },

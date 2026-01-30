@@ -87,7 +87,7 @@ const ScheduleRescheduleSection = () => {
             2 Active
           </span>
         </div>
-        <div className="flex flex-col gap-3 text-['Arimo']">
+        <div className="flex flex-col gap-3 arimo-font">
           {reschedules.map((item, idx) => (
             <div
               key={idx}
