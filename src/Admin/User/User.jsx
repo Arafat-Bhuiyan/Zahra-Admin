@@ -3,14 +3,16 @@ import { Search, Filter } from "lucide-react";
 import StudentTable from "./StudentTable";
 import TeacherTable from "./TeacherTable";
 import TeacherDetails from "./TeacherDetails";
+import toast from "react-hot-toast";
 
 const User = () => {
   const [activeTab, setActiveTab] = useState("students");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState(null);
 
-  const students = [
+  const [students, setStudents] = useState([
     {
+      id: 1,
       name: "Emma Wilson",
       email: "emma.w@email.com",
       courses: 5,
@@ -18,6 +20,7 @@ const User = () => {
       status: "active",
     },
     {
+      id: 2,
       name: "Michael Chen",
       email: "michael.c@email.com",
       courses: 0,
@@ -25,6 +28,7 @@ const User = () => {
       status: "active",
     },
     {
+      id: 3,
       name: "Sarah Parker",
       email: "sarah.p@email.com",
       courses: 0,
@@ -32,6 +36,7 @@ const User = () => {
       status: "active",
     },
     {
+      id: 4,
       name: "David Kim",
       email: "david.k@email.com",
       courses: 0,
@@ -39,6 +44,7 @@ const User = () => {
       status: "inactive",
     },
     {
+      id: 5,
       name: "Lisa Anderson",
       email: "lisa.a@email.com",
       courses: 7,
@@ -46,6 +52,7 @@ const User = () => {
       status: "active",
     },
     {
+      id: 6,
       name: "James Rodriguez",
       email: "james.r@email.com",
       courses: 4,
@@ -53,6 +60,7 @@ const User = () => {
       status: "inactive",
     },
     {
+      id: 7,
       name: "Olivia Thompson",
       email: "olivia.t@email.com",
       courses: 5,
@@ -60,16 +68,18 @@ const User = () => {
       status: "active",
     },
     {
+      id: 8,
       name: "Robert Lee",
       email: "robert.l@email.com",
       courses: 6,
       joined: "2024-02-14",
       status: "active",
     },
-  ];
+  ]);
 
-  const teachers = [
+  const [teachers, setTeachers] = useState([
     {
+      id: 1,
       name: "Dr. John Smith",
       email: "john.smith@school.com",
       department: "Mathematics",
@@ -78,6 +88,7 @@ const User = () => {
       status: "active",
     },
     {
+      id: 2,
       name: "Prof. Emily Brown",
       email: "emily.brown@school.com",
       department: "Science",
@@ -86,6 +97,7 @@ const User = () => {
       status: "active",
     },
     {
+      id: 3,
       name: "Dr. Marcus Johnson",
       email: "marcus.j@school.com",
       department: "English",
@@ -94,6 +106,7 @@ const User = () => {
       status: "active",
     },
     {
+      id: 4,
       name: "Dr. Anna Martinez",
       email: "anna.m@school.com",
       department: "History",
@@ -102,6 +115,7 @@ const User = () => {
       status: "active",
     },
     {
+      id: 5,
       name: "Prof. William Taylor",
       email: "will.t@school.com",
       department: "Arts",
@@ -109,7 +123,7 @@ const User = () => {
       students: 150,
       status: "inactive",
     },
-  ];
+  ]);
 
   const currentData = activeTab === "students" ? students : teachers;
 
@@ -125,6 +139,51 @@ const User = () => {
 
   const handleBackToList = () => {
     setSelectedTeacher(null);
+  };
+
+  const confirmDelete = (userId, name) => {
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-3 p-1">
+          <p className="arimo-font text-sm text-neutral-800">
+            Are you sure you want to delete <b>{name}</b>?
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 text-xs text-neutral-500 hover:text-neutral-700 font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                handleDelete(userId);
+                toast.dismiss(t.id);
+              }}
+              className="px-3 py-1 text-xs bg-rose-600 text-white rounded-md hover:bg-rose-700 font-medium transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        className:
+          "border border-black/10 rounded-xl shadow-lg bg-white p-4 min-w-[300px]",
+      },
+    );
+  };
+
+  const handleDelete = (userId) => {
+    if (activeTab === "students") {
+      setStudents(students.filter((s) => s.id !== userId));
+      toast.success("Student removed successfully", { duration: 3000 });
+    } else {
+      setTeachers(teachers.filter((t) => t.id !== userId));
+      toast.success("Teacher removed successfully", { duration: 3000 });
+    }
   };
 
   // Render the details view if a teacher is selected
@@ -197,9 +256,13 @@ const User = () => {
 
         {/* Tables */}
         {activeTab === "students" ? (
-          <StudentTable data={filteredData} />
+          <StudentTable data={filteredData} onDelete={confirmDelete} />
         ) : (
-          <TeacherTable data={filteredData} onView={handleTeacherView} />
+          <TeacherTable
+            data={filteredData}
+            onView={handleTeacherView}
+            onDelete={confirmDelete}
+          />
         )}
 
         {filteredData.length === 0 && (
