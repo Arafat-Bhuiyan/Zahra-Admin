@@ -91,7 +91,7 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
 
             <div className="rounded-[10px] border border-black/10 overflow-hidden max-h-[250px] overflow-y-auto">
               <table className="w-full text-sm text-left arimo-font">
-                <thead className="bg-gray-50 border-b border-black/10 sticky top-0 bg-white">
+                <thead className="border-b border-black/10 sticky top-0 bg-white">
                   <tr>
                     <th className="py-2.5 px-4 font-normal text-neutral-950">
                       Course Name

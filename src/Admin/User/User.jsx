@@ -3,12 +3,14 @@ import { Search, Filter } from "lucide-react";
 import StudentTable from "./StudentTable";
 import TeacherTable from "./TeacherTable";
 import TeacherDetails from "./TeacherDetails";
+import AddUserModal from "./AddUserModal";
 import toast from "react-hot-toast";
 
 const User = () => {
   const [activeTab, setActiveTab] = useState("students");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [students, setStudents] = useState([
     {
@@ -141,6 +143,16 @@ const User = () => {
     setSelectedTeacher(null);
   };
 
+  const handleAddUser = (userData) => {
+    if (activeTab === "students") {
+      setStudents((prev) => [userData, ...prev]);
+      toast.success(`Student ${userData.name} added successfully!`);
+    } else {
+      setTeachers((prev) => [userData, ...prev]);
+      toast.success(`Teacher ${userData.name} added successfully!`);
+    }
+  };
+
   const confirmDelete = (userId, name) => {
     toast(
       (t) => (
@@ -196,8 +208,11 @@ const User = () => {
   return (
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500">
       <div className="flex justify-end w-full">
-        <button className="bg-[#89A6A7] hover:bg-[#729394] text-white px-6 py-2 rounded-lg text-sm font-medium arimo-font transition-colors shadow-sm">
-          Add User
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-[#89A6A7] hover:bg-[#729394] text-white px-6 py-2 rounded-lg text-sm font-medium arimo-font transition-colors shadow-sm"
+        >
+          Add {activeTab === "students" ? "Student" : "Teacher"}
         </button>
       </div>
 
@@ -271,6 +286,13 @@ const User = () => {
           </div>
         )}
       </div>
+
+      <AddUserModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        type={activeTab}
+        onAdd={handleAddUser}
+      />
     </div>
   );
 };

@@ -4,6 +4,12 @@ import AdminLayout from "@/layouts/AdminLayout";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import TermsAndPolicies from "@/Admin/Settings/Settings";
 import User from "../Admin/User/User";
+import Scholarships from "../Admin/Scholarships/Scholarships";
+import Payments from "../Admin/Payments/Payments";
+import Certificates from "../Admin/Certificates/Certificates";
+import Memberships from "../Admin/Memberships/Memberships";
+import Courses from "../Admin/Courses/Courses";
+import Contents from "../Admin/Contents/Contents";
 
 const router = createBrowserRouter([
   {
@@ -24,10 +30,10 @@ const router = createBrowserRouter([
         element: <MainDashboard />,
       },
       { path: "users-management", element: <User /> },
-      { path: "courses-management", element: <>Courses</> },
+      { path: "courses-management", element: <Courses /> },
       { path: "submissions", element: <>Submissions</> },
       { path: "settings", element: <TermsAndPolicies /> },
-      { path: "contents", element: <>Contents</> },
+      { path: "contents", element: <Contents /> },
       { path: "contents/:id", element: <>Content Details</> },
       { path: "book-library", element: <>Book Library</> },
       { path: "book-library/:id", element: <>Book Library Details</> },
@@ -35,13 +41,10 @@ const router = createBrowserRouter([
       { path: "book-sales/:id", element: <>Book Sales Details</> },
       { path: "announcements", element: <>Announcements</> },
       { path: "newsletter", element: <>Newsletter</> },
-      { path: "scholarships", element: <>Scholarships</> },
-      { path: "certificates", element: <>Certificates</> },
-      { path: "memberships", element: <>Memberships</> },
-      { path: "payments", element: <>Payments</> },
-
-      // future admin sub-routes can be added here, e.g.:
-      // { path: "users", element: <UserManagement /> },
+      { path: "scholarships", element: <Scholarships /> },
+      { path: "certificates", element: <Certificates /> },
+      { path: "memberships", element: <Memberships /> },
+      { path: "payments", element: <Payments /> },
     ],
   },
 ]);

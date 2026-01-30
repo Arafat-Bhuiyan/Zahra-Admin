@@ -21,7 +21,7 @@ const TeacherDetails = ({ teacher, onBack }) => {
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-1">
           <h1 className="text-greenTeal text-3xl font-bold inter-font leading-9">
-            Public Profile
+            Teacher Profile
           </h1>
           <p className="text-gray-600 text-base font-normal inter-font leading-6">
             Manage what students see on your profile
