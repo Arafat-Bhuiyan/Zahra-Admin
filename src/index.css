@@ -80,6 +80,9 @@
   .greenTeal{
     color: #7AA4A5;
   }
+  .inter-font{
+    font-family: 'Inter', sans-serif;
+  }
 }
 
 .ck.ck-powered-by {

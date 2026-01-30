@@ -1,31 +1,35 @@
 import React from "react";
-import { Users, Truck, Popsicle } from "lucide-react";
+import { Users, BookOpen, DollarSign } from "lucide-react";
 import ChartsSection from "./ChartsSection";
 
 const cards = [
   {
-    title: "Total Drivers",
-    number: "24,892",
-    icon: Truck,
-    iconColor: "#FF6363",
-  },
-  {
-    title: "Active Drivers",
-    number: "8,342",
+    title: "Total Students",
+    number: "2489",
     icon: Users,
-    iconColor: "#1A9F42",
+    iconColor: "#ffffff",
+    bgColor: "#2B7FFF",
   },
   {
-    title: "Total Customers",
+    title: "Total Teachers",
+    number: "342",
+    icon: Users,
+    iconColor: "#ffffff",
+    bgColor: "#AD46FF",
+  },
+  {
+    title: "Active Courses",
+    number: "127",
+    icon: BookOpen,
+    iconColor: "#ffffff",
+    bgColor: "#7AA4A5",
+  },
+  {
+    title: "Total Revenue",
     number: "$142,384",
-    icon: Users,
-    iconColor: "#FF43F2",
-  },
-  {
-    title: "Live Requests",
-    number: "533",
-    icon: Popsicle,
-    iconColor: "#1B08C0",
+    icon: DollarSign,
+    iconColor: "#ffffff",
+    bgColor: "#1B08C0",
   },
 ];
 
@@ -45,8 +49,15 @@ const MainDashboard = () => {
                 <h2 className="font-semibold text-sm">{card.title}</h2>
                 <p className="font-bold text-xl">{card.number}</p>
               </div>
-              <div className="bg-[#EEEEEE] p-3 rounded-lg">
-                <Icon className="w-6 h-6" style={{ color: card.iconColor }} />
+              <div className="w-12 h-12 p-3 rounded-lg" style={{
+                    backgroundColor: card.bgColor,
+                  }}>
+                <Icon
+                  className="w-6 h-6"
+                  style={{
+                    color: card.iconColor,
+                  }}
+                />
               </div>
             </div>
           );

@@ -77,7 +77,7 @@ export default function AdminLayout() {
       {/* Main Content area (pages render into the Outlet) */}
       <div className="flex-1 ml-72 min-h-screen overflow-y-auto">
         <Header title={title} subtitle={subtitle}/>
-        <div className="px-6 bg-[#FBFBFB] min-h-screen">
+        <div className="px-6 bg-[#FFFEFB] min-h-screen">
           <Outlet />
         </div>
       </div>
