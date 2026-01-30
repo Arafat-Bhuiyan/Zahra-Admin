@@ -1,7 +1,7 @@
 import React from "react";
 import { Eye, Trash2 } from "lucide-react";
 
-const TeacherTable = ({ data }) => {
+const TeacherTable = ({ data, onView }) => {
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full text-sm text-center arimo-font min-w-[1000px]">
@@ -46,7 +46,10 @@ const TeacherTable = ({ data }) => {
               </td>
               <td className="py-4 px-2">
                 <div className="flex justify-center items-center gap-2">
-                  <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-black/10 rounded-lg hover:bg-gray-100 transition-colors text-neutral-950 text-sm shadow-sm group/btn">
+                  <button
+                    onClick={() => onView(user)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white border border-black/10 rounded-lg hover:bg-gray-100 transition-colors text-neutral-950 text-sm shadow-sm group/btn"
+                  >
                     <Eye className="w-4 h-4 text-neutral-600 group-hover/btn:text-neutral-950" />
                     <span>View</span>
                   </button>

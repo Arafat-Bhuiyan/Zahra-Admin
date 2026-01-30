@@ -1,15 +1,13 @@
 import React, { useState } from "react";
-import { Search, Filter, Eye, Trash2 } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import StudentTable from "./StudentTable";
 import TeacherTable from "./TeacherTable";
-
-
-
-
+import TeacherDetails from "./TeacherDetails";
 
 const User = () => {
   const [activeTab, setActiveTab] = useState("students");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
 
   const students = [
     {
@@ -121,8 +119,23 @@ const User = () => {
       user.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const handleTeacherView = (teacher) => {
+    setSelectedTeacher(teacher);
+  };
+
+  const handleBackToList = () => {
+    setSelectedTeacher(null);
+  };
+
+  // Render the details view if a teacher is selected
+  if (selectedTeacher) {
+    return (
+      <TeacherDetails teacher={selectedTeacher} onBack={handleBackToList} />
+    );
+  }
+
   return (
-    <div className="pt-2 flex flex-col gap-6">
+    <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500">
       <div className="flex justify-end w-full">
         <button className="bg-[#89A6A7] hover:bg-[#729394] text-white px-6 py-2 rounded-lg text-sm font-medium arimo-font transition-colors shadow-sm">
           Add User
@@ -186,7 +199,7 @@ const User = () => {
         {activeTab === "students" ? (
           <StudentTable data={filteredData} />
         ) : (
-          <TeacherTable data={filteredData} />
+          <TeacherTable data={filteredData} onView={handleTeacherView} />
         )}
 
         {filteredData.length === 0 && (
