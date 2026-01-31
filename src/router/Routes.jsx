@@ -3,6 +3,7 @@ import AdminLayout from "@/layouts/AdminLayout";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import TermsAndPolicies from "@/Admin/Settings/Settings";
 import Login from "../components/Login";
+import TeacherDashboard from "../Teacher/TeacherDashboard";
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,16 @@ const router = createBrowserRouter([
       // future admin sub-routes can be added here, e.g.:
       // { path: "users", element: <UserManagement /> },
     ],
+  },
+  {
+    path: "/teacher",
+    element: <AdminLayout />,
+     children: [
+      {
+        index: true,
+        element: <TeacherDashboard />,
+      },
+    ]
   },
 ]);
 
