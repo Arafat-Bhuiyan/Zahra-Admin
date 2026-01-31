@@ -36,6 +36,31 @@ const CourseBuilder = ({ course, onBack }) => {
     "Community Chat",
   ];
 
+  const [thumbnail, setThumbnail] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [video, setVideo] = useState(null);
+  const [videoName, setVideoName] = useState("");
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setThumbnail(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setVideo(file);
+      setVideoName(file.name);
+    }
+  };
+
   const addObjective = () => {
     if (newObjective.trim()) {
       setLearningObjectives([...learningObjectives, newObjective]);
@@ -185,12 +210,18 @@ const CourseBuilder = ({ course, onBack }) => {
                 subtitle="1200x675px (JPG, PNG)"
                 icon={<ImageIcon className="w-8 h-8 text-stone-400" />}
                 btnText="Upload Image"
+                onChange={handleImageUpload}
+                accept="image/*.jpg,image/*.jpeg,image/*.png"
+                preview={thumbnailPreview}
               />
               <UploadCard
                 title="Course Preview Video"
                 subtitle="MP4, MOV (Max 2 min)"
                 icon={<Play className="w-8 h-8 text-stone-400" />}
                 btnText="Upload Video"
+                onChange={handleVideoUpload}
+                accept="video/*"
+                preview={videoName}
               />
             </div>
           </section>
@@ -297,19 +328,60 @@ const FormGroup = ({ label, children }) => (
   </div>
 );
 
-const UploadCard = ({ title, subtitle, icon, btnText }) => (
-  <div className="flex flex-col items-center justify-center gap-4 p-10 border-2 border-dashed border-stone-200 rounded-3xl hover:border-teal-400 hover:bg-teal-50/10 transition-all group cursor-pointer">
-    <div className="w-16 h-16 rounded-full bg-stone-50 flex items-center justify-center group-hover:scale-110 transition-transform">
-      {icon}
+const UploadCard = ({
+  title,
+  subtitle,
+  icon,
+  btnText,
+  onChange,
+  accept,
+  preview,
+}) => {
+  const fileInputRef = React.useRef(null);
+
+  return (
+    <div
+      onClick={() => fileInputRef.current.click()}
+      className="flex flex-col items-center justify-center gap-4 p-10 border-2 border-dashed border-stone-200 rounded-3xl hover:border-teal-400 hover:bg-teal-50/10 transition-all group cursor-pointer relative overflow-hidden"
+    >
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onChange}
+        accept={accept}
+        className="hidden"
+      />
+
+      {preview &&
+      typeof preview === "string" &&
+      preview.startsWith("data:image") ? (
+        <div className="absolute inset-0 z-0">
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-full h-full object-cover opacity-20"
+          />
+        </div>
+      ) : null}
+
+      <div className="relative z-10 flex flex-col items-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-stone-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+          {icon}
+        </div>
+        <div className="text-center">
+          <h4 className="text-greenTeal font-bold inter-font">{title}</h4>
+          <p className="text-stone-400 text-xs mt-1 inter-font">
+            {preview && !preview.startsWith("data:image")
+              ? `Selected: ${preview}`
+              : subtitle}
+          </p>
+        </div>
+        <button className="bg-white border border-stone-200 px-6 py-2 rounded-xl text-stone-600 font-bold text-sm shadow-sm hover:border-stone-400 transition-all">
+          {btnText}
+        </button>
+      </div>
     </div>
-    <div className="text-center">
-      <h4 className="text-greenTeal font-bold inter-font">{title}</h4>
-      <p className="text-stone-400 text-xs mt-1 inter-font">{subtitle}</p>
-    </div>
-    <button className="bg-white border border-stone-200 px-6 py-2 rounded-xl text-stone-600 font-bold text-sm shadow-sm hover:border-stone-400 transition-all">
-      {btnText}
-    </button>
-  </div>
-);
+  );
+};
 
 export default CourseBuilder;
