@@ -107,7 +107,7 @@ const CourseBuilder = ({ course, onBack }) => {
             Create comprehensive course content for students
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-greenTeal text-white px-6 py-2.5 rounded-xl font-bold hover:bg-stone-800 transition-all shadow-lg active:scale-95">
+        <button className="flex items-center gap-2 bg-greenTeal text-white px-6 py-2.5 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95">
           <Save className="w-4 h-4" />
           <span>Save Changes</span>
         </button>

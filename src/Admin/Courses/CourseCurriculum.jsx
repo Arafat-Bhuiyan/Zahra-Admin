@@ -9,6 +9,8 @@ import {
   Monitor,
 } from "lucide-react";
 
+import AddContentModal from "./AddLesson";
+
 const CourseCurriculum = () => {
   const [modules, setModules] = useState([
     {
@@ -51,6 +53,8 @@ const CourseCurriculum = () => {
   ]);
 
   const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [targetModuleId, setTargetModuleId] = useState(null);
 
   const addModule = () => {
     if (newModuleTitle.trim()) {
@@ -64,29 +68,23 @@ const CourseCurriculum = () => {
     }
   };
 
-  const addLesson = (moduleId) => {
-    const lessonTitle = prompt("Enter lesson title:");
-    if (lessonTitle) {
-      setModules(
-        modules.map((mod) => {
-          if (mod.id === moduleId) {
-            return {
-              ...mod,
-              lessons: [
-                ...mod.lessons,
-                {
-                  id: Date.now(),
-                  title: lessonTitle,
-                  duration: "00:00",
-                  type: "video",
-                },
-              ],
-            };
-          }
-          return mod;
-        }),
-      );
-    }
+  const openAddContentModal = (moduleId) => {
+    setTargetModuleId(moduleId);
+    setIsModalOpen(true);
+  };
+
+  const handleAddContent = (moduleId, newContent) => {
+    setModules(
+      modules.map((mod) => {
+        if (mod.id === moduleId) {
+          return {
+            ...mod,
+            lessons: [...mod.lessons, newContent],
+          };
+        }
+        return mod;
+      }),
+    );
   };
 
   const removeLesson = (moduleId, lessonId) => {
@@ -127,7 +125,7 @@ const CourseCurriculum = () => {
                 </div>
               </div>
               <button
-                onClick={() => addLesson(mod.id)}
+                onClick={() => openAddContentModal(mod.id)}
                 className="flex items-center gap-2 bg-greenTeal hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all"
               >
                 <Plus className="w-4 h-4" />
@@ -202,6 +200,14 @@ const CourseCurriculum = () => {
           </button>
         </div>
       </div>
+
+      {/* Add Content Modal */}
+      <AddContentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        moduleId={targetModuleId}
+        onAdd={handleAddContent}
+      />
     </div>
   );
 };
