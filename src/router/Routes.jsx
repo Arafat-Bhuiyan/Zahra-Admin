@@ -1,8 +1,8 @@
-import Login from "@/Admin/Auth/Login";
 import MainDashboard from "@/Admin/Dashboard/MainDashboard";
 import AdminLayout from "@/layouts/AdminLayout";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import TermsAndPolicies from "@/Admin/Settings/Settings";
+import Login from "../components/Login";
 
 const router = createBrowserRouter([
   {
