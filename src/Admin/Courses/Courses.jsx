@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Filter,
 } from "lucide-react";
+import CourseDetailsModal from "./CourseDetailsModal";
 
 const Courses = () => {
   const [viewMode, setViewMode] = useState("grid");
@@ -23,6 +24,8 @@ const Courses = () => {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const categories = [
     "All",
@@ -98,6 +101,11 @@ const Courses = () => {
       selectedStatus === "All" || c.status === selectedStatus;
     return matchesSearch && matchesCategory && matchesStatus;
   });
+
+  const handleViewCourse = (course) => {
+    setSelectedCourse(course);
+    setIsDetailsOpen(true);
+  };
 
   return (
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
@@ -372,7 +380,10 @@ const Courses = () => {
                     <button className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm">
                       <Pencil className="w-4 h-4" />
                     </button>
-                    <button className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm">
+                    <button
+                      onClick={() => handleViewCourse(c)}
+                      className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
+                    >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm">
@@ -441,7 +452,10 @@ const Courses = () => {
                       <button className="p-1.5 hover:bg-gray-100 rounded text-slate-400">
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button className="p-1.5 hover:bg-gray-100 rounded text-slate-400">
+                      <button
+                        onClick={() => handleViewCourse(c)}
+                        className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
                     </div>
@@ -452,6 +466,11 @@ const Courses = () => {
           </table>
         </div>
       )}
+      <CourseDetailsModal
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+        course={selectedCourse}
+      />
     </div>
   );
 };
