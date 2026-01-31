@@ -16,6 +16,7 @@ import {
   Filter,
 } from "lucide-react";
 import CourseDetailsModal from "./CourseDetailsModal";
+import AddEditCourse from "./AddEditCourse";
 
 const Courses = () => {
   const [viewMode, setViewMode] = useState("grid");
@@ -26,6 +27,8 @@ const Courses = () => {
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [activeView, setActiveView] = useState("listing"); // listing, add-edit
+  const [courseToEdit, setCourseToEdit] = useState(null);
 
   const categories = [
     "All",
@@ -107,6 +110,33 @@ const Courses = () => {
     setIsDetailsOpen(true);
   };
 
+  const handleAddCourse = () => {
+    setCourseToEdit(null);
+    setActiveView("add-edit");
+  };
+
+  const handleEditCourse = (course) => {
+    setCourseToEdit(course);
+    setActiveView("add-edit");
+  };
+
+  const handleSaveCourse = (formData) => {
+    // In a real app, you'd make an API call here
+    console.log("Saving course:", formData);
+    // For now, just go back to listing
+    setActiveView("listing");
+  };
+
+  if (activeView === "add-edit") {
+    return (
+      <AddEditCourse
+        course={courseToEdit}
+        onBack={() => setActiveView("listing")}
+        onSave={handleSaveCourse}
+      />
+    );
+  }
+
   return (
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
       {/* Stats Quick View */}
@@ -143,7 +173,10 @@ const Courses = () => {
           <Video className="w-5 h-5" />
           Live
         </button>
-        <button className="bg-greenTeal hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-md flex items-center gap-2">
+        <button
+          onClick={handleAddCourse}
+          className="bg-greenTeal hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-md flex items-center gap-2"
+        >
           <Plus className="w-5 h-5" />
           Add New Course
         </button>
@@ -377,7 +410,10 @@ const Courses = () => {
                     {c.price}
                   </span>
                   <div className="flex gap-2">
-                    <button className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm">
+                    <button
+                      onClick={() => handleEditCourse(c)}
+                      className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
+                    >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
@@ -449,7 +485,10 @@ const Courses = () => {
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex justify-end gap-2">
-                      <button className="p-1.5 hover:bg-gray-100 rounded text-slate-400">
+                      <button
+                        onClick={() => handleEditCourse(c)}
+                        className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
+                      >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
