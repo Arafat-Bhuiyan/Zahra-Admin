@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   Play,
 } from "lucide-react";
+import CourseCurriculum from "./CourseCurriculum";
 
 const CourseBuilder = ({ course, onBack }) => {
   const [activeTab, setActiveTab] = useState("Course Overview");
@@ -315,6 +316,7 @@ const CourseBuilder = ({ course, onBack }) => {
           </section>
         </div>
       )}
+      {activeTab === "Course Curriculum" && <CourseCurriculum />}
     </div>
   );
 };
