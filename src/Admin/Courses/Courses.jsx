@@ -39,7 +39,7 @@ const Courses = () => {
   ];
   const statuses = ["All", "Live", "Recorded", "Upcoming"];
 
-  const [courses] = useState([
+  const [courses, setCourses] = useState([
     {
       id: 1,
       title: "Tafsir Al-Quran: Understanding Divine Messages",
@@ -121,10 +121,26 @@ const Courses = () => {
   };
 
   const handleSaveCourse = (formData) => {
-    // In a real app, you'd make an API call here
-    console.log("Saving course:", formData);
-    // For now, just go back to listing
+    if (courseToEdit) {
+      // Edit existing course
+      setCourses((prev) =>
+        prev.map((c) =>
+          c.id === courseToEdit.id
+            ? { ...formData, id: c.id, image: formData.imagePreview }
+            : c,
+        ),
+      );
+    } else {
+      // Add new course
+      const newCourse = {
+        ...formData,
+        id: courses.length > 0 ? Math.max(...courses.map((c) => c.id)) + 1 : 1,
+        image: formData.imagePreview || "https://placehold.co/360x219",
+      };
+      setCourses((prev) => [...prev, newCourse]);
+    }
     setActiveView("listing");
+    setCourseToEdit(null);
   };
 
   if (activeView === "add-edit") {
