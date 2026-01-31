@@ -7,7 +7,6 @@ import {
   Video,
   Eye,
   Pencil,
-  Book,
   Calendar,
   Clock,
   LayoutGrid,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import CourseDetailsModal from "./CourseDetailsModal";
 import AddEditCourse from "./AddEditCourse";
+import CourseBuilder from "./CourseBuilder";
 
 const Courses = () => {
   const [viewMode, setViewMode] = useState("grid");
@@ -120,6 +120,11 @@ const Courses = () => {
     setActiveView("add-edit");
   };
 
+  const handleOpenBuilder = (course) => {
+    setSelectedCourse(course);
+    setActiveView("builder");
+  };
+
   const handleSaveCourse = (formData) => {
     if (courseToEdit) {
       // Edit existing course
@@ -149,6 +154,15 @@ const Courses = () => {
         course={courseToEdit}
         onBack={() => setActiveView("listing")}
         onSave={handleSaveCourse}
+      />
+    );
+  }
+
+  if (activeView === "builder") {
+    return (
+      <CourseBuilder
+        course={selectedCourse}
+        onBack={() => setActiveView("listing")}
       />
     );
   }
@@ -438,8 +452,11 @@ const Courses = () => {
                     >
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm">
-                      <Book className="w-4 h-4" />
+                    <button
+                      onClick={() => handleOpenBuilder(c)}
+                      className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
+                    >
+                      <BookOpen className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -512,6 +529,12 @@ const Courses = () => {
                         className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
                       >
                         <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenBuilder(c)}
+                        className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
+                      >
+                        <BookOpen className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
