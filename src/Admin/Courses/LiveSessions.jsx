@@ -9,13 +9,20 @@ import {
   Plus,
   Search,
   MoreVertical,
+  User,
+  Mail,
 } from "lucide-react";
 
 import ScheduleSessionModal from "./ScheduleSessionModal";
+import ScheduleConsultationModal from "./ScheduleConsultationModal";
+import ConsultationDetailsModal from "./ConsultationDetailsModal";
 
 const LiveSessions = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState("Schedule live Class");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedConsultation, setSelectedConsultation] = useState(null);
 
   const [sessions, setSessions] = useState([
     {
@@ -39,9 +46,30 @@ const LiveSessions = ({ onBack }) => {
       status: "Scheduled",
     },
   ]);
+  const [consultations, setConsultations] = useState([
+    {
+      id: 1,
+      title: "Islamic Family Counseling",
+      instructor: "Dr. Jannat Ara",
+      email: "jannatara10@gmail.com",
+      date: "Today",
+      time: "2:00 PM",
+      students: 28,
+      status: "Scheduled",
+    },
+    {
+      id: 2,
+      title: "Islamic Family Counseling",
+      instructor: "Dr. Jannat Ara",
+      email: "jannatara10@gmail.com",
+      date: "Today",
+      time: "2:00 PM",
+      students: 28,
+      status: "Scheduled",
+    },
+  ]);
 
   const handleAddSession = (newSession) => {
-    // Format the incoming data to match the list display
     const formattedSession = {
       id: newSession.id,
       title: newSession.title,
@@ -53,6 +81,20 @@ const LiveSessions = ({ onBack }) => {
       status: "Scheduled",
     };
     setSessions((prev) => [formattedSession, ...prev]);
+  };
+
+  const handleAddConsultation = (newConsultation) => {
+    const formattedConsultation = {
+      id: newConsultation.id,
+      title: "Private Consultation",
+      instructor: newConsultation.teacher,
+      email: newConsultation.teacherEmail,
+      date: newConsultation.date,
+      time: newConsultation.startTime,
+      students: 1,
+      status: "Scheduled",
+    };
+    setConsultations((prev) => [formattedConsultation, ...prev]);
   };
 
   return (
@@ -80,7 +122,7 @@ const LiveSessions = ({ onBack }) => {
 
       {/* Tab Switcher */}
       <div className="w-full bg-stone-100/80 p-1.5 rounded-full inline-flex justify-between border border-stone-200/50">
-        {["Schedule live Class", "Schedule New Session"].map((tab) => (
+        {["Schedule live Class", "Schedule New Consultation"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -102,11 +144,15 @@ const LiveSessions = ({ onBack }) => {
             Upcoming Sessions
           </h2>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() =>
+              activeTab === "Schedule live Class"
+                ? setIsModalOpen(true)
+                : setIsConsultationModalOpen(true)
+            }
             className="flex items-center gap-2 bg-greenTeal hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-teal-900/10 inter-font"
           >
             <Video className="w-4 h-4" />
-            <span>Schedule live Class</span>
+            <span>{activeTab}</span>
           </button>
         </div>
 
@@ -172,17 +218,40 @@ const LiveSessions = ({ onBack }) => {
             ))}
           </div>
         ) : (
-          <div className="min-h-[400px] flex flex-col items-center justify-center text-center p-12 bg-stone-50/50 rounded-[2rem] border border-dashed border-stone-200">
-            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-sm border border-stone-100 mb-6">
-              <Calendar className="w-10 h-10 text-stone-300" />
-            </div>
-            <h3 className="text-xl font-bold text-stone-800 arimo-font mb-2">
-              Configure New Session
-            </h3>
-            <p className="text-stone-500 max-w-sm inter-font">
-              Use the form to set up recurrent or one-time special events for
-              your students.
-            </p>
+          <div className="grid grid-cols-1 gap-6">
+            {consultations.map((consultation) => (
+              <React.Fragment key={consultation.id}>
+                <div className="bg-stone-50/50 border-l-4 border-amber-500 rounded-2xl p-6 flex items-center gap-4 hover:bg-white hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100">
+                    <User className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-stone-900 inter-font group-hover:text-amber-700 transition-colors">
+                      {consultation.instructor}
+                    </h3>
+                    <div className="flex items-center gap-6 mt-1">
+                      <p className="text-sm font-medium text-stone-400 inter-font flex items-center gap-2">
+                        <Mail className="w-3.5 h-3.5" />
+                        {consultation.email}
+                      </p>
+                      <p className="text-sm font-medium text-amber-600 inter-font flex items-center gap-2">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {consultation.date} at {consultation.time}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedConsultation(consultation);
+                      setIsDetailsModalOpen(true);
+                    }}
+                    className="bg-white border border-stone-200 text-stone-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700 transition-all shadow-sm"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </React.Fragment>
+            ))}
           </div>
         )}
       </div>
@@ -191,6 +260,18 @@ const LiveSessions = ({ onBack }) => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSchedule={handleAddSession}
+      />
+
+      <ScheduleConsultationModal
+        isOpen={isConsultationModalOpen}
+        onClose={() => setIsConsultationModalOpen(false)}
+        onSchedule={handleAddConsultation}
+      />
+
+      <ConsultationDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        consultation={selectedConsultation}
       />
     </div>
   );
