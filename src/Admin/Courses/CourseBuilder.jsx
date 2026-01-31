@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import CourseCurriculum from "./CourseCurriculum";
 import CommunityChat from "./CommunityChat";
+import CourseReviews from "./CourseReviews";
 
 const CourseBuilder = ({ course, onBack }) => {
   const [activeTab, setActiveTab] = useState("Course Overview");
@@ -318,6 +319,7 @@ const CourseBuilder = ({ course, onBack }) => {
         </div>
       )}
       {activeTab === "Course Curriculum" && <CourseCurriculum />}
+      {activeTab === "Review" && <CourseReviews />}
       {activeTab === "Community Chat" && <CommunityChat />}
     </div>
   );
