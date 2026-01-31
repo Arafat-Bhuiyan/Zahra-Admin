@@ -12,6 +12,7 @@ import {
   Play,
 } from "lucide-react";
 import CourseCurriculum from "./CourseCurriculum";
+import CommunityChat from "./CommunityChat";
 
 const CourseBuilder = ({ course, onBack }) => {
   const [activeTab, setActiveTab] = useState("Course Overview");
@@ -317,6 +318,7 @@ const CourseBuilder = ({ course, onBack }) => {
         </div>
       )}
       {activeTab === "Course Curriculum" && <CourseCurriculum />}
+      {activeTab === "Community Chat" && <CommunityChat />}
     </div>
   );
 };
