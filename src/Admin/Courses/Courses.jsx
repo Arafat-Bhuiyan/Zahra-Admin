@@ -1,100 +1,106 @@
 import React, { useState } from "react";
 import {
   Search,
-  Filter,
   Plus,
   BookOpen,
-  Clock,
   Users,
-  Star,
-  MoreVertical,
+  Video,
+  Eye,
+  Pencil,
+  Book,
+  Calendar,
+  Clock,
   LayoutGrid,
   List,
+  ChevronDown,
+  Filter,
 } from "lucide-react";
 
 const Courses = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
 
-  const [courses, setCourses] = useState([
+  const categories = [
+    "All",
+    "Mental Health",
+    "Spiritual Growth",
+    "Relationships",
+    "Professional",
+  ];
+  const statuses = ["All", "Live", "Recorded", "Upcoming"];
+
+  const [courses] = useState([
     {
       id: 1,
-      title: "Foundations of Islamic Psychology",
-      instructor: "Dr. Laleh Bakhtiar",
-      category: "Psychology",
-      students: 450,
-      rating: 4.8,
-      duration: "12 Weeks",
-      price: "$199",
-      status: "Published",
-      image:
-        "https://images.unsplash.com/photo-1532012197367-2bb673c24237?q=80&w=300&h=200&auto=format&fit=crop",
+      title: "Tafsir Al-Quran: Understanding Divine Messages",
+      instructor: "Dr. Ahmed Hassan",
+      category: "Mental Health",
+      status: "Upcoming",
+      lessons: 24,
+      duration: "12 weeks",
+      totalHours: 12,
+      sessionDuration: "2hr per session",
+      price: "$99",
+      image: "https://placehold.co/360x219",
     },
     {
       id: 2,
-      title: "Advanced Arabic Linguistics II",
-      instructor: "Prof. Ahmed Mansour",
-      category: "Language",
-      students: 120,
-      rating: 4.5,
-      duration: "8 Weeks",
-      price: "$149",
-      status: "Published",
-      image:
-        "https://images.unsplash.com/photo-1513258496099-48168024adb0?q=80&w=300&h=200&auto=format&fit=crop",
+      title: "Tafsir Al-Quran: Understanding Divine Messages",
+      instructor: "Dr. Ahmed Hassan",
+      category: "Mental Health",
+      status: "Live",
+      lessons: 24,
+      duration: "12 weeks",
+      totalHours: 12,
+      sessionDuration: "2hr per session",
+      price: "$99",
+      image: "https://placehold.co/360x219",
     },
     {
       id: 3,
-      title: "Theology of the Soul",
-      instructor: "Sheikh Omar Suleiman",
-      category: "Theology",
-      students: 2300,
-      rating: 4.9,
-      duration: "Self-Paced",
-      price: "Free",
-      status: "Draft",
-      image:
-        "https://images.unsplash.com/photo-1544924467-9c938bb0ca13?q=80&w=300&h=200&auto=format&fit=crop",
+      title: "Tafsir Al-Quran: Understanding Divine Messages",
+      instructor: "Dr. Ahmed Hassan",
+      category: "Mental Health",
+      status: "Recorded",
+      lessons: 24,
+      duration: "12 weeks",
+      totalHours: 12,
+      sessionDuration: "2hr per session",
+      price: "$99",
+      image: "https://placehold.co/360x219",
     },
     {
       id: 4,
-      title: "Islamic Ethics in Modern Business",
+      title: "Foundation of Islamic Ethics",
       instructor: "Dr. Yasir Qadhi",
-      category: "Business",
-      students: 890,
-      rating: 4.7,
-      duration: "6 Weeks",
-      price: "$89",
-      status: "Published",
-      image:
-        "https://images.unsplash.com/photo-1454165833767-0270b24bbbad?q=80&w=300&h=200&auto=format&fit=crop",
+      category: "Spiritual Growth",
+      status: "Recorded",
+      lessons: 18,
+      duration: "10 weeks",
+      totalHours: 15,
+      sessionDuration: "1.5hr per session",
+      price: "$79",
+      image: "https://placehold.co/360x219",
     },
   ]);
 
-  const filteredCourses = courses.filter(
-    (c) =>
+  const filteredCourses = courses.filter((c) => {
+    const matchesSearch =
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.instructor.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+      c.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" || c.category === selectedCategory;
+    const matchesStatus =
+      selectedStatus === "All" || c.status === selectedStatus;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
 
   return (
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex flex-col">
-          <h1 className="text-neutral-900 text-3xl font-bold arimo-font tracking-tight">
-            Courses Management
-          </h1>
-          <p className="text-gray-500 text-base font-normal arimo-font">
-            Create, edit and manage your curriculum
-          </p>
-        </div>
-        <button className="bg-greenTeal hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-md flex items-center gap-2">
-          <Plus className="w-5 h-5" />
-          Add New Course
-        </button>
-      </div>
-
       {/* Stats Quick View */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
@@ -123,6 +129,127 @@ const Courses = () => {
         </div>
       </div>
 
+      {/* Header Actions */}
+      <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
+        <button className="bg-red-400 hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-md flex items-center gap-2">
+          <Video className="w-5 h-5" />
+          Live
+        </button>
+        <button className="bg-greenTeal hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-md flex items-center gap-2">
+          <Plus className="w-5 h-5" />
+          Add New Course
+        </button>
+      </div>
+
+      {/* Filters Section */}
+      <div className="flex flex-col md:flex-row gap-12 z-20">
+        {/* Category Filter */}
+        <div className="flex flex-col gap-3 relative">
+          <button
+            onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+            className="flex items-center gap-2 text-stone-700 hover:text-teal-700 transition-colors group"
+          >
+            <Filter className="w-4 h-4 text-stone-500 group-hover:text-teal-600" />
+            <span className="text-sm font-bold font-['Arial'] leading-5 tracking-wide">
+              CATEGORY
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform duration-300 ${isCategoryOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {isCategoryOpen && (
+            <div className="absolute top-8 left-0 mt-2 p-5 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl flex flex-col gap-1 min-w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setSelectedCategory(cat);
+                    setIsCategoryOpen(false);
+                  }}
+                  className={`px-4 py-2.5 rounded-xl text-sm text-left transition-all ${
+                    selectedCategory === cat
+                      ? "bg-teal-50 text-teal-700 font-bold"
+                      : "text-stone-600 hover:bg-stone-50"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  selectedCategory === cat
+                    ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
+                    : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Status Filter */}
+        <div className="flex flex-col gap-3 relative">
+          <button
+            onClick={() => setIsStatusOpen(!isStatusOpen)}
+            className="flex items-center gap-2 text-stone-700 hover:text-teal-700 transition-colors group"
+          >
+            <Filter className="w-4 h-4 text-stone-500 group-hover:text-teal-600" />
+            <span className="text-sm font-bold font-['Arial'] leading-5 tracking-wide">
+              STATUS
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform duration-300 ${isStatusOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {isStatusOpen && (
+            <div className="absolute top-8 left-0 mt-2 p-5 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl flex flex-col gap-1 min-w-[180px] z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              {statuses.map((stat) => (
+                <button
+                  key={stat}
+                  onClick={() => {
+                    setSelectedStatus(stat);
+                    setIsStatusOpen(false);
+                  }}
+                  className={`px-4 py-2.5 rounded-xl text-sm text-left transition-all ${
+                    selectedStatus === stat
+                      ? "bg-teal-50 text-teal-700 font-bold"
+                      : "text-stone-600 hover:bg-stone-50"
+                  }`}
+                >
+                  {stat}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {statuses.map((stat) => (
+              <button
+                key={stat}
+                onClick={() => setSelectedStatus(stat)}
+                className={`px-6 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  selectedStatus === stat
+                    ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
+                    : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
+                }`}
+              >
+                {stat}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Toolbar */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-black/5 shadow-sm">
         <div className="relative w-full md:w-[400px]">
@@ -137,13 +264,6 @@ const Courses = () => {
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-xl border border-black/10 hover:bg-gray-50 transition-colors text-sm font-medium">
-            <Filter className="w-4 h-4" />
-            Categories
-          </button>
-
-          <div className="h-10 w-[1px] bg-gray-200 hidden md:block mx-1"></div>
-
           <div className="flex bg-zinc-100 p-1 rounded-xl">
             <button
               onClick={() => setViewMode("grid")}
@@ -163,61 +283,102 @@ const Courses = () => {
 
       {/* Courses Display */}
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 tracking-tight">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 tracking-tight">
           {filteredCourses.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden group hover:shadow-md transition-all"
+              className="bg-white rounded-[2rem] border border-stone-200 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300"
             >
-              <div className="relative h-40 overflow-hidden">
+              <div className="relative h-64 w-full p-4">
+                <div className="absolute top-6 right-8 z-10 px-4 py-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl text-stone-700 text-xs font-medium shadow-sm">
+                  {c.category}
+                </div>
                 <img
                   src={c.image}
                   alt={c.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover rounded-[1.5rem]"
                 />
-                <div className="absolute top-3 right-3">
+              </div>
+
+              <div className="px-6 pb-6 flex flex-col gap-5 flex-grow">
+                {/* Status Badge */}
+                <div className="flex">
                   <span
-                    className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase border bg-white/90 backdrop-blur-sm shadow-sm ${c.status === "Published" ? "text-emerald-600 border-emerald-100" : "text-amber-600 border-amber-100"}`}
+                    className={`px-4 py-1.5 rounded-[20px] text-xs font-semibold text-white flex items-center gap-2 ${
+                      c.status === "Upcoming"
+                        ? "bg-lime-600"
+                        : c.status === "Live"
+                          ? "bg-red-700"
+                          : "bg-sky-500"
+                    }`}
                   >
+                    {c.status === "Live" && (
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                      </span>
+                    )}
                     {c.status}
                   </span>
                 </div>
-              </div>
-              <div className="p-5 flex flex-col gap-3">
-                <div className="flex flex-col gap-1">
-                  <p className="text-greenTeal text-[10px] font-bold uppercase tracking-widest">
-                    {c.category}
-                  </p>
-                  <h4 className="text-neutral-950 font-bold text-base leading-tight line-clamp-2 min-h-[3rem]">
+
+                {/* Title and Instructor */}
+                <div className="space-y-2">
+                  <h4 className="text-stone-900 text-xl font-bold leading-tight line-clamp-2 min-h-[3.5rem] group-hover:text-teal-700 transition-colors">
                     {c.title}
                   </h4>
+                  <div className="flex items-center gap-2 text-stone-600">
+                    <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm font-medium">{c.instructor}</span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-zinc-100 border border-black/5 flex items-center justify-center text-[10px] font-bold">
-                    IB
+                {/* Course Stats */}
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-2">
+                  <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
+                    <BookOpen className="w-4 h-4 text-teal-600" />
+                    <span className="text-xs font-bold whitespace-nowrap">
+                      {c.lessons} Lessons
+                    </span>
                   </div>
-                  <p className="text-gray-500 text-xs font-medium truncate">
-                    {c.instructor}
-                  </p>
+                  <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
+                    <Calendar className="w-4 h-4 text-teal-600" />
+                    <span className="text-xs font-bold whitespace-nowrap">
+                      {c.duration}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
+                    <Clock className="w-4 h-4 text-teal-600" />
+                    <span className="text-xs font-bold whitespace-nowrap">
+                      {c.totalHours} hr
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
+                    <Clock className="w-4 h-4 text-teal-600" />
+                    <span className="text-xs font-bold whitespace-nowrap line-clamp-1">
+                      {c.sessionDuration}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-black/5 mt-2">
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-gray-500 text-xs font-medium">
-                      {c.students}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                    <span className="text-gray-950 text-xs font-bold">
-                      {c.rating}
-                    </span>
-                  </div>
-                  <p className="text-neutral-900 font-bold text-sm">
+                {/* Footer: Price and Actions */}
+                <div className="pt-5 border-t border-stone-100 flex items-center justify-between mt-auto">
+                  <span className="text-teal-800 text-2xl font-black">
                     {c.price}
-                  </p>
+                  </span>
+                  <div className="flex gap-2">
+                    <button className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm">
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm">
+                      <Book className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -230,8 +391,8 @@ const Courses = () => {
               <tr>
                 <th className="py-4 px-6">Course Name</th>
                 <th className="py-4 px-6">Instructor</th>
-                <th className="py-4 px-6 text-center">Rating</th>
-                <th className="py-4 px-6 text-center">Students</th>
+                <th className="py-4 px-6 text-center">Lessons</th>
+                <th className="py-4 px-6 text-center">Duration</th>
                 <th className="py-4 px-6">Price</th>
                 <th className="py-4 px-6 text-center">Status</th>
                 <th className="py-4 px-6 text-right">Actions</th>
@@ -246,36 +407,44 @@ const Courses = () => {
                   <td className="py-4 px-6 flex items-center gap-3">
                     <img
                       src={c.image}
-                      className="w-10 h-7 rounded object-cover border border-black/5"
+                      className="w-12 h-8 rounded-lg object-cover border border-black/5"
                     />
                     <span className="text-neutral-950 font-bold">
                       {c.title}
                     </span>
                   </td>
                   <td className="py-4 px-6 text-neutral-600">{c.instructor}</td>
-                  <td className="py-4 px-6 text-center">
-                    <div className="flex items-center justify-center gap-1 text-amber-500">
-                      <Star className="w-3.5 h-3.5 fill-current" />
-                      <span className="font-bold">{c.rating}</span>
-                    </div>
+                  <td className="py-4 px-6 text-center text-neutral-600">
+                    {c.lessons}
                   </td>
-                  <td className="py-4 px-6 text-center font-bold text-blue-600 bg-blue-50/20">
-                    {c.students}
+                  <td className="py-4 px-6 text-center text-neutral-600">
+                    {c.duration}
                   </td>
                   <td className="py-4 px-6 font-bold">{c.price}</td>
                   <td className="py-4 px-6">
                     <div className="flex justify-center">
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${c.status === "Published" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"}`}
+                        className={`px-3 py-1 rounded-[20px] text-[10px] font-bold uppercase ${
+                          c.status === "Upcoming"
+                            ? "bg-lime-600 text-white"
+                            : c.status === "Live"
+                              ? "bg-red-700 text-white"
+                              : "bg-sky-500 text-white"
+                        }`}
                       >
                         {c.status}
                       </span>
                     </div>
                   </td>
                   <td className="py-4 px-6 text-right">
-                    <button className="p-2 hover:bg-gray-100 rounded-lg text-neutral-400 hover:text-neutral-900">
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button className="p-1.5 hover:bg-gray-100 rounded text-slate-400">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button className="p-1.5 hover:bg-gray-100 rounded text-slate-400">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

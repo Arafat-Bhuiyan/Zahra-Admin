@@ -12,7 +12,7 @@ export default function AdminLayout() {
   const title = location.pathname.startsWith(`/admin/users-management`)
     ? "Users Management"
     : location.pathname.startsWith(`/admin/courses-management`)
-    ? "Courses Management"
+    ? "My Courses"
     : location.pathname.startsWith(`/admin/submissions`)
     ? "Submissions Management"
     : location.pathname.startsWith(`/admin/contents`)
