@@ -17,6 +17,7 @@ import {
 import CourseDetailsModal from "./CourseDetailsModal";
 import AddEditCourse from "./AddEditCourse";
 import CourseBuilder from "./CourseBuilder";
+import LiveSessions from "./LiveSessions";
 
 const Courses = () => {
   const [viewMode, setViewMode] = useState("grid");
@@ -27,7 +28,7 @@ const Courses = () => {
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [activeView, setActiveView] = useState("listing"); // listing, add-edit
+  const [activeView, setActiveView] = useState("listing"); // listing, add-edit, builder, live-sessions
   const [courseToEdit, setCourseToEdit] = useState(null);
 
   const categories = [
@@ -167,6 +168,10 @@ const Courses = () => {
     );
   }
 
+  if (activeView === "live-sessions") {
+    return <LiveSessions onBack={() => setActiveView("listing")} />;
+  }
+
   return (
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
       {/* Stats Quick View */}
@@ -199,13 +204,16 @@ const Courses = () => {
 
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
-        <button className="bg-red-400 hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-md flex items-center gap-2">
+        <button
+          onClick={() => setActiveView("live-sessions")}
+          className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold arimo-font transition-all shadow-lg active:scale-95 flex items-center gap-2"
+        >
           <Video className="w-5 h-5" />
           Live
         </button>
         <button
           onClick={handleAddCourse}
-          className="bg-greenTeal hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-md flex items-center gap-2"
+          className="bg-greenTeal hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-lg active:scale-95 flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Add New Course
