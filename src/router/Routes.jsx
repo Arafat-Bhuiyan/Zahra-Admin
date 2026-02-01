@@ -10,6 +10,7 @@ import Certificates from "../Admin/Certificates/Certificates";
 import Memberships from "../Admin/Memberships/Memberships";
 import Courses from "../Admin/Courses/Courses";
 import Contents from "../Admin/Contents/Contents";
+import ContentDetails from "../Admin/Contents/ContentDetails";
 import Submission from "../Admin/Submission/Submission";
 
 const router = createBrowserRouter([
@@ -35,7 +36,7 @@ const router = createBrowserRouter([
       { path: "submissions", element: <Submission /> },
       { path: "settings", element: <TermsAndPolicies /> },
       { path: "contents", element: <Contents /> },
-      { path: "contents/:id", element: <>Content Details</> },
+      { path: "contents/:id", element: <ContentDetails /> },
       { path: "book-library", element: <>Book Library</> },
       { path: "book-library/:id", element: <>Book Library Details</> },
       { path: "book-sales", element: <>Book Sales</> },

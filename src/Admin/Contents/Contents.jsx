@@ -11,8 +11,10 @@ import {
   CheckCircle2,
   ChevronDown,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Contents = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   const [contentsList, setContentsList] = useState([
@@ -121,7 +123,10 @@ const Contents = () => {
               />
               {item.type === "Video" && (
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center group cursor-pointer">
-                  <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 backdrop-blur-sm">
+                  <div
+                    onClick={() => navigate(`/admin/contents/${item.id}`)}
+                    className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 backdrop-blur-sm"
+                  >
                     <Play className="w-6 h-6 text-slate-600 fill-slate-600 ml-1" />
                   </div>
                   <div className="absolute bottom-4 right-4 bg-black/50 px-2 py-1 rounded text-white text-xs font-bold">
@@ -176,7 +181,10 @@ const Contents = () => {
             {/* Footer Actions */}
             {item.type === "Article" && (
               <div className="px-5 py-4 bg-neutral-50 border-t border-black/10 flex items-center justify-end gap-3">
-                <button className="p-2 border border-slate-400 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors">
+                <button
+                  onClick={() => navigate(`/admin/contents/${item.id}`)}
+                  className="p-2 border border-slate-400 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
+                >
                   <Eye className="w-5 h-4" />
                 </button>
                 {item.status === "Pending" ? (
