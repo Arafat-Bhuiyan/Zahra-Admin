@@ -10,14 +10,21 @@ import {
   Clock,
 } from "lucide-react";
 import AssignmentDetailsModal from "./AssignmentDetailsModal";
+import GradeAssignmentModal from "./GradeAssignmentModal";
 
 const AssignmentSection = ({ categories, submissions }) => {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isGradeModalOpen, setIsGradeModalOpen] = React.useState(false);
   const [selectedSubmission, setSelectedSubmission] = React.useState(null);
 
   const handleViewDetails = (submission) => {
     setSelectedSubmission(submission);
     setIsModalOpen(true);
+  };
+
+  const handleGrade = (submission) => {
+    setSelectedSubmission(submission);
+    setIsGradeModalOpen(true);
   };
 
   return (
@@ -128,12 +135,18 @@ const AssignmentSection = ({ categories, submissions }) => {
                     </button>
 
                     {submission.status === "Graded" ? (
-                      <button className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] border border-neutral-300 text-neutral-700 text-sm font-medium hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handleGrade(submission)}
+                        className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] border border-neutral-300 text-neutral-700 text-sm font-medium hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2"
+                      >
                         <Edit3 className="w-4 h-4 stroke-[1.5]" />
                         Edit Grade
                       </button>
                     ) : (
-                      <button className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] bg-[#7AA4A5] text-white text-sm font-medium hover:bg-[#6b9192] transition-colors flex items-center justify-center gap-2 shadow-sm">
+                      <button
+                        onClick={() => handleGrade(submission)}
+                        className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] bg-[#7AA4A5] text-white text-sm font-medium hover:bg-[#6b9192] transition-colors flex items-center justify-center gap-2 shadow-sm"
+                      >
                         <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
                         Grade Now
                       </button>
@@ -147,6 +160,15 @@ const AssignmentSection = ({ categories, submissions }) => {
       <AssignmentDetailsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        submission={selectedSubmission}
+        onGrade={() => {
+          setIsModalOpen(false);
+          setIsGradeModalOpen(true);
+        }}
+      />
+      <GradeAssignmentModal
+        isOpen={isGradeModalOpen}
+        onClose={() => setIsGradeModalOpen(false)}
         submission={selectedSubmission}
       />
     </div>

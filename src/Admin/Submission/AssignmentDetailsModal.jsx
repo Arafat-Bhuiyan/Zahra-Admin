@@ -1,8 +1,10 @@
 import React from "react";
 import { X, FileText, Download, CheckCircle2 } from "lucide-react";
 
-const AssignmentDetailsModal = ({ isOpen, onClose, submission }) => {
+const AssignmentDetailsModal = ({ isOpen, onClose, submission, onGrade }) => {
   if (!isOpen || !submission) return null;
+
+  const isGraded = submission.status === "Graded";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -120,9 +122,12 @@ const AssignmentDetailsModal = ({ isOpen, onClose, submission }) => {
             Close
           </button>
 
-          <button className="px-8 py-2.5 bg-[#7AA4A5] text-white rounded-xl font-bold flex items-center gap-2 hover:bg-[#6b9192] transition-colors shadow-lg shadow-[#7AA4A5]/20">
+          <button
+            onClick={onGrade}
+            className="px-8 py-2.5 bg-[#7AA4A5] text-white rounded-xl font-bold flex items-center gap-2 hover:bg-[#6b9192] transition-colors shadow-lg shadow-[#7AA4A5]/20"
+          >
             <CheckCircle2 className="w-5 h-5" />
-            Grade Assignment
+            {isGraded ? "Edit Grade" : "Grade Assignment"}
           </button>
         </div>
       </div>
