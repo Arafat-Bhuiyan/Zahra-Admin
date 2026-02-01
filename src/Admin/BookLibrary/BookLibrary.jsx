@@ -15,11 +15,13 @@ import {
 } from "lucide-react";
 import BookDetailsModal from "./BookDetailsModal";
 import EditBookModal from "./EditBookModal";
+import UploadBookModal from "./UploadBookModal";
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
   const [editingBook, setEditingBook] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const [booksList, setBooksList] = useState([
     {
@@ -121,6 +123,11 @@ const BookLibrary = () => {
     setEditingBook(null);
   };
 
+  const handleAddBook = (newBook) => {
+    setBooksList((prev) => [newBook, ...prev]);
+    setShowUploadModal(false);
+  };
+
   const stats = [
     { label: "Total Books", value: "6", icon: BookOpen, color: "bg-teal-600" },
     {
@@ -137,7 +144,10 @@ const BookLibrary = () => {
     <div className="pt-2 flex flex-col gap-8 animate-in fade-in duration-500 pb-10 arimo-font">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
-        <button className="bg-[#7AA4A5] hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm flex items-center gap-2 inter-font">
+        <button
+          onClick={() => setShowUploadModal(true)}
+          className="bg-[#7AA4A5] hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm flex items-center gap-2 inter-font"
+        >
           <Plus className="w-4 h-4" />
           Create New Book
         </button>
@@ -290,6 +300,14 @@ const BookLibrary = () => {
           book={editingBook}
           onClose={() => setEditingBook(null)}
           onSave={handleUpdateBook}
+        />
+      )}
+
+      {/* Upload Book Modal */}
+      {showUploadModal && (
+        <UploadBookModal
+          onClose={() => setShowUploadModal(false)}
+          onSave={handleAddBook}
         />
       )}
     </div>
