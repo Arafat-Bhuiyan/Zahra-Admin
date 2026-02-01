@@ -12,6 +12,7 @@ import Courses from "../Admin/Courses/Courses";
 import Contents from "../Admin/Contents/Contents";
 import ContentDetails from "../Admin/Contents/ContentDetails";
 import BookLibrary from "../Admin/BookLibrary/BookLibrary";
+import BookSales from "../Admin/BookSales/BookSales";
 import Submission from "../Admin/Submission/Submission";
 
 const router = createBrowserRouter([
@@ -40,7 +41,7 @@ const router = createBrowserRouter([
       { path: "contents/:id", element: <ContentDetails /> },
       { path: "book-library", element: <BookLibrary /> },
       { path: "book-library/:id", element: <>Book Library Details</> },
-      { path: "book-sales", element: <>Book Sales</> },
+      { path: "book-sales", element: <BookSales /> },
       { path: "book-sales/:id", element: <>Book Sales Details</> },
       { path: "announcements", element: <>Announcements</> },
       { path: "newsletter", element: <>Newsletter</> },
