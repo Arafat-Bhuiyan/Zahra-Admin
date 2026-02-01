@@ -13,11 +13,12 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UploadContent from "./UploadContent";
+import UploadVideo from "./UploadVideo";
 
 const Contents = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [showUploadForm, setShowUploadForm] = useState(null); // 'article', 'video', or null
 
   const [contentsList, setContentsList] = useState([
     {
@@ -75,14 +76,23 @@ const Contents = () => {
 
   const handleSaveContent = (newItem) => {
     setContentsList((prev) => [newItem, ...prev]);
-    setShowUploadForm(false);
+    setShowUploadForm(null);
   };
 
-  if (showUploadForm) {
+  if (showUploadForm === "article") {
     return (
       <UploadContent
         onSave={handleSaveContent}
-        onBack={() => setShowUploadForm(false)}
+        onBack={() => setShowUploadForm(null)}
+      />
+    );
+  }
+
+  if (showUploadForm === "video") {
+    return (
+      <UploadVideo
+        onSave={handleSaveContent}
+        onBack={() => setShowUploadForm(null)}
       />
     );
   }
@@ -93,14 +103,17 @@ const Contents = () => {
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
         <div className="flex items-center gap-4 inter-font">
           <button
-            onClick={() => setShowUploadForm(true)}
-            className="w-56 h-7 px-2 py-1 bg-greenTeal rounded-2xl outline outline-1 outline-offset-[-1px] outline-black/0 inline-flex justify-center items-center gap-1.5 hover:opacity-90 transition-all"
+            onClick={() => setShowUploadForm("article")}
+            className="w-56 h-7 px-2 py-1 bg-greenTeal rounded-2xl outline outline-1 outline-offset-[-1px] outline-black/0 inline-flex justify-center items-center gap-1.5 hover:opacity-90 transition-all font-semibold"
           >
             <span className="text-center text-white text-sm font-semibold leading-5">
               Upload New Content
             </span>
           </button>
-          <button className="w-56 h-7 px-2 py-1 bg-gray-200 rounded-2xl inline-flex justify-center items-center gap-1.5 hover:bg-gray-300 transition-all">
+          <button
+            onClick={() => setShowUploadForm("video")}
+            className="w-56 h-7 px-2 py-1 bg-gray-200 rounded-2xl inline-flex justify-center items-center gap-1.5 hover:bg-gray-300 transition-all font-semibold"
+          >
             <span className="text-center text-neutral-950 text-sm font-semibold leading-5">
               Upload New Video
             </span>
@@ -137,11 +150,19 @@ const Contents = () => {
           >
             {/* Thumbnail */}
             <div className="relative h-[227px] w-full overflow-hidden">
-              <img
-                src={item.thumbnail}
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                alt={item.title}
-              />
+              {item.type === "Video" && item.thumbnail?.startsWith("blob:") ? (
+                <video
+                  src={item.thumbnail}
+                  className="w-full h-full object-cover"
+                  muted
+                />
+              ) : (
+                <img
+                  src={item.thumbnail}
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                  alt={item.title}
+                />
+              )}
               {item.type === "Video" && (
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center group cursor-pointer">
                   <div
