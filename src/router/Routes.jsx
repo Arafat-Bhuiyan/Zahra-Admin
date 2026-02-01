@@ -11,6 +11,7 @@ import Memberships from "../Admin/Memberships/Memberships";
 import Courses from "../Admin/Courses/Courses";
 import Contents from "../Admin/Contents/Contents";
 import ContentDetails from "../Admin/Contents/ContentDetails";
+import BookLibrary from "../Admin/BookLibrary/BookLibrary";
 import Submission from "../Admin/Submission/Submission";
 
 const router = createBrowserRouter([
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
       { path: "settings", element: <TermsAndPolicies /> },
       { path: "contents", element: <Contents /> },
       { path: "contents/:id", element: <ContentDetails /> },
-      { path: "book-library", element: <>Book Library</> },
+      { path: "book-library", element: <BookLibrary /> },
       { path: "book-library/:id", element: <>Book Library Details</> },
       { path: "book-sales", element: <>Book Sales</> },
       { path: "book-sales/:id", element: <>Book Sales Details</> },
