@@ -12,10 +12,12 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import UploadContent from "./UploadContent";
 
 const Contents = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showUploadForm, setShowUploadForm] = useState(false);
 
   const [contentsList, setContentsList] = useState([
     {
@@ -71,18 +73,37 @@ const Contents = () => {
     );
   };
 
+  const handleSaveContent = (newItem) => {
+    setContentsList((prev) => [newItem, ...prev]);
+    setShowUploadForm(false);
+  };
+
+  if (showUploadForm) {
+    return (
+      <UploadContent
+        onSave={handleSaveContent}
+        onBack={() => setShowUploadForm(false)}
+      />
+    );
+  }
+
   return (
     <div className="pt-2 flex flex-col gap-8 animate-in fade-in duration-500 pb-10 arimo-font">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
-        <div className="flex items-center gap-4">
-          <button className="bg-[#7AA4A5] hover:opacity-90 text-white px-6 py-2.5 rounded-2xl text-sm font-medium transition-all shadow-sm flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Upload New Content
+        <div className="flex items-center gap-4 inter-font">
+          <button
+            onClick={() => setShowUploadForm(true)}
+            className="w-56 h-7 px-2 py-1 bg-greenTeal rounded-2xl outline outline-1 outline-offset-[-1px] outline-black/0 inline-flex justify-center items-center gap-1.5 hover:opacity-90 transition-all"
+          >
+            <span className="text-center text-white text-sm font-semibold leading-5">
+              Upload New Content
+            </span>
           </button>
-          <button className="bg-[#E5E7EB] hover:bg-gray-300 text-neutral-900 px-6 py-2.5 rounded-2xl text-sm font-medium transition-all flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Upload New Video
+          <button className="w-56 h-7 px-2 py-1 bg-gray-200 rounded-2xl inline-flex justify-center items-center gap-1.5 hover:bg-gray-300 transition-all">
+            <span className="text-center text-neutral-950 text-sm font-semibold leading-5">
+              Upload New Video
+            </span>
           </button>
         </div>
       </div>
