@@ -1,8 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Search,
-  Filter,
-  BookOpen,
   FileText,
   User,
   Calendar,
@@ -11,12 +8,21 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import QuizDetailsModal from "./QuizDetailsModal";
 
 /**
  * QuizSection component to display quiz submissions.
  * Matches Figma design with purple accents and Passed/Failed status.
  */
 const QuizSection = ({ categories, submissions }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
+
+  const handleViewDetails = (submission) => {
+    setSelectedSubmission(submission);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="space-y-10">
       {categories.map((title, catIdx) => (
@@ -116,7 +122,10 @@ const QuizSection = ({ categories, submissions }) => {
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-4">
-                    <button className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] border border-slate-300 text-slate-400 text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => handleViewDetails(submission)}
+                      className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] border border-slate-300 text-slate-400 text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                    >
                       <Eye className="w-4 h-4 stroke-[1.5]" />
                       <span>View Details</span>
                     </button>
@@ -126,6 +135,11 @@ const QuizSection = ({ categories, submissions }) => {
           </div>
         </div>
       ))}
+      <QuizDetailsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        submission={selectedSubmission}
+      />
     </div>
   );
 };
