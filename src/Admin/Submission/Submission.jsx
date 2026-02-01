@@ -79,12 +79,25 @@ const Submission = () => {
     },
   ];
 
-  // Grouping titles for UI categories
+  // Filter submissions based on search term
+  const filteredAssignments = assignmentSubmissions.filter(
+    (s) =>
+      s.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.assignmentTitle.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const filteredQuizzes = quizSubmissions.filter(
+    (s) =>
+      s.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.assignmentTitle.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  // Grouping titles for UI categories based on filtered data
   const assignmentCategories = [
-    ...new Set(assignmentSubmissions.map((s) => s.assignmentTitle)),
+    ...new Set(filteredAssignments.map((s) => s.assignmentTitle)),
   ];
   const quizCategories = [
-    ...new Set(quizSubmissions.map((s) => s.assignmentTitle)),
+    ...new Set(filteredQuizzes.map((s) => s.assignmentTitle)),
   ];
 
   return (
@@ -195,12 +208,12 @@ const Submission = () => {
       {selectedType === "Assignment" ? (
         <AssignmentSection
           categories={assignmentCategories}
-          submissions={assignmentSubmissions}
+          submissions={filteredAssignments}
         />
       ) : (
         <QuizSection
           categories={quizCategories}
-          submissions={quizSubmissions}
+          submissions={filteredQuizzes}
         />
       )}
     </div>

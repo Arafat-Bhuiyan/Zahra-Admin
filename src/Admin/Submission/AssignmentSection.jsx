@@ -9,8 +9,17 @@ import {
   CheckCircle2,
   Clock,
 } from "lucide-react";
+import AssignmentDetailsModal from "./AssignmentDetailsModal";
 
 const AssignmentSection = ({ categories, submissions }) => {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [selectedSubmission, setSelectedSubmission] = React.useState(null);
+
+  const handleViewDetails = (submission) => {
+    setSelectedSubmission(submission);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="space-y-10">
       {categories.map((title, catIdx) => (
@@ -110,7 +119,10 @@ const AssignmentSection = ({ categories, submissions }) => {
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-4">
-                    <button className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] border border-slate-300 text-slate-500 text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => handleViewDetails(submission)}
+                      className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] border border-slate-300 text-slate-500 text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                    >
                       <Eye className="w-4 h-4 stroke-[1.5]" />
                       <span>View Details</span>
                     </button>
@@ -132,6 +144,11 @@ const AssignmentSection = ({ categories, submissions }) => {
           </div>
         </div>
       ))}
+      <AssignmentDetailsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        submission={selectedSubmission}
+      />
     </div>
   );
 };
