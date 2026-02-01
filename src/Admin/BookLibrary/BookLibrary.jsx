@@ -14,39 +14,14 @@ import {
   Filter,
 } from "lucide-react";
 import BookDetailsModal from "./BookDetailsModal";
+import EditBookModal from "./EditBookModal";
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
+  const [editingBook, setEditingBook] = useState(null);
 
-  const stats = [
-    {
-      label: "Total Books",
-      value: "6",
-      icon: BookOpen,
-      color: "bg-teal-600",
-    },
-    {
-      label: "Total Downloads",
-      value: "7,475",
-      icon: Download,
-      color: "bg-blue-600",
-    },
-    {
-      label: "Total Views",
-      value: "18,595",
-      icon: Eye,
-      color: "bg-green-600",
-    },
-    {
-      label: "Categories",
-      value: "8",
-      icon: Layers,
-      color: "bg-purple-600",
-    },
-  ];
-
-  const books = [
+  const [booksList, setBooksList] = useState([
     {
       id: 1,
       title: "Healing the Anxious Heart",
@@ -58,6 +33,7 @@ const BookLibrary = () => {
       price: "99",
       category: "Psychology",
       type: "Both",
+      status: "Active",
       image:
         "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2787&auto=format&fit=crop",
     },
@@ -72,6 +48,7 @@ const BookLibrary = () => {
       price: "85",
       category: "Lifestyle",
       type: "Digital",
+      status: "Active",
       image:
         "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2824&auto=format&fit=crop",
     },
@@ -86,6 +63,7 @@ const BookLibrary = () => {
       price: "70",
       category: "Parenting",
       type: "Both",
+      status: "Active",
       image:
         "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2800&auto=format&fit=crop",
     },
@@ -100,6 +78,7 @@ const BookLibrary = () => {
       price: "120",
       category: "History",
       type: "Physical",
+      status: "Active",
       image:
         "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop",
     },
@@ -114,6 +93,7 @@ const BookLibrary = () => {
       price: "60",
       category: "Spirituality",
       type: "Both",
+      status: "Active",
       image:
         "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2899&auto=format&fit=crop",
     },
@@ -128,9 +108,29 @@ const BookLibrary = () => {
       price: "110",
       category: "Philosophy",
       type: "Digital",
+      status: "Active",
       image:
         "https://images.unsplash.com/photo-1491843331657-f050bc730ff9?q=80&w=2940&auto=format&fit=crop",
     },
+  ]);
+
+  const handleUpdateBook = (updatedBook) => {
+    setBooksList((prev) =>
+      prev.map((b) => (b.id === updatedBook.id ? updatedBook : b)),
+    );
+    setEditingBook(null);
+  };
+
+  const stats = [
+    { label: "Total Books", value: "6", icon: BookOpen, color: "bg-teal-600" },
+    {
+      label: "Total Downloads",
+      value: "7,475",
+      icon: Download,
+      color: "bg-blue-600",
+    },
+    { label: "Total Views", value: "18,595", icon: Eye, color: "bg-green-600" },
+    { label: "Categories", value: "8", icon: Layers, color: "bg-purple-600" },
   ];
 
   return (
@@ -200,7 +200,7 @@ const BookLibrary = () => {
 
       {/* Books Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {books.map((book) => (
+        {booksList.map((book) => (
           <div
             key={book.id}
             className="bg-white rounded-2xl border border-black/10 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group"
@@ -261,7 +261,10 @@ const BookLibrary = () => {
                   <Eye className="w-4 h-4" />
                   View
                 </button>
-                <button className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-neutral-950 hover:bg-gray-50 transition-colors">
+                <button
+                  onClick={() => setEditingBook(book)}
+                  className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-neutral-950 hover:bg-gray-50 transition-colors"
+                >
                   <Edit3 className="w-4 h-4" />
                 </button>
                 <button className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors">
@@ -278,6 +281,15 @@ const BookLibrary = () => {
         <BookDetailsModal
           book={selectedBook}
           onClose={() => setSelectedBook(null)}
+        />
+      )}
+
+      {/* Edit Book Modal */}
+      {editingBook && (
+        <EditBookModal
+          book={editingBook}
+          onClose={() => setEditingBook(null)}
+          onSave={handleUpdateBook}
         />
       )}
     </div>
