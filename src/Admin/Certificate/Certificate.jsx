@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   BookOpen,
   Award,
@@ -6,7 +6,12 @@ import {
   Users,
   ChevronRight,
   CheckCircle,
+  ArrowLeft,
+  Search,
+  Filter,
 } from "lucide-react";
+import CertificateDetails from "./CertificateDetails";
+import toast from "react-hot-toast";
 
 const StatsCard = ({ icon: Icon, color, label, value }) => {
   const colorStyles = {
@@ -55,6 +60,42 @@ const StatsCard = ({ icon: Icon, color, label, value }) => {
   );
 };
 
+const CourseDetailsStatsCard = ({ value, label, color }) => {
+  const colorStyles = {
+    blue: {
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+    },
+    green: {
+      bg: "bg-green-50",
+      text: "text-green-700",
+    },
+    gray: {
+      bg: "bg-slate-400/10",
+      text: "text-slate-500",
+    },
+    yellow: {
+      bg: "bg-yellow-50",
+      text: "text-yellow-700",
+    },
+  };
+
+  const style = colorStyles[color];
+
+  return (
+    <div
+      className={`flex-1 min-w-[200px] px-3 pt-3 pb-3 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 flex flex-col justify-start items-center gap-1 ${style.bg}`}
+    >
+      <div className={`text-2xl font-bold arimo-font ${style.text}`}>
+        {value}
+      </div>
+      <div className="text-neutral-600 text-xs font-normal arimo-font text-center">
+        {label}
+      </div>
+    </div>
+  );
+};
+
 const StepItem = ({ number, title, subtitle }) => (
   <div className="w-full flex items-start gap-4">
     <div className="w-6 h-6 bg-greenTeal rounded-full flex justify-center items-center shrink-0">
@@ -71,9 +112,12 @@ const StepItem = ({ number, title, subtitle }) => (
   </div>
 );
 
-const CourseCard = ({ course }) => {
+const CourseCard = ({ course, onClick }) => {
   return (
-    <div className="w-full p-5 rounded-2xl bg-white border border-neutral-200 hover:shadow-md transition-all flex justify-between items-center group cursor-pointer hover:border-slate-300">
+    <div
+      onClick={() => onClick(course)}
+      className="w-full p-5 rounded-2xl bg-white border border-neutral-200 hover:shadow-md transition-all flex justify-between items-center group cursor-pointer hover:border-slate-300"
+    >
       <div className="flex-1 flex items-center gap-4">
         <div className="w-14 h-14 bg-gradient-to-b from-greenTeal to-stone-300 rounded-[10px] flex justify-center items-center text-white">
           <BookOpen size={28} strokeWidth={1.5} />
@@ -112,7 +156,86 @@ const CourseCard = ({ course }) => {
   );
 };
 
+const StudentRow = ({ student, isSelected, onSelect }) => {
+  const statusStyles = {
+    Issued: {
+      bg: "bg-green-100",
+      border: "outline-green-200",
+      dot: "outline-green-700",
+      text: "text-green-700",
+    },
+    Eligible: {
+      bg: "bg-yellow-100",
+      border: "outline-yellow-200",
+      dot: "outline-yellow-700",
+      text: "text-yellow-700",
+    },
+    "In Progress": {
+      bg: "bg-neutral-100",
+      border: "outline-neutral-200",
+      dot: "outline-neutral-600",
+      text: "text-neutral-600",
+    },
+  };
+
+  const style = statusStyles[student.status] || statusStyles["In Progress"];
+
+  return (
+    <div
+      className={`w-full px-4 py-3 rounded-[10px] border ${isSelected ? "border-blue-300 bg-blue-50/30" : "border-neutral-200 bg-white"} hover:border-blue-300 transition-all flex items-center gap-4`}
+    >
+      <div className="flex items-center justify-center">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onSelect(student.id)}
+          className="w-5 h-5 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+        />
+      </div>
+
+      <div className="w-10 h-10 bg-slate-400 rounded-full flex justify-center items-center text-white font-bold text-sm">
+        {student.initials}
+      </div>
+
+      <div className="flex-1 flex flex-col">
+        <span className="text-neutral-800 text-base font-bold arimo-font">
+          {student.name}
+        </span>
+        <span className="text-neutral-500 text-sm font-normal arimo-font">
+          {student.email}
+        </span>
+      </div>
+
+      <div className="w-32 flex flex-col items-end mr-8">
+        <span className="text-neutral-500 text-sm font-normal arimo-font">
+          Completion
+        </span>
+        <span
+          className={`text-sm font-normal arimo-font ${student.completionDate === "In Progress" ? "text-neutral-500 italic" : "text-neutral-800"}`}
+        >
+          {student.completionDate}
+        </span>
+      </div>
+
+      <div
+        className={`w-24 h-7 rounded-full flex items-center px-1.5 gap-2 outline outline-1 outline-offset-[-1px] ${style.bg} ${style.border}`}
+      >
+        <div className="w-3 h-3 relative flex items-center justify-center">
+          <div
+            className={`w-2 h-2 rounded-full border-[1.5px] ${style.dot.replace("outline", "border")}`}
+          ></div>
+        </div>
+        <span className={`text-xs font-bold arimo-font ${style.text}`}>
+          {student.status}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const Certificate = () => {
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
   const stats = [
     {
       label: "Total Courses",
@@ -171,6 +294,16 @@ const Certificate = () => {
     },
   ];
 
+  if (selectedCourse) {
+    return (
+      <CertificateDetails
+        selectedCourse={selectedCourse}
+        onBack={() => setSelectedCourse(null)}
+      />
+    );
+  }
+
+  // --- Main Course List View ---
   return (
     <div className="min-h-screen bg-slate-50/50 p-8 space-y-8 animate-in fade-in duration-500">
       {/* Stats Grid */}
@@ -245,7 +378,11 @@ const Certificate = () => {
         </h2>
         <div className="flex flex-col gap-4">
           {courses.map((course) => (
-            <CourseCard key={course.id} course={course} />
+            <CourseCard
+              key={course.id}
+              course={course}
+              onClick={setSelectedCourse}
+            />
           ))}
         </div>
       </div>
