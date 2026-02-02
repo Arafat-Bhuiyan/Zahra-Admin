@@ -2,6 +2,7 @@ import MainDashboard from "@/Admin/Dashboard/MainDashboard";
 import AdminLayout from "@/layouts/AdminLayout";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import TermsAndPolicies from "@/Admin/Settings/Settings";
+
 import Login from "../components/Login";
 import TeacherDashboard from "../Teacher/TeacherDashboard";
 import PublicProfile from "../Teacher/PublicProfile";
@@ -12,6 +13,20 @@ import LiveSessions from "../Teacher/LiveSessions";
 import ContentUpload from "../Teacher/ContentUpload";
 import EarningsRevenue from "../Teacher/EarningsRevenue";
 import TeacherSettings from "../Teacher/Settings";
+
+import User from "../Admin/User/User";
+import Scholarships from "../Admin/Scholarships/Scholarships";
+import Payments from "../Admin/Payments/Payments";
+import Certificates from "../Admin/Certificates/Certificates";
+import Memberships from "../Admin/Memberships/Memberships";
+import Courses from "../Admin/Courses/Courses";
+import Contents from "../Admin/Contents/Contents";
+import ContentDetails from "../Admin/Contents/ContentDetails";
+import BookLibrary from "../Admin/BookLibrary/BookLibrary";
+import BookSales from "../Admin/BookSales/BookSales";
+import Submission from "../Admin/Submission/Submission";
+import Announcement from "../Admin/Announesement/Announcement";
+
 
 const router = createBrowserRouter([
   {
@@ -31,25 +46,22 @@ const router = createBrowserRouter([
         index: true,
         element: <MainDashboard />,
       },
-      { path: "users-management", element: <>Users</> },
-      { path: "courses-management", element: <>Courses</> },
-      { path: "submissions", element: <>Submissions</> },
+      { path: "users-management", element: <User /> },
+      { path: "courses-management", element: <Courses /> },
+      { path: "submissions", element: <Submission /> },
       { path: "settings", element: <TermsAndPolicies /> },
-      { path: "contents", element: <>Contents</> },
-      { path: "contents/:id", element: <>Content Details</> },
-      { path: "book-library", element: <>Book Library</> },
+      { path: "contents", element: <Contents /> },
+      { path: "contents/:id", element: <ContentDetails /> },
+      { path: "book-library", element: <BookLibrary /> },
       { path: "book-library/:id", element: <>Book Library Details</> },
-      { path: "book-sales", element: <>Book Sales</> },
+      { path: "book-sales", element: <BookSales /> },
       { path: "book-sales/:id", element: <>Book Sales Details</> },
-      { path: "announcements", element: <>Announcements</> },
+      { path: "announcements", element: <Announcement /> },
       { path: "newsletter", element: <>Newsletter</> },
-      { path: "scholarships", element: <>Scholarships</> },
-      { path: "certificates", element: <>Certificates</> },
-      { path: "memberships", element: <>Memberships</> },
-      { path: "payments", element: <>Payments</> },
-
-      // future admin sub-routes can be added here, e.g.:
-      // { path: "users", element: <UserManagement /> },
+      { path: "scholarships", element: <Scholarships /> },
+      { path: "certificates", element: <Certificates /> },
+      { path: "memberships", element: <Memberships /> },
+      { path: "payments", element: <Payments /> },
     ],
   },
   {
