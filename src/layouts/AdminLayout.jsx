@@ -35,6 +35,8 @@ export default function AdminLayout() {
     ? "Payments & Revenue"
     : location.pathname.startsWith(`/admin/settings`)
     ? "Settings"
+    : location.pathname.startsWith(`/teacher`)
+    ? "Teacher Dashboard"
     : "Dashboard Overview";
 
   const subtitle = location.pathname.startsWith(`/admin/users-management`)
@@ -63,6 +65,8 @@ export default function AdminLayout() {
     ? "Track payments and platform earnings"
     : location.pathname.startsWith(`/admin/settings`)
     ? "Manage admin account and system configuration"
+    : location.pathname.startsWith(`/teacher`)
+    ? "Welcome back! Here's your overview for today."
     : "Welcome back! Here's what's happening today.";
   return (
     <div

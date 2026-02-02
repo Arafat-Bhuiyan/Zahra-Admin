@@ -37,6 +37,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        primary: {
+          DEFAULT: "#3A6E73",
+          foreground: "#ffffff",
+        },
         greenTeal: "#7AA4A5",
       },
       borderRadius: {

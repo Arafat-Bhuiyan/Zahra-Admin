@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import profile from "../../../src/assets/images/profile.jpg";
 import { Bell, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Header = ({ title, subtitle }) => {
   const [hasNotification, setHasNotification] = useState(true);
   const navigate = useNavigate();
-
+  const location = useLocation()
   const handleLogout = () => {
     // Perform logout logic here (e.g., clearing tokens)
     console.log("Logging out...");
@@ -16,7 +16,7 @@ const Header = ({ title, subtitle }) => {
   return (
     <div className="flex items-center justify-between px-6 py-7 bg-[#FFFFFF]">
       <div>
-        <h1 className="font-bold text-[30px] text-greenTeal">{title}</h1>
+        <h1 className={`font-bold text-[30px] text-greenTeal ${location.pathname.includes("teacher") ? "text-primary" : "text-greenTeal"}`}>{title}</h1>
         <p className="text-base font-normal text-[#4A5565] mt-1">{subtitle}</p>
       </div>
       <div className="flex items-center gap-4">

@@ -1,8 +1,19 @@
-import Login from "@/Admin/Auth/Login";
 import MainDashboard from "@/Admin/Dashboard/MainDashboard";
 import AdminLayout from "@/layouts/AdminLayout";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import TermsAndPolicies from "@/Admin/Settings/Settings";
+
+import Login from "../components/Login";
+import TeacherDashboard from "../Teacher/TeacherDashboard";
+import PublicProfile from "../Teacher/PublicProfile";
+import MyCourses from "../Teacher/MyCourses";
+import Submissions from "../Teacher/Submissions";
+import Consultations from "../Teacher/Consultations";
+import LiveSessions from "../Teacher/LiveSessions";
+import ContentUpload from "../Teacher/ContentUpload";
+import EarningsRevenue from "../Teacher/EarningsRevenue";
+import TeacherSettings from "../Teacher/Settings";
+
 import User from "../Admin/User/User";
 import Scholarships from "../Admin/Scholarships/Scholarships";
 import Payments from "../Admin/Payments/Payments";
@@ -15,6 +26,7 @@ import BookLibrary from "../Admin/BookLibrary/BookLibrary";
 import BookSales from "../Admin/BookSales/BookSales";
 import Submission from "../Admin/Submission/Submission";
 import Announcement from "../Admin/Announesement/Announcement";
+
 
 const router = createBrowserRouter([
   {
@@ -50,6 +62,24 @@ const router = createBrowserRouter([
       { path: "certificates", element: <Certificates /> },
       { path: "memberships", element: <Memberships /> },
       { path: "payments", element: <Payments /> },
+    ],
+  },
+  {
+    path: "/teacher",
+    element: <AdminLayout />,
+    children: [
+      {
+        index: true,
+        element: <TeacherDashboard />,
+      },
+      { path: "public-profile", element: <PublicProfile /> },
+      { path: "my-courses", element: <MyCourses /> },
+      { path: "submissions", element: <Submissions /> },
+      { path: "consultations", element: <Consultations /> },
+      { path: "live-sessions", element: <LiveSessions /> },
+      { path: "content-upload", element: <ContentUpload /> },
+      { path: "earnings-revenue", element: <EarningsRevenue /> },
+      { path: "settings", element: <TeacherSettings /> },
     ],
   },
 ]);
