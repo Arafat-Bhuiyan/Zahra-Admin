@@ -85,13 +85,8 @@ export default function MyCourses() {
   });
 
   const handleCardClick = (course) => {
-    // Only navigate to details page if course status is NOT "Live"
-    if (course.status !== "Live") {
-      navigate(`/teacher/course/${course.id}`, { state: { course } });
-    }
+    navigate(`/teacher/course/${course.id}`, { state: { course } });
   };
-
-  const isCardClickable = (course) => course.status !== "Live";
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -173,11 +168,9 @@ export default function MyCourses() {
             <div
               key={course.id}
               onClick={() => handleCardClick(course)}
-              className={`bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow ${
-                isCardClickable(course)
-                  ? "cursor-pointer"
-                  : "cursor-not-allowed"
-              }`}
+              className={
+                "bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow cursor-pointer"
+              }
             >
               {/* Course Image */}
               <div className="relative h-48 bg-gray-200 overflow-hidden">
