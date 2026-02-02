@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import CreateAnnouncementModal from "./CreateAnnouncementModal";
+import EditAnnouncementModal from "./EditAnnouncementModal";
 
 import {
   Plus,
@@ -29,7 +30,7 @@ const StatCard = ({ icon: Icon, title, count, bgColor, iconColor }) => (
   </div>
 );
 
-const AnnouncementCard = ({ announcement }) => {
+const AnnouncementCard = ({ announcement, onEdit }) => {
   const isUrgent = announcement.isUrgent;
 
   return (
@@ -66,7 +67,10 @@ const AnnouncementCard = ({ announcement }) => {
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors">
+          <button
+            onClick={() => onEdit(announcement)}
+            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+          >
             <Edit2 size={18} />
           </button>
           <button className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
@@ -104,6 +108,8 @@ const AnnouncementCard = ({ announcement }) => {
 
 const Announcement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
   const [announcements, setAnnouncements] = useState([
     {
       id: 1,
@@ -176,6 +182,19 @@ const Announcement = () => {
     setAnnouncements((prev) => [newAnnouncement, ...prev]);
   };
 
+  const handleUpdateAnnouncement = (updatedAnnouncement) => {
+    setAnnouncements((prev) =>
+      prev.map((ann) =>
+        ann.id === updatedAnnouncement.id ? updatedAnnouncement : ann,
+      ),
+    );
+  };
+
+  const handleEditTrigger = (announcement) => {
+    setCurrentAnnouncement(announcement);
+    setIsEditModalOpen(true);
+  };
+
   const getStats = () => [
     {
       icon: Bell,
@@ -230,6 +249,16 @@ const Announcement = () => {
         onAdd={handleAddAnnouncement}
       />
 
+      <EditAnnouncementModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setCurrentAnnouncement(null);
+        }}
+        announcement={currentAnnouncement}
+        onUpdate={handleUpdateAnnouncement}
+      />
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {getStats().map((stat, index) => (
@@ -240,7 +269,11 @@ const Announcement = () => {
       {/* Announcements List */}
       <div className="space-y-6">
         {announcements.map((announcement) => (
-          <AnnouncementCard key={announcement.id} announcement={announcement} />
+          <AnnouncementCard
+            key={announcement.id}
+            announcement={announcement}
+            onEdit={handleEditTrigger}
+          />
         ))}
       </div>
     </div>
