@@ -16,6 +16,8 @@ import {
 import BookDetailsModal from "./BookDetailsModal";
 import EditBookModal from "./EditBookModal";
 import UploadBookModal from "./UploadBookModal";
+import toast from "react-hot-toast";
+import { X } from "lucide-react";
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -126,6 +128,59 @@ const BookLibrary = () => {
   const handleAddBook = (newBook) => {
     setBooksList((prev) => [newBook, ...prev]);
     setShowUploadModal(false);
+  };
+
+  const handleRemoveBook = (id) => {
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4 p-1">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-neutral-800 inter-font">
+              Confirm Delete
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Are you sure you want to remove this book?
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setBooksList((prev) => prev.filter((book) => book.id !== id));
+                toast.dismiss(t.id);
+                toast.success("Book removed successfully", {
+                  icon: "🗑️",
+                  style: {
+                    borderRadius: "12px",
+                    background: "#333",
+                    color: "#fff",
+                  },
+                });
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          minWidth: "350px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        },
+      },
+    );
   };
 
   const stats = [
@@ -277,7 +332,10 @@ const BookLibrary = () => {
                 >
                   <Edit3 className="w-4 h-4" />
                 </button>
-                <button className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors">
+                <button
+                  onClick={() => handleRemoveBook(book.id)}
+                  className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>

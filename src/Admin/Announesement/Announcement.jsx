@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import CreateAnnouncementModal from "./CreateAnnouncementModal";
 import EditAnnouncementModal from "./EditAnnouncementModal";
+import toast from "react-hot-toast";
 
 import {
   Plus,
@@ -30,7 +31,7 @@ const StatCard = ({ icon: Icon, title, count, bgColor, iconColor }) => (
   </div>
 );
 
-const AnnouncementCard = ({ announcement, onEdit }) => {
+const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
   const isUrgent = announcement.isUrgent;
 
   return (
@@ -73,7 +74,10 @@ const AnnouncementCard = ({ announcement, onEdit }) => {
           >
             <Edit2 size={18} />
           </button>
-          <button className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+          <button
+            onClick={() => onDelete(announcement.id)}
+            className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+          >
             <Trash2 size={18} />
           </button>
         </div>
@@ -182,6 +186,59 @@ const Announcement = () => {
     setAnnouncements((prev) => [newAnnouncement, ...prev]);
   };
 
+  const handleRemoveAnnouncement = (id) => {
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4 p-1 arimo-font">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-neutral-800 inter-font">
+              Confirm Delete
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Are you sure you want to remove this announcement?
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setAnnouncements((prev) => prev.filter((ann) => ann.id !== id));
+                toast.dismiss(t.id);
+                toast.success("Announcement removed successfully", {
+                  icon: "🗑️",
+                  style: {
+                    borderRadius: "12px",
+                    background: "#333",
+                    color: "#fff",
+                  },
+                });
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          minWidth: "400px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        },
+      },
+    );
+  };
+
   const handleUpdateAnnouncement = (updatedAnnouncement) => {
     setAnnouncements((prev) =>
       prev.map((ann) =>
@@ -273,6 +330,7 @@ const Announcement = () => {
             key={announcement.id}
             announcement={announcement}
             onEdit={handleEditTrigger}
+            onDelete={handleRemoveAnnouncement}
           />
         ))}
       </div>
