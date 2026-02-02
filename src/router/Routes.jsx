@@ -17,7 +17,6 @@ import TeacherSettings from "../Teacher/Settings";
 import User from "../Admin/User/User";
 import Scholarships from "../Admin/Scholarships/Scholarships";
 import Payments from "../Admin/Payments/Payments";
-import Certificates from "../Admin/Certificates/Certificates";
 import Memberships from "../Admin/Memberships/Memberships";
 import Courses from "../Admin/Courses/Courses";
 import Contents from "../Admin/Contents/Contents";
@@ -27,6 +26,7 @@ import BookSales from "../Admin/BookSales/BookSales";
 import Submission from "../Admin/Submission/Submission";
 import Announcement from "../Admin/Announesement/Announcement";
 import Newsletter from "../Admin/Newsletter/Newsletter";
+import Certificate from "../Admin/Certificate/Certificate";
 
 
 const router = createBrowserRouter([
@@ -60,7 +60,7 @@ const router = createBrowserRouter([
       { path: "announcements", element: <Announcement /> },
       { path: "newsletter", element: <Newsletter /> },
       { path: "scholarships", element: <Scholarships /> },
-      { path: "certificates", element: <Certificates /> },
+      { path: "certificates", element: <Certificate /> },
       { path: "memberships", element: <Memberships /> },
       { path: "payments", element: <Payments /> },
     ],

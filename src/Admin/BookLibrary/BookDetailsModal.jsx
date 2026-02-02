@@ -6,9 +6,6 @@ import {
   User,
   Calendar,
   Tag,
-  BookOpen,
-  Globe,
-  FileText,
 } from "lucide-react";
 
 const BookDetailsModal = ({ book, onClose }) => {
