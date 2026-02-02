@@ -4,6 +4,14 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import TermsAndPolicies from "@/Admin/Settings/Settings";
 import Login from "../components/Login";
 import TeacherDashboard from "../Teacher/TeacherDashboard";
+import PublicProfile from "../Teacher/PublicProfile";
+import MyCourses from "../Teacher/MyCourses";
+import Submissions from "../Teacher/Submissions";
+import Consultations from "../Teacher/Consultations";
+import LiveSessions from "../Teacher/LiveSessions";
+import ContentUpload from "../Teacher/ContentUpload";
+import EarningsRevenue from "../Teacher/EarningsRevenue";
+import TeacherSettings from "../Teacher/Settings";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +60,14 @@ const router = createBrowserRouter([
         index: true,
         element: <TeacherDashboard />,
       },
+      { path: "public-profile", element: <PublicProfile /> },
+      { path: "my-courses", element: <MyCourses /> },
+      { path: "submissions", element: <Submissions /> },
+      { path: "consultations", element: <Consultations /> },
+      { path: "live-sessions", element: <LiveSessions /> },
+      { path: "content-upload", element: <ContentUpload /> },
+      { path: "earnings-revenue", element: <EarningsRevenue /> },
+      { path: "settings", element: <TeacherSettings /> },
     ],
   },
 ]);

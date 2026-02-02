@@ -56,15 +56,55 @@ export const Sidebar = () => {
   } else if (role === "teacher") {
     // Teacher has a minimal sidebar
     menuItems = [
-      { icon: Home, label: "Dashboard",   active: true, slug: "teacher" },
-      { icon: User, label: "Public Profile",   active: false, slug: "teacher/public-profile" },
-      { icon: GraduationCap, label: "My Courses",   active: false, slug: "teacher/my-courses" },
-      { icon: ClipboardCheck, label: "Submissions",   active: false, slug: "teacher/submissions" },
-      { icon: MessageSquare, label: "Consultations",   active: false, slug: "teacher/consultations" },
-      { icon: Video, label: "Live Sessions",   active: false, slug: "teacher/live-sessions" },
-      { icon: Upload, label: "Content Upload",   active: false, slug: "teacher/content-upload" },
-      { icon: DollarSign, label: "Earnings & Revenue",   active: false, slug: "teacher/earnings-revenue" },
-      { icon: Settings, label: "Settings",   active: false, slug: "teacher/settings" },
+      { icon: Home, label: "Dashboard", active: true, slug: "teacher" },
+      {
+        icon: User,
+        label: "Public Profile",
+        active: false,
+        slug: "teacher/public-profile",
+      },
+      {
+        icon: GraduationCap,
+        label: "My Courses",
+        active: false,
+        slug: "teacher/my-courses",
+      },
+      {
+        icon: ClipboardCheck,
+        label: "Submissions",
+        active: false,
+        slug: "teacher/submissions",
+      },
+      {
+        icon: MessageSquare,
+        label: "Consultations",
+        active: false,
+        slug: "teacher/consultations",
+      },
+      {
+        icon: Video,
+        label: "Live Sessions",
+        active: false,
+        slug: "teacher/live-sessions",
+      },
+      {
+        icon: Upload,
+        label: "Content Upload",
+        active: false,
+        slug: "teacher/content-upload",
+      },
+      {
+        icon: DollarSign,
+        label: "Earnings & Revenue",
+        active: false,
+        slug: "teacher/earnings-revenue",
+      },
+      {
+        icon: Settings,
+        label: "Settings",
+        active: false,
+        slug: "teacher/settings",
+      },
     ];
   } else {
     // No role set (not logged in) — show nothing or a minimal menu
@@ -91,8 +131,8 @@ export const Sidebar = () => {
               const to =
                 item.slug === "dashboard"
                   ? "/admin"
-                  : item.slug === "teacher"
-                    ? "/teacher"
+                  : item.slug.includes("teacher")
+                    ? `/${item.slug}`
                     : `/admin/${item.slug}`;
 
               return (
@@ -100,12 +140,22 @@ export const Sidebar = () => {
                   <NavLink
                     to={to}
                     className={() => {
+                      // Treat top-level index routes (/admin, /teacher) as exact-only matches
+                      const isIndexRoute = to === "/admin" || to === "/teacher";
                       const isActive =
                         location.pathname === to ||
-                        location.pathname.startsWith(to + "/");
+                        (!isIndexRoute &&
+                          location.pathname.startsWith(to + "/"));
+
+                      const activeClasses = location.pathname.includes(
+                        "/teacher",
+                      )
+                        ? "bg-primary rounded-full"
+                        : "bg-greenTeal rounded-xl";
+
                       return `flex items-center h-12 pl-6 py-3 text-start text-base font-normal transition-colors mx-4 mb-1 gap-3 ${
                         isActive
-                          ? `${location.pathname.includes("/teacher")? "bg-primary rounded-full": "bg-greenTeal rounded-xl"} text-[#FFFFFF] shadow-lg backdrop-blur-md $`
+                          ? `${activeClasses} text-[#FFFFFF] shadow-lg backdrop-blur-md`
                           : "text-[#4A5565] rounded-sm"
                       }`;
                     }}

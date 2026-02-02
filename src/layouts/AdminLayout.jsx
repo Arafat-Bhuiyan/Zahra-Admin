@@ -65,7 +65,7 @@ export default function AdminLayout() {
     ? "Track payments and platform earnings"
     : location.pathname.startsWith(`/admin/settings`)
     ? "Manage admin account and system configuration"
-    : location.pathname.startsWith(`/admin`)
+    : location.pathname.startsWith(`/teacher`)
     ? "Welcome back! Here's your overview for today."
     : "Welcome back! Here's what's happening today.";
   return (
