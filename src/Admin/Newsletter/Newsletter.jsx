@@ -8,14 +8,19 @@ import {
   Send,
   Calendar,
   Search,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import CreateNewsletterModal from "./CreateNewsletterModal";
+import CreateTemplateModal from "./CreateTemplateModal";
 import ViewNewsletterModal from "./ViewNewsletterModal";
+import TemplateCard from "./TemplateCard";
 import toast from "react-hot-toast";
 
 const Newsletter = () => {
   const [activeTab, setActiveTab] = useState("Newsletters");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState(null);
 
@@ -46,6 +51,53 @@ const Newsletter = () => {
     },
   ]);
 
+  const [templates, setTemplates] = useState([
+    {
+      id: 1,
+      title: "User Registration Confirmation",
+      tag: "registration",
+      tagColor: "bg-blue-100 text-blue-700",
+      subject: "Welcome to LearnHub! Confirm Your Email",
+      preview:
+        "Hi {{name}}, Thank you for joining LearnHub! Please confirm your email address by clicking the link below: {{confirmation_link}} Best regards, LearnHub Team",
+      used: 847,
+      modified: "2026-01-15",
+    },
+    {
+      id: 2,
+      title: "Welcome Email",
+      tag: "welcome",
+      tagColor: "bg-green-100 text-green-700",
+      subject: "Welcome to LearnHub - Start Your Learning Journey",
+      preview:
+        "Hi {{name}}, Welcome to LearnHub! We're excited to have you in our learning community. Explore our courses and start learning today! Best regards, LearnHub Team",
+      used: 823,
+      modified: "2026-01-10",
+    },
+    {
+      id: 3,
+      title: "Password Reset",
+      tag: "password-reset",
+      tagColor: "bg-red-100 text-red-700",
+      subject: "Reset Your LearnHub Password",
+      preview:
+        "Hi {{name}}, We received a request to reset your password. Click the link below to create a new password: {{reset_link}} If you didn't request this, please ignore this email. Best regards, LearnHub Team",
+      used: 156,
+      modified: "2026-01-08",
+    },
+    {
+      id: 4,
+      title: "Course Enrollment Confirmation",
+      tag: "course-enrollment",
+      tagColor: "bg-purple-100 text-purple-700",
+      subject: "You're Enrolled! {{course_name}}",
+      preview:
+        "Hi {{name}}, Congratulations! You're now enrolled in {{course_name}}. Access your course here: {{course_link}} Happy learning! LearnHub Team",
+      used: 542,
+      modified: "2026-01-12",
+    },
+  ]);
+
   const handleSendNow = (id) => {
     setNewsletters((prev) =>
       prev.map((n) =>
@@ -66,9 +118,22 @@ const Newsletter = () => {
     toast.success("Saved as draft!");
   };
 
+  const handleSaveTemplate = (newTemplate) => {
+    setTemplates((prev) => [newTemplate, ...prev]);
+    toast.success("Template created successfully!");
+  };
+
   const handlePreview = (newsletter) => {
     setSelectedNewsletter(newsletter);
     setIsPreviewModalOpen(true);
+  };
+
+  const handleMainButtonClick = () => {
+    if (activeTab === "Templates") {
+      setIsTemplateModalOpen(true);
+    } else {
+      setIsModalOpen(true);
+    }
   };
 
   const tabs = [
@@ -82,11 +147,15 @@ const Newsletter = () => {
       {/* Header */}
       <div className="flex justify-end items-center">
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleMainButtonClick}
           className="flex items-center gap-2 bg-[#7BA0A0] hover:bg-[#6A8F8F] text-white px-6 py-3 rounded-xl shadow-md transition-all active:scale-95 inter-font"
         >
           <Plus size={20} />
-          <span className="font-semibold">Create Newsletter</span>
+          <span className="font-semibold">
+            {activeTab === "Templates"
+              ? "Create Template"
+              : "Create Newsletter"}
+          </span>
         </button>
       </div>
 
@@ -94,6 +163,12 @@ const Newsletter = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveDraft}
+      />
+
+      <CreateTemplateModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        onSave={handleSaveTemplate}
       />
 
       <ViewNewsletterModal
@@ -193,19 +268,18 @@ const Newsletter = () => {
               ))}
             </div>
           )}
-
           {activeTab === "Templates" && (
-            <div className="flex flex-col items-center justify-center h-full py-20 text-neutral-400 space-y-4">
-              <div className="p-6 bg-slate-50 rounded-full">
-                <FileText size={48} />
-              </div>
-              <p className="text-lg font-medium">No templates found</p>
-              <button className="text-[#7BA0A0] font-bold hover:underline">
-                Create your first template
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {templates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  onEdit={(t) => console.log("Edit template", t)}
+                  onDelete={(id) => console.log("Delete template", id)}
+                />
+              ))}
             </div>
           )}
-
           {activeTab === "Subscribers" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl">
