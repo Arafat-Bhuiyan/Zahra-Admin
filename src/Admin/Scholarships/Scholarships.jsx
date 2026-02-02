@@ -15,6 +15,8 @@ import {
   DollarSign,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import ScholarshipDetailsModal from "./ScholarshipDetailsModal";
+import SetDiscountModal from "./SetDiscountModal";
 
 const StatsCard = ({ icon: Icon, color, label, value }) => {
   const colorStyles = {
@@ -59,7 +61,7 @@ const StatsCard = ({ icon: Icon, color, label, value }) => {
   );
 };
 
-const ApplicationCard = ({ app, onReject }) => {
+const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
   const statusColors = {
     Pending: {
       bg: "bg-yellow-100",
@@ -154,10 +156,16 @@ const ApplicationCard = ({ app, onReject }) => {
 
         {/* Right Section: Actions */}
         <div className="flex gap-2">
-          <button className="w-10 h-9 rounded-lg border border-slate-300 flex items-center justify-center text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all">
+          <button
+            onClick={() => onViewDetails(app)}
+            className="w-10 h-9 rounded-lg border border-slate-300 flex items-center justify-center text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all"
+          >
             <Eye size={18} />
           </button>
-          <button className="w-10 h-9 rounded-lg bg-slate-400 hover:bg-slate-500 text-white flex items-center justify-center transition-all shadow-sm">
+          <button
+            onClick={() => onOpenDiscount(app)}
+            className="w-10 h-9 rounded-lg bg-slate-400 hover:bg-slate-500 text-white flex items-center justify-center transition-all shadow-sm"
+          >
             <Percent size={16} />
           </button>
           <button
@@ -184,6 +192,8 @@ const ApplicationCard = ({ app, onReject }) => {
 
 const Scholarships = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAppDetails, setSelectedAppDetails] = useState(null);
+  const [selectedAppDiscount, setSelectedAppDiscount] = useState(null);
 
   const [applications, setApplications] = useState([
     {
@@ -332,8 +342,43 @@ const Scholarships = () => {
     );
   };
 
+  const handleApproveDiscount = (id, discountPercent, finalPrice) => {
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.id === id
+          ? {
+              ...app,
+              status: "Approved",
+              discount: `${discountPercent}% Discount`,
+              discountPrice: `$${finalPrice.toFixed(2)}`,
+            }
+          : app,
+      ),
+    );
+    toast.success("Application approved with discount!");
+    setSelectedAppDiscount(null);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50/50 p-8 space-y-8 animate-in fade-in duration-500">
+      {/* Modals */}
+      <ScholarshipDetailsModal
+        isOpen={!!selectedAppDetails}
+        onClose={() => setSelectedAppDetails(null)}
+        application={selectedAppDetails}
+        onReject={handleReject}
+        onOpenDiscountModal={(app) => {
+          setSelectedAppDetails(null);
+          setSelectedAppDiscount(app);
+        }}
+      />
+
+      <SetDiscountModal
+        isOpen={!!selectedAppDiscount}
+        onClose={() => setSelectedAppDiscount(null)}
+        application={selectedAppDiscount}
+        onApprove={handleApproveDiscount}
+      />
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
@@ -363,7 +408,13 @@ const Scholarships = () => {
         {/* Applications List */}
         <div className="flex flex-col gap-4">
           {filteredApplications.map((app) => (
-            <ApplicationCard key={app.id} app={app} onReject={handleReject} />
+            <ApplicationCard
+              key={app.id}
+              app={app}
+              onReject={handleReject}
+              onViewDetails={setSelectedAppDetails}
+              onOpenDiscount={setSelectedAppDiscount}
+            />
           ))}
 
           {filteredApplications.length === 0 && (
