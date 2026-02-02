@@ -8,11 +8,10 @@ import {
   Send,
   Calendar,
   Search,
-  Edit2,
-  Trash2,
 } from "lucide-react";
 import CreateNewsletterModal from "./CreateNewsletterModal";
 import CreateTemplateModal from "./CreateTemplateModal";
+import EditTemplateModal from "./EditTemplateModal";
 import ViewNewsletterModal from "./ViewNewsletterModal";
 import TemplateCard from "./TemplateCard";
 import toast from "react-hot-toast";
@@ -21,8 +20,10 @@ const Newsletter = () => {
   const [activeTab, setActiveTab] = useState("Newsletters");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [isEditTemplateModalOpen, setIsEditTemplateModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const [newsletters, setNewsletters] = useState([
     {
@@ -123,6 +124,71 @@ const Newsletter = () => {
     toast.success("Template created successfully!");
   };
 
+  const handleEditTemplate = (template) => {
+    setSelectedTemplate(template);
+    setIsEditTemplateModalOpen(true);
+  };
+
+  const handleUpdateTemplate = (updatedTemplate) => {
+    setTemplates((prev) =>
+      prev.map((t) => (t.id === updatedTemplate.id ? updatedTemplate : t)),
+    );
+    toast.success("Template updated successfully!");
+  };
+
+  const handleDeleteTemplate = (id) => {
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4 p-1">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-neutral-800 inter-font">
+              Confirm Delete
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Are you sure you want to remove this template?
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setTemplates((prev) => prev.filter((t) => t.id !== id));
+                toast.dismiss(t.id);
+                toast.success("Template deleted successfully!", {
+                  icon: "🗑️",
+                  style: {
+                    borderRadius: "12px",
+                    background: "#333",
+                    color: "#fff",
+                  },
+                });
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          minWidth: "350px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        },
+      },
+    );
+  };
+
   const handlePreview = (newsletter) => {
     setSelectedNewsletter(newsletter);
     setIsPreviewModalOpen(true);
@@ -169,6 +235,16 @@ const Newsletter = () => {
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
         onSave={handleSaveTemplate}
+      />
+
+      <EditTemplateModal
+        isOpen={isEditTemplateModalOpen}
+        onClose={() => {
+          setIsEditTemplateModalOpen(false);
+          setSelectedTemplate(null);
+        }}
+        onSave={handleUpdateTemplate}
+        template={selectedTemplate}
       />
 
       <ViewNewsletterModal
@@ -268,18 +344,22 @@ const Newsletter = () => {
               ))}
             </div>
           )}
+
+          {/* Templates */}
           {activeTab === "Templates" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {templates.map((template) => (
                 <TemplateCard
                   key={template.id}
                   template={template}
-                  onEdit={(t) => console.log("Edit template", t)}
-                  onDelete={(id) => console.log("Delete template", id)}
+                  onEdit={handleEditTemplate}
+                  onDelete={handleDeleteTemplate}
                 />
               ))}
             </div>
           )}
+
+          {/* Subscribers */}
           {activeTab === "Subscribers" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl">
