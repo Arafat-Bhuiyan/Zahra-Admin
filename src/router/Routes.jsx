@@ -14,6 +14,7 @@ import ContentDetails from "../Admin/Contents/ContentDetails";
 import BookLibrary from "../Admin/BookLibrary/BookLibrary";
 import BookSales from "../Admin/BookSales/BookSales";
 import Submission from "../Admin/Submission/Submission";
+import Announcement from "../Admin/Announesement/Announcement";
 
 const router = createBrowserRouter([
   {
@@ -43,7 +44,7 @@ const router = createBrowserRouter([
       { path: "book-library/:id", element: <>Book Library Details</> },
       { path: "book-sales", element: <BookSales /> },
       { path: "book-sales/:id", element: <>Book Sales Details</> },
-      { path: "announcements", element: <>Announcements</> },
+      { path: "announcements", element: <Announcement /> },
       { path: "newsletter", element: <>Newsletter</> },
       { path: "scholarships", element: <Scholarships /> },
       { path: "certificates", element: <Certificates /> },
