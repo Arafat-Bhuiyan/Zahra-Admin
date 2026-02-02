@@ -9,11 +9,14 @@ import {
   Calendar,
   Search,
 } from "lucide-react";
+import CreateNewsletterModal from "./CreateNewsletterModal";
+import toast from "react-hot-toast";
 
 const Newsletter = () => {
   const [activeTab, setActiveTab] = useState("Newsletters");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const newsletters = [
+  const [newsletters, setNewsletters] = useState([
     {
       id: 1,
       title: "January 2026 Course Updates",
@@ -38,7 +41,27 @@ const Newsletter = () => {
       preview: "Get ready for our February lineup...",
       status: "draft",
     },
-  ];
+  ]);
+
+  const handleSendNow = (id) => {
+    setNewsletters((prev) =>
+      prev.map((n) =>
+        n.id === id
+          ? {
+              ...n,
+              status: "sent",
+              date: new Date().toISOString().split("T")[0],
+            }
+          : n,
+      ),
+    );
+    toast.success("Newsletter sent successfully!");
+  };
+
+  const handleSaveDraft = (newNewsletter) => {
+    setNewsletters((prev) => [newNewsletter, ...prev]);
+    toast.success("Saved as draft!");
+  };
 
   const tabs = [
     { id: "Newsletters", icon: Mail, label: "Newsletters" },
@@ -47,14 +70,23 @@ const Newsletter = () => {
   ];
 
   return (
-    <div className="p-8 space-y-8 min-h-screen arimo-font">
+    <div className="p-8 space-y-8 min-h-screen arimo-font bg-slate-50/10">
       {/* Header */}
       <div className="flex justify-end items-center">
-        <button className="flex items-center gap-2 bg-[#7BA0A0] hover:bg-[#6A8F8F] text-white px-6 py-3 rounded-xl shadow-md transition-all active:scale-95">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-[#7BA0A0] hover:bg-[#6A8F8F] text-white px-6 py-3 rounded-xl shadow-md transition-all active:scale-95 inter-font"
+        >
           <Plus size={20} />
           <span className="font-semibold">Create Newsletter</span>
         </button>
       </div>
+
+      <CreateNewsletterModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveDraft}
+      />
 
       {/* Main Container */}
       <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden min-h-[600px] flex flex-col">
@@ -101,7 +133,7 @@ const Newsletter = () => {
                           className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             item.status === "sent"
                               ? "bg-green-100 text-green-700"
-                              : "bg-neutral-100 text-neutral-600"
+                              : "bg-neutral-100 text-neutral-600 font-bold"
                           }`}
                         >
                           {item.status}
@@ -117,7 +149,10 @@ const Newsletter = () => {
 
                     <div className="flex items-center gap-3">
                       {item.status === "draft" && (
-                        <button className="flex items-center gap-2 bg-[#7BA0A0] hover:bg-[#6A8F8F] text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95">
+                        <button
+                          onClick={() => handleSendNow(item.id)}
+                          className="flex items-center gap-2 bg-[#7BA0A0] hover:bg-[#6A8F8F] text-white px-5 py-2 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95"
+                        >
                           <Send size={16} />
                           Send Now
                         </button>
