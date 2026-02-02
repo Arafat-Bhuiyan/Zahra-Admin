@@ -14,6 +14,7 @@ import CreateTemplateModal from "./CreateTemplateModal";
 import EditTemplateModal from "./EditTemplateModal";
 import ViewNewsletterModal from "./ViewNewsletterModal";
 import TemplateCard from "./TemplateCard";
+import SubscribersList from "./SubscribersList";
 import toast from "react-hot-toast";
 
 const Newsletter = () => {
@@ -360,67 +361,7 @@ const Newsletter = () => {
           )}
 
           {/* Subscribers */}
-          {activeTab === "Subscribers" && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl">
-                <div className="relative flex-1 max-w-md">
-                  <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"
-                    size={18}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search subscribers..."
-                    className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-[#7BA0A0]/20"
-                  />
-                </div>
-                <div className="flex gap-4 items-center">
-                  <span className="text-sm font-bold text-neutral-500">
-                    1,234 Total Subscribers
-                  </span>
-                  <button className="text-sm font-bold bg-[#7BA0A0]/10 text-[#7BA0A0] px-4 py-2 rounded-lg hover:bg-[#7BA0A0]/20">
-                    Export Excel
-                  </button>
-                </div>
-              </div>
-
-              <div className="border border-neutral-200 rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-neutral-50">
-                    <tr className="text-neutral-500 text-sm font-bold border-b border-neutral-200">
-                      <th className="px-6 py-4">Name</th>
-                      <th className="px-6 py-4">Email</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Subscribed At</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-100">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <tr
-                        key={i}
-                        className="hover:bg-neutral-50/50 transition-colors"
-                      >
-                        <td className="px-6 py-4 font-bold text-neutral-800">
-                          Subscriber {i}
-                        </td>
-                        <td className="px-6 py-4 text-neutral-600">
-                          user{i}@example.com
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2.5 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">
-                            Active
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-neutral-500 text-sm">
-                          2026-01-{10 + i}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          {activeTab === "Subscribers" && <SubscribersList />}
         </div>
       </div>
     </div>
