@@ -47,12 +47,12 @@ const router = createBrowserRouter([
   {
     path: "/teacher",
     element: <AdminLayout />,
-     children: [
+    children: [
       {
         index: true,
         element: <TeacherDashboard />,
       },
-    ]
+    ],
   },
 ]);
 

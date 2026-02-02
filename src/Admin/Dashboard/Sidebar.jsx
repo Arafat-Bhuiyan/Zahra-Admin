@@ -4,7 +4,6 @@ import {
   Users,
   Settings,
   ClipboardCheck,
-  Bell,
   LayoutDashboard,
   BookOpen,
   FileText,
@@ -16,10 +15,16 @@ import {
   ShoppingCart,
   Megaphone,
   Newspaper,
+  Home,
+  User,
+  DollarSign,
+  Upload,
+  Video,
+  MessageSquare,
 } from "lucide-react";
 import logo from "../../assets/img/logo.png";
 
-export const Sidebar = ({ currentComponent, onMenuClick }) => {
+export const Sidebar = () => {
   const navigate = useNavigate();
 
   const role = useSelector((state) => state.auth.role);
@@ -50,7 +55,17 @@ export const Sidebar = ({ currentComponent, onMenuClick }) => {
     ];
   } else if (role === "teacher") {
     // Teacher has a minimal sidebar
-    menuItems = [{ icon: UserCheck, label: "Teacher",   active: true, slug: "teacher" }];
+    menuItems = [
+      { icon: Home, label: "Dashboard",   active: true, slug: "teacher" },
+      { icon: User, label: "Public Profile",   active: false, slug: "teacher/public-profile" },
+      { icon: GraduationCap, label: "My Courses",   active: false, slug: "teacher/my-courses" },
+      { icon: ClipboardCheck, label: "Submissions",   active: false, slug: "teacher/submissions" },
+      { icon: MessageSquare, label: "Consultations",   active: false, slug: "teacher/consultations" },
+      { icon: Video, label: "Live Sessions",   active: false, slug: "teacher/live-sessions" },
+      { icon: Upload, label: "Content Upload",   active: false, slug: "teacher/content-upload" },
+      { icon: DollarSign, label: "Earnings & Revenue",   active: false, slug: "teacher/earnings-revenue" },
+      { icon: Settings, label: "Settings",   active: false, slug: "teacher/settings" },
+    ];
   } else {
     // No role set (not logged in) — show nothing or a minimal menu
     menuItems = [];
@@ -59,7 +74,7 @@ export const Sidebar = ({ currentComponent, onMenuClick }) => {
 
   // NavLink will determine active state; build `to` from slug below.
   return (
-    <div className="w-full h-[100vh]   shadow-xl flex flex-col justify-between overflow-auto [&::-webkit-scrollbar]:hidden bg-[#D6CBAF33]">
+    <div className="w-full h-[100vh] shadow-xl flex flex-col justify-between overflow-auto [&::-webkit-scrollbar]:hidden bg-[#D6CBAF33]">
       {/* Logo */}
       <div>
         <div className="w-full">
@@ -90,7 +105,7 @@ export const Sidebar = ({ currentComponent, onMenuClick }) => {
                         location.pathname.startsWith(to + "/");
                       return `flex items-center h-12 pl-6 py-3 text-start text-base font-normal transition-colors mx-4 mb-1 gap-3 ${
                         isActive
-                          ? "bg-greenTeal text-[#FFFFFF] rounded-xl shadow-lg backdrop-blur-md "
+                          ? `${location.pathname.includes("/teacher")? "bg-primary rounded-full": "bg-greenTeal rounded-xl"} text-[#FFFFFF] shadow-lg backdrop-blur-md $`
                           : "text-[#4A5565] rounded-sm"
                       }`;
                     }}
