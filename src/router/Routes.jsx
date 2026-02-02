@@ -26,6 +26,7 @@ import BookLibrary from "../Admin/BookLibrary/BookLibrary";
 import BookSales from "../Admin/BookSales/BookSales";
 import Submission from "../Admin/Submission/Submission";
 import Announcement from "../Admin/Announesement/Announcement";
+import EditProfile from "../components/EditProfile";
 
 
 const router = createBrowserRouter([
@@ -73,6 +74,7 @@ const router = createBrowserRouter([
         element: <TeacherDashboard />,
       },
       { path: "public-profile", element: <PublicProfile /> },
+      { path: "edit-profile", element: <EditProfile /> },
       { path: "my-courses", element: <MyCourses /> },
       { path: "submissions", element: <Submissions /> },
       { path: "consultations", element: <Consultations /> },
