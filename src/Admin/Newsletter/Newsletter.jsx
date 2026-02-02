@@ -10,11 +10,14 @@ import {
   Search,
 } from "lucide-react";
 import CreateNewsletterModal from "./CreateNewsletterModal";
+import ViewNewsletterModal from "./ViewNewsletterModal";
 import toast from "react-hot-toast";
 
 const Newsletter = () => {
   const [activeTab, setActiveTab] = useState("Newsletters");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [selectedNewsletter, setSelectedNewsletter] = useState(null);
 
   const [newsletters, setNewsletters] = useState([
     {
@@ -63,6 +66,11 @@ const Newsletter = () => {
     toast.success("Saved as draft!");
   };
 
+  const handlePreview = (newsletter) => {
+    setSelectedNewsletter(newsletter);
+    setIsPreviewModalOpen(true);
+  };
+
   const tabs = [
     { id: "Newsletters", icon: Mail, label: "Newsletters" },
     { id: "Templates", icon: FileText, label: "Email Templates" },
@@ -86,6 +94,15 @@ const Newsletter = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveDraft}
+      />
+
+      <ViewNewsletterModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => {
+          setIsPreviewModalOpen(false);
+          setSelectedNewsletter(null);
+        }}
+        newsletter={selectedNewsletter}
       />
 
       {/* Main Container */}
@@ -157,7 +174,10 @@ const Newsletter = () => {
                           Send Now
                         </button>
                       )}
-                      <button className="p-2.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all">
+                      <button
+                        onClick={() => handlePreview(item)}
+                        className="p-2.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                      >
                         <Eye size={20} />
                       </button>
                     </div>
