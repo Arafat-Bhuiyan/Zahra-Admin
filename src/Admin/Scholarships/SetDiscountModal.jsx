@@ -36,7 +36,7 @@ const SetDiscountModal = ({ isOpen, onClose, application, onApprove }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative bg-white rounded-2xl shadow-2xl w-[672px] overflow-hidden">
         {/* Header */}
-        <div className="w-full h-28 px-6 pt-6 pb-px bg-gradient-to-b from-slate-400 to-slate-500 border-b border-neutral-200 flex flex-col justify-start items-start">
+        <div className="w-full h-28 px-6 pt-6 pb-px bg-greenTeal border-b border-neutral-200 flex flex-col justify-start items-start">
           <div className="w-full inline-flex justify-between items-center">
             <div className="inline-flex flex-col justify-start items-start gap-1">
               <div className="text-white text-2xl font-bold arimo-font leading-8">
@@ -166,7 +166,7 @@ const SetDiscountModal = ({ isOpen, onClose, application, onApprove }) => {
           </button>
           <button
             onClick={handleSave}
-            className="px-6 py-2.5 bg-slate-400 hover:bg-slate-500 text-white rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2"
+            className="px-6 py-2.5 bg-greenTeal hover:bg-opacity-90 text-white rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2"
           >
             <Check size={18} />
             Approve with {discountPercent || 0}% Discount

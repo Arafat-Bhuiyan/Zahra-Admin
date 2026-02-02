@@ -90,7 +90,7 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
       <div className="self-stretch flex justify-between items-start">
         {/* Left Section: Avatar & Info */}
         <div className="flex gap-4">
-          <div className="w-14 h-14 bg-slate-400 rounded-full flex justify-center items-center">
+          <div className="w-14 h-14 bg-greenTeal rounded-full flex justify-center items-center">
             <span className="text-white text-xl font-bold arimo-font">
               {app.initials}
             </span>
@@ -158,13 +158,13 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
         <div className="flex gap-2">
           <button
             onClick={() => onViewDetails(app)}
-            className="w-10 h-9 rounded-lg border border-slate-300 flex items-center justify-center text-slate-400 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all"
+            className="w-10 h-9 rounded-lg border border-slate-300 flex items-center justify-center text-greenTeal hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50 transition-all"
           >
             <Eye size={18} />
           </button>
           <button
             onClick={() => onOpenDiscount(app)}
-            className="w-10 h-9 rounded-lg bg-slate-400 hover:bg-slate-500 text-white flex items-center justify-center transition-all shadow-sm"
+            className="w-10 h-9 rounded-lg bg-greenTeal hover:bg-opacity-90 text-white flex items-center justify-center transition-all shadow-sm"
           >
             <Percent size={16} />
           </button>

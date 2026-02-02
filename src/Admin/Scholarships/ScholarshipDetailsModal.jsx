@@ -1,5 +1,5 @@
 import React from "react";
-import { X, FileText, Download } from "lucide-react";
+import { X, FileText, Download, Percent } from "lucide-react";
 
 const ScholarshipDetailsModal = ({
   isOpen,
@@ -14,7 +14,7 @@ const ScholarshipDetailsModal = ({
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-[881px] max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 z-10 w-full h-28 px-6 pt-6 pb-px bg-gradient-to-b from-slate-400 to-slate-500 border-b border-neutral-200 flex flex-col justify-start items-start">
+        <div className="sticky top-0 z-10 w-full h-28 px-6 pt-6 pb-px bg-greenTeal border-b border-neutral-200 flex flex-col justify-start items-start">
           <div className="w-full inline-flex justify-between items-start">
             <div className="flex justify-start items-center gap-4">
               <div className="w-16 h-16 bg-white rounded-full flex justify-center items-center">
@@ -44,27 +44,39 @@ const ScholarshipDetailsModal = ({
         <div className="px-6 pt-6 pb-8 flex flex-col gap-6">
           {/* Status Bar */}
           <div className="flex justify-between items-center">
-            <div
-              className={`px-4 py-2 rounded-[10px] border flex items-center gap-2 ${
-                application.status === "Approved"
-                  ? "bg-green-100 border-green-200 text-green-700"
-                  : application.status === "Pending"
-                    ? "bg-yellow-100 border-yellow-200 text-yellow-700"
-                    : "bg-red-100 border-red-200 text-red-700"
-              }`}
-            >
+            <div className="flex items-center gap-2">
               <div
-                className={`w-3.5 h-3.5 border-2 rounded-full ${
+                className={`px-4 py-2 rounded-[10px] border flex items-center gap-2 ${
                   application.status === "Approved"
-                    ? "border-green-700"
+                    ? "bg-green-100 border-green-200 text-green-700"
                     : application.status === "Pending"
-                      ? "border-yellow-700"
-                      : "border-red-700"
+                      ? "bg-yellow-100 border-yellow-200 text-yellow-700"
+                      : "bg-red-100 border-red-200 text-red-700"
                 }`}
-              ></div>
-              <span className="font-bold arimo-font text-sm">
-                {application.status}
-              </span>
+              >
+                <div
+                  className={`w-3.5 h-3.5 border-2 rounded-full ${
+                    application.status === "Approved"
+                      ? "border-green-700"
+                      : application.status === "Pending"
+                        ? "border-yellow-700"
+                        : "border-red-700"
+                  }`}
+                ></div>
+                <span className="font-bold arimo-font text-sm">
+                  {application.status}
+                </span>
+              </div>
+              <div>
+                {application.discount && (
+                  <div className="px-4 py-2 rounded-[10px] flex items-center gap-1.5 outline outline-1 outline-offset-[-1px] bg-purple-100 outline-purple-200">
+                    <Percent size={12} className="text-purple-700" />
+                    <span className="text-sm font-bold arimo-font text-purple-700">
+                      {application.discount}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="text-neutral-500 text-sm font-normal arimo-font">
               Applied: {application.appliedDate}
@@ -75,7 +87,7 @@ const ScholarshipDetailsModal = ({
           <div className="p-5 bg-neutral-50 rounded-[10px] flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 border-2 border-slate-400 rounded-full flex items-center justify-center">
-                <div className="w-2.5 h-2.5 bg-slate-400 rounded-full"></div>
+                <div className="w-2.5 h-2.5 bg-greenTeal rounded-full"></div>
               </div>
               <h3 className="text-neutral-800 text-lg font-bold arimo-font">
                 Student Information
@@ -126,7 +138,7 @@ const ScholarshipDetailsModal = ({
           </div>
 
           {/* Course & Pricing */}
-          <div className="p-5 bg-slate-400/10 rounded-[10px] border border-slate-400/30 flex flex-col gap-4">
+          <div className="p-5 bg-greenTeal/10 rounded-[10px] border border-slate-400/30 flex flex-col gap-4">
             <h3 className="text-neutral-800 text-lg font-bold arimo-font">
               Course & Pricing
             </h3>
@@ -219,17 +231,24 @@ const ScholarshipDetailsModal = ({
           >
             Close
           </button>
+          {/* Modify Discount */}
+          {(application.status === "Approved" ||
+            application.status === "Rejected") && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => onOpenDiscountModal(application)}
+                className="px-6 py-2 bg-greenTeal hover:bg-opacity-90 text-white rounded-[10px] font-bold transition-colors"
+              >
+                Modify Discount
+              </button>
+            </div>
+          )}
 
           {application.status === "Pending" && (
             <div className="flex items-center gap-3">
               <button
                 onClick={() => {
                   onReject(application.id);
-                  // We don't close immediately here because we want the user to see the success toast or confirmation?
-                  // Wait, standard behavior usually allows closing manually.
-                  // But if rejected, maybe we should close?
-                  // Let's pass the reject handler and let the parent decide or just trigger it.
-                  // The parent component shows toast. We probably should close the modal after reject.
                   onClose();
                 }}
                 className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-[10px] font-medium transition-colors"
@@ -238,7 +257,7 @@ const ScholarshipDetailsModal = ({
               </button>
               <button
                 onClick={() => onOpenDiscountModal(application)}
-                className="px-6 py-2 bg-slate-400 hover:bg-slate-500 text-white rounded-[10px] font-bold transition-colors"
+                className="px-6 py-2 bg-greenTeal hover:bg-opacity-90 text-white rounded-[10px] font-bold transition-colors"
               >
                 Set Discount
               </button>
