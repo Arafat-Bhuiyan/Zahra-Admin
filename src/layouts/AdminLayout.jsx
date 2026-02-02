@@ -4,9 +4,6 @@ import { Sidebar } from "@/Admin/Dashboard/Sidebar";
 import Header from "@/Admin/Dashboard/Header";
 
 export default function AdminLayout() {
-  // State for currently selected menu in the sidebar
-  console.log("first");
-
   const location = useLocation();
 
   const title = location.pathname.startsWith(`/admin/users-management`)
@@ -38,7 +35,7 @@ export default function AdminLayout() {
     : location.pathname.startsWith(`/teacher/public-profile`)
     ? "Public Profile"
     : location.pathname.startsWith(`/teacher/my-courses`)
-    ? "Welcome back! Here's your overview for today."
+    ? "My Assigned Courses"
     : location.pathname.startsWith(`/teacher/submissions`)
     ? "Welcome back! Here's your overview for today."
     : location.pathname.startsWith(`/teacher/consultations`)
@@ -87,7 +84,7 @@ export default function AdminLayout() {
     : location.pathname.startsWith(`/teacher/public-profile`)
     ? "Manage what students see on your profile"
     : location.pathname.startsWith(`/teacher/my-courses`)
-    ? "Welcome back! Here's your overview for today."
+    ? "View your teaching assignments and course details"
     : location.pathname.startsWith(`/teacher/submissions`)
     ? "Welcome back! Here's your overview for today."
     : location.pathname.startsWith(`/teacher/consultations`)
