@@ -13,17 +13,9 @@ import {
   MousePointer2,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import EditMembershipModal from "./EditMembershipModal";
 
-const MembershipCard = () => {
-  const benefits = [
-    "Access to all existing courses",
-    "All upcoming courses included",
-    "New content added monthly",
-    "Cancel anytime",
-    "Certificate of completion",
-    "Community forum access",
-  ];
-
+const MembershipCard = ({ settings, onEdit }) => {
   return (
     <div className="w-full bg-gradient-to-b from-[#7AA4A5] to-[#6A9495] rounded-2xl shadow-lg text-white overflow-hidden relative">
       <div className="p-8">
@@ -39,25 +31,33 @@ const MembershipCard = () => {
                   <h2 className="text-2xl font-bold arimo-font">
                     Full Membership Subscription
                   </h2>
-                  <span className="px-3 py-1 bg-emerald-500 rounded-full text-green-900 text-xs font-bold uppercase tracking-wider">
-                    Active
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                      settings.active
+                        ? "bg-emerald-500 text-green-900"
+                        : "bg-neutral-400 text-neutral-800"
+                    }`}
+                  >
+                    {settings.active ? "Active" : "Inactive"}
                   </span>
                 </div>
                 <p className="text-white/90 text-base arimo-font">
-                  Get unlimited access to all current and future courses
+                  {settings.description}
                 </p>
               </div>
             </div>
 
             {/* Price */}
             <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-bold arimo-font">$49</span>
+              <span className="text-5xl font-bold arimo-font">
+                ${settings.price}
+              </span>
               <span className="text-white/80 text-base">/month</span>
             </div>
 
             {/* Benefits Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-              {benefits.map((benefit, index) => (
+              {settings.benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-transparent border border-green-300 flex items-center justify-center shrink-0">
                     <Check
@@ -73,7 +73,10 @@ const MembershipCard = () => {
           </div>
 
           {/* Edit Button */}
-          <button className="bg-white hover:bg-opacity-90 text-greenTeal px-4 py-2.5 rounded-[10px] font-bold text-base flex items-center gap-2 transition-colors shadow-sm">
+          <button
+            onClick={onEdit}
+            className="bg-white hover:bg-opacity-90 text-greenTeal px-4 py-2.5 rounded-[10px] font-bold text-base flex items-center gap-2 transition-colors shadow-sm"
+          >
             <Settings size={18} />
             Edit Settings
           </button>
@@ -239,6 +242,21 @@ const StatCard = ({ icon: Icon, label, value, colorClass, bgClass }) => {
 };
 
 const Memberships = () => {
+  const [membershipSettings, setMembershipSettings] = useState({
+    active: true,
+    price: 49,
+    description: "Get unlimited access to all current and future courses",
+    benefits: [
+      "Access to all existing courses",
+      "All upcoming courses included",
+      "New content added monthly",
+      "Cancel anytime",
+      "Certificate of completion",
+      "Community forum access",
+    ],
+  });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const [bundles, setBundles] = useState([
     {
       id: 1,
@@ -368,7 +386,10 @@ const Memberships = () => {
     <div className="p-8 space-y-10 min-h-screen bg-white animate-in fade-in duration-500">
       {/* Subscription Card */}
       <div className="w-full">
-        <MembershipCard />
+        <MembershipCard
+          settings={membershipSettings}
+          onEdit={() => setIsEditModalOpen(true)}
+        />
       </div>
 
       {/* Course Bundles Section */}
@@ -426,6 +447,16 @@ const Memberships = () => {
           ))}
         </div>
       </div>
+
+      <EditMembershipModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        initialSettings={membershipSettings}
+        onSave={(newSettings) => {
+          setMembershipSettings(newSettings);
+          toast.success("Membership settings updated successfully");
+        }}
+      />
     </div>
   );
 };
