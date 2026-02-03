@@ -95,97 +95,105 @@ const donationsData = [
 ];
 
 const DonationsTable = () => {
-  const [filter, setFilter] = useState("Monthly Recurring");
+  const [filter, setFilter] = useState("All");
+
+  const filteredData = donationsData.filter((item) => {
+    if (filter === "All") return true;
+    return item.frequency === filter;
+  });
+
   return (
     <div className="w-full bg-white rounded-2xl overflow-hidden border border-neutral-200">
       {/* Filter Header */}
       <div className="h-16 px-6 bg-neutral-50 border-b border-neutral-200 flex justify-start items-center gap-4">
         <Filter className="w-5 h-5 text-neutral-500" />
         <div className="flex-1 h-9 flex justify-start items-start gap-2">
-          {/* Currently only showing one active filter as per design */}
-          <button className="h-9 px-4 py-2 bg-white rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 flex justify-start items-center">
-            <span className="text-neutral-600 text-sm font-normal arimo-font leading-5">
-              Monthly Recurring
-            </span>
-          </button>
+          {["All", "Monthly", "One-Time"].map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilter(type)}
+              className={`h-9 px-4 py-2 rounded-[10px] outline outline-1 outline-offset-[-1px] flex justify-start items-center transition-all ${
+                filter === type
+                  ? "bg-white outline-neutral-400 shadow-sm"
+                  : "bg-transparent outline-transparent hover:bg-neutral-100 text-neutral-500"
+              }`}
+            >
+              <span
+                className={`text-sm font-normal arimo-font leading-5 ${
+                  filter === type ? "text-neutral-800 font-semibold" : ""
+                }`}
+              >
+                {type === "All" ? "All Donations" : type}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="w-full overflow-x-auto">
-        <div className="w-full min-w-[1000px]">
-          {/* Header */}
-          <div className="h-12 bg-gradient-to-r from-pink-50 to-red-50 flex items-center">
-            <div className="flex-1 pl-6">
-              <span className="text-neutral-700 text-sm font-bold arimo-font leading-5">
+        <table className="w-full min-w-[1000px] border-collapse">
+          <thead>
+            <tr className="h-12 bg-gradient-to-r from-pink-50 to-red-50 text-left">
+              <th className="pl-6 text-neutral-700 text-sm font-bold arimo-font leading-5 w-[25%]">
                 Donor Name
-              </span>
-            </div>
-            <div className="w-72 pl-6">
-              <span className="text-neutral-700 text-sm font-bold arimo-font leading-5">
+              </th>
+              <th className="pl-6 text-neutral-700 text-sm font-bold arimo-font leading-5 w-[25%]">
                 Email
-              </span>
-            </div>
-            <div className="w-32 pl-6">
-              <span className="text-neutral-700 text-sm font-bold arimo-font leading-5">
+              </th>
+              <th className="pl-6 text-neutral-700 text-sm font-bold arimo-font leading-5 w-[15%]">
                 Amount
-              </span>
-            </div>
-            <div className="w-44 pl-6">
-              <span className="text-neutral-700 text-sm font-bold arimo-font leading-5">
+              </th>
+              <th className="pl-6 text-neutral-700 text-sm font-bold arimo-font leading-5 w-[20%]">
                 Frequency
-              </span>
-            </div>
-            <div className="w-44 pl-6">
-              <span className="text-neutral-700 text-sm font-bold arimo-font leading-5">
+              </th>
+              <th className="pl-6 text-neutral-700 text-sm font-bold arimo-font leading-5 w-[15%]">
                 Date
-              </span>
-            </div>
-          </div>
-
-          {/* List */}
-          <div>
-            {donationsData.map((item) => (
-              <div
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.map((item) => (
+              <tr
                 key={item.id}
-                className="h-16 border-b border-neutral-200 flex items-center hover:bg-pink-50/20 transition-colors"
+                className="h-16 border-b border-neutral-200 hover:bg-pink-50/20 transition-colors"
               >
-                <div className="flex-1 pl-6 flex items-center gap-2">
-                  {/* Initials match design's colored circles ? Design just shows generic gradients. I will randomly assign colors or reuse logic if needed. For now I used random colors in data */}
-                  <div
-                    className={`w-8 h-8 bg-gradient-to-br ${item.color || "from-pink-400 to-red-400"} rounded-full flex justify-center items-center text-white`}
-                  >
-                    {/* Mock Icon */}
-                    <svg
-                      width="14"
-                      height="12"
-                      viewBox="0 0 14 12"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                <td className="pl-6">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-8 h-8 rounded-full flex justify-center items-center text-white bg-gradient-to-br ${item.color || "from-pink-400 to-red-400"}`}
                     >
-                      <path
-                        d="M7 2.45455L6.125 1.57955C4.165 0.529545 1.75 1.22955 1.75 3.50455C1.75 5.25455 3.325 6.65455 6.265 9.31455L7 10.0045L7.735 9.31455C10.675 6.65455 12.25 5.25455 12.25 3.50455C12.25 1.22955 9.835 0.529545 7.875 1.57955L7 2.45455Z"
-                        stroke="white"
-                        strokeWidth="1.33"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                      <svg
+                        width="14"
+                        height="12"
+                        viewBox="0 0 14 12"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M7 2.45455L6.125 1.57955C4.165 0.529545 1.75 1.22955 1.75 3.50455C1.75 5.25455 3.325 6.65455 6.265 9.31455L7 10.0045L7.735 9.31455C10.675 6.65455 12.25 5.25455 12.25 3.50455C12.25 1.22955 9.835 0.529545 7.875 1.57955L7 2.45455Z"
+                          stroke="white"
+                          strokeWidth="1.33"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-neutral-800 text-base font-normal arimo-font leading-6 ml-2">
+                      {item.name}
+                    </span>
                   </div>
-                  <span className="text-neutral-800 text-base font-normal arimo-font leading-6 ml-2">
-                    {item.name}
-                  </span>
-                </div>
-                <div className="w-72 pl-6">
+                </td>
+                <td className="pl-6">
                   <span className="text-neutral-600 text-base font-normal arimo-font leading-6">
                     {item.email}
                   </span>
-                </div>
-                <div className="w-32 pl-6">
+                </td>
+                <td className="pl-6">
                   <span className="text-pink-600 text-lg font-bold arimo-font leading-7">
                     {item.amount}
                   </span>
-                </div>
-                <div className="w-44 pl-6">
+                </td>
+                <td className="pl-6">
                   {item.frequency === "Monthly" ? (
                     <div className="inline-flex px-3 py-1 bg-purple-100 rounded-full items-center gap-1">
                       <div className="w-3 h-3 relative overflow-hidden">
@@ -213,16 +221,16 @@ const DonationsTable = () => {
                       </span>
                     </div>
                   )}
-                </div>
-                <div className="w-44 pl-6">
+                </td>
+                <td className="pl-6">
                   <span className="text-neutral-600 text-base font-normal arimo-font leading-6">
                     {item.date}
                   </span>
-                </div>
-              </div>
+                </td>
+              </tr>
             ))}
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
   );
