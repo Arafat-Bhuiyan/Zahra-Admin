@@ -15,6 +15,7 @@ import {
 import toast from "react-hot-toast";
 import EditMembershipModal from "./EditMembershipModal";
 import CreateBundleModal from "./CreateBundleModal";
+import EditBundleModal from "./EditBundleModal";
 
 const MembershipCard = ({ settings, onEdit }) => {
   return (
@@ -95,7 +96,12 @@ const MembershipCard = ({ settings, onEdit }) => {
   );
 };
 
-const BundleWebCard = ({ bundle, onToggleStatus, onRemoveBundle }) => {
+const BundleWebCard = ({
+  bundle,
+  onToggleStatus,
+  onRemoveBundle,
+  onEditBundle,
+}) => {
   const isPublished = bundle.status === "Published";
   const borderColor = isPublished ? "outline-green-200" : "outline-neutral-200";
   const shadowColor = isPublished ? "shadow-green-100" : "shadow-neutral-100";
@@ -212,7 +218,10 @@ const BundleWebCard = ({ bundle, onToggleStatus, onRemoveBundle }) => {
             </>
           )}
         </button>
-        <button className="w-10 h-10 rounded-[10px] border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 text-neutral-500 hover:text-neutral-800 transition-colors">
+        <button
+          onClick={() => onEditBundle(bundle)}
+          className="w-10 h-10 rounded-[10px] border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 text-neutral-500 hover:text-neutral-800 transition-colors"
+        >
           <Pencil size={18} />
         </button>
         <button
@@ -258,6 +267,7 @@ const Memberships = () => {
   });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateBundleModalOpen, setIsCreateBundleModalOpen] = useState(false);
+  const [editingBundle, setEditingBundle] = useState(null);
 
   const [bundles, setBundles] = useState([
     {
@@ -383,6 +393,16 @@ const Memberships = () => {
     toast.success("Bundle created successfully!");
   };
 
+  const handleUpdateBundle = (updatedBundle) => {
+    setBundles((prev) =>
+      prev.map((bundle) =>
+        bundle.id === updatedBundle.id ? updatedBundle : bundle,
+      ),
+    );
+    toast.success("Bundle updated successfully!");
+    setEditingBundle(null);
+  };
+
   const totalBundles = bundles.length;
   const publishedCount = bundles.filter((b) => b.status === "Published").length;
   const unpublishedCount = bundles.filter(
@@ -453,6 +473,7 @@ const Memberships = () => {
               bundle={bundle}
               onToggleStatus={handleToggleStatus}
               onRemoveBundle={handleRemoveBundle}
+              onEditBundle={(bundle) => setEditingBundle(bundle)}
             />
           ))}
         </div>
@@ -472,6 +493,13 @@ const Memberships = () => {
         isOpen={isCreateBundleModalOpen}
         onClose={() => setIsCreateBundleModalOpen(false)}
         onCreate={handleCreateBundle}
+      />
+
+      <EditBundleModal
+        isOpen={!!editingBundle}
+        onClose={() => setEditingBundle(null)}
+        bundle={editingBundle}
+        onUpdate={handleUpdateBundle}
       />
     </div>
   );
