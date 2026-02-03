@@ -12,6 +12,7 @@ import {
   FileText,
   MousePointer2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const MembershipCard = () => {
   const benefits = [
@@ -90,7 +91,7 @@ const MembershipCard = () => {
   );
 };
 
-const BundleWebCard = ({ bundle }) => {
+const BundleWebCard = ({ bundle, onToggleStatus, onRemoveBundle }) => {
   const isPublished = bundle.status === "Published";
   const borderColor = isPublished ? "outline-green-200" : "outline-neutral-200";
   const shadowColor = isPublished ? "shadow-green-100" : "shadow-neutral-100";
@@ -190,10 +191,11 @@ const BundleWebCard = ({ bundle }) => {
       {/* Actions */}
       <div className="flex items-center gap-2 mt-auto">
         <button
+          onClick={() => onToggleStatus(bundle.id)}
           className={`flex-1 h-10 rounded-[10px] flex items-center justify-center gap-2 font-normal text-base transition-colors ${
             isPublished
-              ? "bg-green-100 text-green-700 hover:bg-green-200"
-              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+              ? "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+              : "bg-green-100 text-green-700 hover:bg-green-200"
           }`}
         >
           {isPublished ? (
@@ -209,7 +211,10 @@ const BundleWebCard = ({ bundle }) => {
         <button className="w-10 h-10 rounded-[10px] border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 text-neutral-500 hover:text-neutral-800 transition-colors">
           <Pencil size={18} />
         </button>
-        <button className="w-10 h-10 rounded-[10px] border border-neutral-200 flex items-center justify-center hover:bg-red-50 text-neutral-500 hover:text-red-500 transition-colors">
+        <button
+          onClick={() => onRemoveBundle(bundle.id)}
+          className="w-10 h-10 rounded-[10px] border border-neutral-200 flex items-center justify-center hover:bg-red-50 text-neutral-500 hover:text-red-500 transition-colors"
+        >
           <Trash2 size={18} />
         </button>
       </div>
@@ -234,7 +239,7 @@ const StatCard = ({ icon: Icon, label, value, colorClass, bgClass }) => {
 };
 
 const Memberships = () => {
-  const bundles = [
+  const [bundles, setBundles] = useState([
     {
       id: 1,
       title: "Web Development Mastery Bundle",
@@ -284,7 +289,80 @@ const Memberships = () => {
         { title: "FastAPI & Microservices", category: "Backend" },
       ],
     },
-  ];
+  ]);
+
+  const handleToggleStatus = (id) => {
+    setBundles((prevBundles) =>
+      prevBundles.map((bundle) => {
+        if (bundle.id === id) {
+          return {
+            ...bundle,
+            status: bundle.status === "Published" ? "Draft" : "Published",
+          };
+        }
+        return bundle;
+      }),
+    );
+  };
+
+  const handleRemoveBundle = (id) => {
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4 p-1">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-neutral-800 arimo-font">
+              Confirm Delete
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5 arimo-font">
+              Are you sure you want to remove this bundle?
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors arimo-font"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                setBundles((prev) => prev.filter((bundle) => bundle.id !== id));
+                toast.dismiss(t.id);
+                toast.success("Bundle removed successfully", {
+                  icon: "🗑️",
+                  style: {
+                    borderRadius: "12px",
+                    background: "#333",
+                    color: "#fff",
+                  },
+                });
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm arimo-font"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          minWidth: "350px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        },
+      },
+    );
+  };
+
+  const totalBundles = bundles.length;
+  const publishedCount = bundles.filter((b) => b.status === "Published").length;
+  const unpublishedCount = bundles.filter(
+    (b) => b.status !== "Published",
+  ).length;
 
   return (
     <div className="p-8 space-y-10 min-h-screen bg-white animate-in fade-in duration-500">
@@ -316,21 +394,21 @@ const Memberships = () => {
           <StatCard
             icon={Package}
             label="Total Bundles"
-            value="3"
+            value={totalBundles}
             bgClass="bg-slate-100"
             colorClass="text-slate-500"
           />
           <StatCard
             icon={Eye}
             label="Published"
-            value="1"
+            value={publishedCount}
             bgClass="bg-green-100"
             colorClass="text-green-600"
           />
           <StatCard
             icon={EyeOff}
             label="Unpublished"
-            value="2"
+            value={unpublishedCount}
             bgClass="bg-neutral-100"
             colorClass="text-neutral-600"
           />
@@ -339,7 +417,12 @@ const Memberships = () => {
         {/* Bundles Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {bundles.map((bundle) => (
-            <BundleWebCard key={bundle.id} bundle={bundle} />
+            <BundleWebCard
+              key={bundle.id}
+              bundle={bundle}
+              onToggleStatus={handleToggleStatus}
+              onRemoveBundle={handleRemoveBundle}
+            />
           ))}
         </div>
       </div>
