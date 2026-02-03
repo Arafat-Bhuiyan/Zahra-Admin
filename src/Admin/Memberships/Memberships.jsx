@@ -1,223 +1,346 @@
 import React, { useState } from "react";
 import {
-  Search,
-  Filter,
-  UserCheck,
-  Shield,
-  Clock,
-  AlertTriangle,
-  MoreVertical,
-  CreditCard,
+  Crown,
+  Check,
+  Settings,
+  Plus,
+  Package,
+  Eye,
+  EyeOff,
+  Pencil,
+  Trash2,
+  FileText,
+  MousePointer2,
 } from "lucide-react";
 
-const Memberships = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const [memberships, setMemberships] = useState([
-    {
-      id: "MEM-4021",
-      user: "Abdullah Al-Mamun",
-      tier: "LIFETIME",
-      since: "2023-05-12",
-      expiry: "Never",
-      status: "Active",
-    },
-    {
-      id: "MEM-4022",
-      user: "Sarah Jenkins",
-      tier: "PREMIUM",
-      since: "2024-01-20",
-      expiry: "2025-01-20",
-      status: "Active",
-    },
-    {
-      id: "MEM-4023",
-      user: "Michael Scott",
-      tier: "BASIC",
-      since: "2023-03-10",
-      expiry: "2024-03-10",
-      status: "Expired",
-    },
-    {
-      id: "MEM-4024",
-      user: "Emma Watson",
-      tier: "PREMIUM",
-      since: "2023-11-15",
-      expiry: "2024-11-15",
-      status: "Active",
-    },
-    {
-      id: "MEM-4025",
-      user: "Kevin Hart",
-      tier: "BASIC",
-      since: "2024-02-01",
-      expiry: "2025-02-01",
-      status: "Cancelled",
-    },
-  ]);
-
-  const filteredMemberships = memberships.filter(
-    (m) =>
-      m.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.tier.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const getTierBadge = (tier) => {
-    switch (tier) {
-      case "LIFETIME":
-        return "bg-purple-600 text-white";
-      case "PREMIUM":
-        return "bg-greenTeal text-white";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Active":
-        return "text-emerald-500 bg-emerald-50";
-      case "Expired":
-        return "text-rose-500 bg-rose-50";
-      case "Cancelled":
-        return "text-gray-400 bg-gray-50";
-      default:
-        return "text-gray-500 bg-gray-50";
-    }
-  };
+const MembershipCard = () => {
+  const benefits = [
+    "Access to all existing courses",
+    "All upcoming courses included",
+    "New content added monthly",
+    "Cancel anytime",
+    "Certificate of completion",
+    "Community forum access",
+  ];
 
   return (
-    <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500">
-      {/* Tier Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-2xl text-white shadow-lg overflow-hidden relative">
-          <div className="relative z-10 flex flex-col gap-4">
-            <Shield className="w-8 h-8 opacity-50" />
-            <div>
-              <p className="text-purple-100 text-sm font-medium">
-                Lifetime Members
-              </p>
-              <h3 className="text-3xl font-bold">128</h3>
+    <div className="w-full bg-gradient-to-b from-[#7AA4A5] to-[#6A9495] rounded-2xl shadow-lg text-white overflow-hidden relative">
+      <div className="p-8">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+          <div className="flex-1 space-y-6">
+            {/* Header */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <Crown size={32} className="text-white" strokeWidth={1.5} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-bold arimo-font">
+                    Full Membership Subscription
+                  </h2>
+                  <span className="px-3 py-1 bg-emerald-500 rounded-full text-green-900 text-xs font-bold uppercase tracking-wider">
+                    Active
+                  </span>
+                </div>
+                <p className="text-white/90 text-base arimo-font">
+                  Get unlimited access to all current and future courses
+                </p>
+              </div>
+            </div>
+
+            {/* Price */}
+            <div className="flex items-baseline gap-1">
+              <span className="text-5xl font-bold arimo-font">$49</span>
+              <span className="text-white/80 text-base">/month</span>
+            </div>
+
+            {/* Benefits Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+              {benefits.map((benefit, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-transparent border border-green-300 flex items-center justify-center shrink-0">
+                    <Check
+                      size={12}
+                      className="text-green-300"
+                      strokeWidth={3}
+                    />
+                  </div>
+                  <span className="text-white/90 text-sm">{benefit}</span>
+                </div>
+              ))}
             </div>
           </div>
-          <Shield className="w-32 h-32 absolute -right-8 -bottom-8 opacity-10" />
-        </div>
-        <div className="bg-gradient-to-br from-[#89A6A7] to-[#5D7A7B] p-6 rounded-2xl text-white shadow-lg overflow-hidden relative">
-          <div className="relative z-10 flex flex-col gap-4">
-            <UserCheck className="w-8 h-8 opacity-50" />
-            <div>
-              <p className="text-[#E0ECEB] text-sm font-medium">
-                Premium (Active)
-              </p>
-              <h3 className="text-3xl font-bold">842</h3>
-            </div>
-          </div>
-          <UserCheck className="w-32 h-32 absolute -right-8 -bottom-8 opacity-10" />
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-black/5 shadow-sm flex flex-col gap-4">
-          <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
-            <AlertTriangle className="w-6 h-6 text-amber-600" />
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm font-medium">
-              Expiring This Month
-            </p>
-            <h3 className="text-3xl font-bold text-neutral-900">45</h3>
-          </div>
+
+          {/* Edit Button */}
+          <button className="bg-white hover:bg-opacity-90 text-greenTeal px-4 py-2.5 rounded-[10px] font-bold text-base flex items-center gap-2 transition-colors shadow-sm">
+            <Settings size={18} />
+            Edit Settings
+          </button>
         </div>
       </div>
 
-      {/* Membership List */}
-      <div className="w-full bg-white rounded-2xl border border-black/10 shadow-sm p-6 flex flex-col gap-7 min-h-[610px]">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-          <div className="flex flex-col">
-            <h2 className="text-neutral-950 text-xl font-bold arimo-font">
-              Membership Management
+      {/* Footer Stats */}
+      <div className="bg-black/10 px-8 py-4 backdrop-blur-sm">
+        <div className="flex flex-col">
+          <span className="text-white/70 text-sm">Active Subscribers</span>
+          <span className="text-3xl font-bold">1,247</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BundleWebCard = ({ bundle }) => {
+  const isPublished = bundle.status === "Published";
+  const borderColor = isPublished ? "outline-green-200" : "outline-neutral-200";
+  const shadowColor = isPublished ? "shadow-green-100" : "shadow-neutral-100";
+
+  return (
+    <div
+      className={`bg-white rounded-2xl p-6 outline outline-2 outline-offset-[-2px] ${borderColor} shadow-sm hover:shadow-md transition-shadow flex flex-col h-full`}
+    >
+      {/* Header */}
+      <div className="mb-6 space-y-2">
+        <div className="flex justify-between items-start">
+          <h3 className="text-xl font-bold text-neutral-800 arimo-font leading-tight pr-4">
+            {bundle.title}
+          </h3>
+          {isPublished ? (
+            <div className="flex items-center gap-1.5 bg-green-100 px-3 py-1 rounded-full shrink-0">
+              <div className="w-2 h-2 rounded-full bg-green-600"></div>
+              <span className="text-green-700 text-xs font-bold">
+                Published
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 bg-neutral-100 px-3 py-1 rounded-full shrink-0">
+              <div className="w-2 h-2 rounded-full bg-neutral-500"></div>
+              <span className="text-neutral-600 text-xs font-bold">Draft</span>
+            </div>
+          )}
+        </div>
+        <p className="text-neutral-600 text-sm arimo-font line-clamp-2">
+          {bundle.description}
+        </p>
+      </div>
+
+      {/* Price */}
+      <div className="mb-6 space-y-1">
+        <div className="flex items-center gap-3">
+          <span className="text-greenTeal text-3xl font-bold arimo-font">
+            ${bundle.price}
+          </span>
+          {bundle.discount > 0 && (
+            <span className="text-greenTeal text-sm font-normal">
+              Save {bundle.discount}%
+            </span>
+          )}
+        </div>
+        <div className="text-neutral-500 text-sm line-through">
+          Original value: ${bundle.originalPrice}
+        </div>
+        <div className="text-neutral-500 text-xs">One-time lifetime access</div>
+      </div>
+
+      {/* Includes List */}
+      <div className="mb-6 flex-1">
+        <p className="text-neutral-700 text-sm mb-3">
+          Includes {bundle.courses.length} Courses:
+        </p>
+        <div className="space-y-3">
+          {bundle.courses.map((course, idx) => (
+            <div key={idx} className="flex items-start gap-3">
+              <div className="w-4 h-4 mt-0.5 shrink-0">
+                <div
+                  className={`w-3 h-3 rounded-sm border ${isPublished ? "border-green-500" : "border-neutral-400"} flex items-center justify-center`}
+                >
+                  <Check
+                    size={8}
+                    className={
+                      isPublished ? "text-green-500" : "text-neutral-400"
+                    }
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="text-neutral-700 text-sm leading-tight">
+                  {course.title}
+                </p>
+                <p className="text-neutral-500 text-xs mt-0.5">
+                  {course.category}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats Divider */}
+      <div className="border-t border-neutral-200 pt-4 mb-4 grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-neutral-500 text-sm">Sales</p>
+          <p className="text-neutral-800 text-sm font-bold">{bundle.sales}</p>
+        </div>
+        <div>
+          <p className="text-neutral-500 text-sm">Created</p>
+          <p className="text-neutral-800 text-sm font-bold">{bundle.date}</p>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 mt-auto">
+        <button
+          className={`flex-1 h-10 rounded-[10px] flex items-center justify-center gap-2 font-normal text-base transition-colors ${
+            isPublished
+              ? "bg-green-100 text-green-700 hover:bg-green-200"
+              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+          }`}
+        >
+          {isPublished ? (
+            <>
+              <EyeOff size={16} /> Unpublish
+            </>
+          ) : (
+            <>
+              <MousePointer2 size={16} className="rotate-90" /> Publish
+            </>
+          )}
+        </button>
+        <button className="w-10 h-10 rounded-[10px] border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 text-neutral-500 hover:text-neutral-800 transition-colors">
+          <Pencil size={18} />
+        </button>
+        <button className="w-10 h-10 rounded-[10px] border border-neutral-200 flex items-center justify-center hover:bg-red-50 text-neutral-500 hover:text-red-500 transition-colors">
+          <Trash2 size={18} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const StatCard = ({ icon: Icon, label, value, colorClass, bgClass }) => {
+  return (
+    <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm flex items-center gap-4">
+      <div
+        className={`w-12 h-12 rounded-full flex items-center justify-center ${bgClass}`}
+      >
+        <Icon size={24} className={colorClass} />
+      </div>
+      <div>
+        <p className="text-neutral-500 text-sm">{label}</p>
+        <p className="text-2xl font-bold text-neutral-800 mt-1">{value}</p>
+      </div>
+    </div>
+  );
+};
+
+const Memberships = () => {
+  const bundles = [
+    {
+      id: 1,
+      title: "Web Development Mastery Bundle",
+      description: "Complete web development stack from frontend to backend",
+      price: 599,
+      originalPrice: 1344,
+      discount: 55,
+      status: "Published",
+      sales: 47,
+      date: "1/10/2026",
+      courses: [
+        { title: "Data Science Fundamentals", category: "Data Science" },
+        { title: "Node.js Backend Development", category: "Web Development" },
+        { title: "CSS Masterclass", category: "Web Development" },
+        { title: "Advanced React Patterns", category: "Web Development" },
+      ],
+    },
+    {
+      id: 2,
+      title: "UI/UX Design Masterclass Bundle",
+      description: "Learn to design beautiful interfaces and user experiences",
+      price: 399,
+      originalPrice: 899,
+      discount: 45,
+      status: "Draft",
+      sales: 12,
+      date: "2/15/2026",
+      courses: [
+        { title: "Figma Fundamentals", category: "Design" },
+        { title: "User Research Mastery", category: "UX Research" },
+        { title: "Design Systems", category: "UI Design" },
+      ],
+    },
+    {
+      id: 3,
+      title: "Full Stack Python Bundle",
+      description: "Master Python from basics to advanced web frameworks",
+      price: 499,
+      originalPrice: 999,
+      discount: 50,
+      status: "Draft",
+      sales: 8,
+      date: "3/01/2026",
+      courses: [
+        { title: "Python for Beginners", category: "Programming" },
+        { title: "Django Framework", category: "Web Development" },
+        { title: "FastAPI & Microservices", category: "Backend" },
+      ],
+    },
+  ];
+
+  return (
+    <div className="p-8 space-y-10 min-h-screen bg-white animate-in fade-in duration-500">
+      {/* Subscription Card */}
+      <div className="w-full">
+        <MembershipCard />
+      </div>
+
+      {/* Course Bundles Section */}
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-end border-b border-neutral-200 pb-6 gap-4">
+          <div className="space-y-1">
+            <h2 className="text-neutral-800 text-2xl font-bold arimo-font">
+              Course Bundles
             </h2>
-            <p className="text-gray-500 text-sm font-normal arimo-font">
-              Control access tiers and subscription cycles
+            <p className="text-neutral-500 text-base arimo-font">
+              Create curated course packages for one-time purchase
             </p>
           </div>
-
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-[300px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search specific members..."
-                className="w-full h-10 pl-10 pr-4 bg-zinc-50 border border-black/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-greenTeal/20 focus:border-greenTeal transition-all text-sm arimo-font"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <button className="p-2.5 bg-white rounded-xl border border-black/10 hover:bg-gray-50 transition-colors shadow-sm text-neutral-950">
-              <Filter className="w-4 h-4" />
-            </button>
-          </div>
+          <button className="bg-greenTeal hover:bg-opacity-80 text-white px-6 py-3 rounded-[10px] font-bold shadow-md transition-all flex items-center gap-2">
+            <Plus size={20} />
+            Create Bundle
+          </button>
         </div>
 
-        {/* Table */}
-        <div className="w-full overflow-x-auto rounded-xl border border-black/5">
-          <table className="w-full text-sm text-left arimo-font">
-            <thead className="bg-zinc-50 border-b border-black/5 text-neutral-500 font-medium">
-              <tr>
-                <th className="py-4 px-6">Member ID</th>
-                <th className="py-4 px-6">User Name</th>
-                <th className="py-4 px-6">Access Tier</th>
-                <th className="py-4 px-6 text-center">Member Since</th>
-                <th className="py-4 px-6 text-center">Expiry / Renewal</th>
-                <th className="py-4 px-6 text-center">Lifecycle</th>
-                <th className="py-4 px-6 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black/5">
-              {filteredMemberships.map((m) => (
-                <tr
-                  key={m.id}
-                  className="hover:bg-zinc-50/50 transition-colors group"
-                >
-                  <td className="py-4 px-6 font-mono text-xs text-neutral-400">
-                    {m.id}
-                  </td>
-                  <td className="py-4 px-6 text-neutral-900 font-semibold">
-                    {m.user}
-                  </td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-widest ${getTierBadge(m.tier)}`}
-                    >
-                      {m.tier}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-center text-neutral-600">
-                    {m.since}
-                  </td>
-                  <td className="py-4 px-6 text-center text-neutral-600">
-                    {m.expiry}
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex justify-center">
-                      <span
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${getStatusColor(m.status)}`}
-                      >
-                        {m.status}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex justify-end gap-1">
-                      <button className="p-1.5 hover:bg-gray-100 rounded-lg text-neutral-400 hover:text-neutral-900 transition-colors">
-                        <CreditCard className="w-4 h-4" />
-                      </button>
-                      <button className="p-1.5 hover:bg-gray-100 rounded-lg text-neutral-400 hover:text-neutral-900 transition-colors">
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatCard
+            icon={Package}
+            label="Total Bundles"
+            value="3"
+            bgClass="bg-slate-100"
+            colorClass="text-slate-500"
+          />
+          <StatCard
+            icon={Eye}
+            label="Published"
+            value="1"
+            bgClass="bg-green-100"
+            colorClass="text-green-600"
+          />
+          <StatCard
+            icon={EyeOff}
+            label="Unpublished"
+            value="2"
+            bgClass="bg-neutral-100"
+            colorClass="text-neutral-600"
+          />
+        </div>
+
+        {/* Bundles Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {bundles.map((bundle) => (
+            <BundleWebCard key={bundle.id} bundle={bundle} />
+          ))}
         </div>
       </div>
     </div>
