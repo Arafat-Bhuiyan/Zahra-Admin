@@ -2,21 +2,29 @@ import React, { useState } from "react";
 import profile from "../../../src/assets/images/profile.jpg";
 import { Bell, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { clearRole } from "@/Redux/features/auth/authSlice";
 
 const Header = ({ title, subtitle }) => {
   const [hasNotification, setHasNotification] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation()
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const role = useSelector((state) => state.auth.role);
+
   const handleLogout = () => {
-    // Perform logout logic here (e.g., clearing tokens)
-    console.log("Logging out...");
-    navigate("/login"); // Redirect to login page
+    dispatch(clearRole());
+    navigate("/login");
   };
 
   return (
     <div className="flex items-center justify-between px-6 py-7 bg-[#FFFFFF]">
       <div>
-        <h1 className={`font-bold text-[30px] text-greenTeal ${location.pathname.includes("teacher") ? "text-primary" : "text-greenTeal"}`}>{title}</h1>
+        <h1
+          className={`font-bold text-[30px] text-greenTeal ${location.pathname.includes("teacher") ? "text-primary" : "text-greenTeal"}`}
+        >
+          {title}
+        </h1>
         <p className="text-base font-normal text-[#4A5565] mt-1">{subtitle}</p>
       </div>
       <div className="flex items-center gap-4">
@@ -34,8 +42,8 @@ const Header = ({ title, subtitle }) => {
             <h1 className="text-right justify-start text-neutral-950 text-sm font-semibold inter-font">
               Fatima Ara
             </h1>
-            <p className="text-right justify-start text-gray-600 text-xs font-normal inter-font">
-              Teacher
+            <p className="text-right justify-start text-gray-600 text-xs font-normal inter-font capitalize">
+              {role || "User"}
             </p>
           </div>
           <button className="w-10 h-10 rounded-full overflow-hidden bg-[#F5F3F3] border border-[#093349] font-bold text-base">

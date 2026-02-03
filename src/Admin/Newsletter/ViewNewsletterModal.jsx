@@ -3,12 +3,12 @@ import { X, ChevronLeft, Calendar, User } from "lucide-react";
 
 const ViewNewsletterModal = ({ isOpen, onClose, newsletter }) => {
   if (!isOpen || !newsletter) return null;
-  console.log("newsletter",newsletter)
+  console.log("newsletter", newsletter);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 arimo-font">
       <div className="w-full max-w-[880px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="px-8 py-6 bg-gradient-to-r from-slate-400 to-slate-500 relative">
+        <div className="px-8 py-6 bg-gradient-to-b from-[#7AA4A5] to-[#6A9495] relative">
           <div className="flex justify-between items-center text-white">
             <button
               onClick={onClose}
