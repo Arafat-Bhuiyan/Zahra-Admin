@@ -131,7 +131,7 @@ export default function TermsAndPolicies() {
           {!isEditing && activeTab !== "general" && (
             <button
               onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-greenTeal text-white font-semibold rounded hover:bg-[#0b85f7] transition-colors"
+              className="px-4 py-2 bg-greenTeal text-white font-semibold rounded hover:bg-opacity-90 transition-colors"
             >
               Edit
             </button>
@@ -237,7 +237,7 @@ export default function TermsAndPolicies() {
                 <div className="flex gap-3 mt-4">
                   <button
                     onClick={handleSaveEdit}
-                    className="px-6 py-2 bg-greenTeal text-white font-semibold rounded hover:bg-[#0b85f7] transition-colors"
+                    className="px-6 py-2 bg-greenTeal text-white font-semibold rounded hover:bg-opacity-90 transition-colors"
                   >
                     Save
                   </button>
