@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, Search, Filter, Award } from "lucide-react";
 import toast from "react-hot-toast";
+import GenerateCertificateModal from "./GenerateCertificateModal";
 
 const CourseDetailsStatsCard = ({ value, label, color }) => {
   const colorStyles = {
@@ -110,7 +111,7 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
 const CertificateDetails = ({ selectedCourse, onBack }) => {
   const [selectedStudents, setSelectedStudents] = useState([]);
 
-  const students = [
+  const [students, setStudents] = useState([
     {
       id: 1,
       name: "Emily Rodriguez",
@@ -167,7 +168,7 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
       completionDate: "Jan 16, 2026",
       status: "Issued",
     },
-  ];
+  ]);
 
   const handleSelectStudent = (id) => {
     setSelectedStudents((prev) =>
@@ -179,15 +180,41 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
     setSelectedStudents([]);
   };
 
-  const handleGenerate = () => {
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+
+  const selectedStudentObjects = students.filter((student) =>
+    selectedStudents.includes(student.id),
+  );
+
+  const handleGenerateClick = () => {
     if (selectedStudents.length === 0) {
       toast.error("Please select at least one student.");
       return;
     }
+    setIsGenerateModalOpen(true);
+  };
+
+  const handleGenerateConfirm = (data) => {
+    // Here you would typically make an API call with the data
+    console.log("Generating certificates:", {
+      students: selectedStudents,
+      ...data,
+    });
+
+    // Update status to Issued for selected students
+    setStudents((prevStudents) =>
+      prevStudents.map((student) =>
+        selectedStudents.includes(student.id)
+          ? { ...student, status: "Issued" }
+          : student,
+      ),
+    );
+
     toast.success(
-      `Generated ${selectedStudents.length} certificates successfully!`,
+      `Certificates sent to ${selectedStudents.length} student emails successfully!`,
     );
     setSelectedStudents([]);
+    setIsGenerateModalOpen(false);
   };
 
   return (
@@ -249,7 +276,7 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
             </span>
           </div>
           <button
-            onClick={handleGenerate}
+            onClick={handleGenerateClick}
             className="bg-slate-400 hover:bg-slate-500 text-white px-6 py-2.5 rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2"
           >
             <Award size={18} />
@@ -302,6 +329,13 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
           ))}
         </div>
       </div>
+
+      <GenerateCertificateModal
+        isOpen={isGenerateModalOpen}
+        onClose={() => setIsGenerateModalOpen(false)}
+        selectedStudents={selectedStudentObjects}
+        onGenerate={handleGenerateConfirm}
+      />
     </div>
   );
 };
