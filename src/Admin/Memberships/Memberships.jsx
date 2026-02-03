@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import EditMembershipModal from "./EditMembershipModal";
+import CreateBundleModal from "./CreateBundleModal";
 
 const MembershipCard = ({ settings, onEdit }) => {
   return (
@@ -256,6 +257,7 @@ const Memberships = () => {
     ],
   });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateBundleModalOpen, setIsCreateBundleModalOpen] = useState(false);
 
   const [bundles, setBundles] = useState([
     {
@@ -376,6 +378,11 @@ const Memberships = () => {
     );
   };
 
+  const handleCreateBundle = (newBundle) => {
+    setBundles((prev) => [newBundle, ...prev]);
+    toast.success("Bundle created successfully!");
+  };
+
   const totalBundles = bundles.length;
   const publishedCount = bundles.filter((b) => b.status === "Published").length;
   const unpublishedCount = bundles.filter(
@@ -404,7 +411,10 @@ const Memberships = () => {
               Create curated course packages for one-time purchase
             </p>
           </div>
-          <button className="bg-greenTeal hover:bg-opacity-80 text-white px-6 py-3 rounded-[10px] font-bold shadow-md transition-all flex items-center gap-2">
+          <button
+            onClick={() => setIsCreateBundleModalOpen(true)}
+            className="bg-greenTeal hover:bg-opacity-80 text-white px-6 py-3 rounded-[10px] font-bold shadow-md transition-all flex items-center gap-2"
+          >
             <Plus size={20} />
             Create Bundle
           </button>
@@ -456,6 +466,12 @@ const Memberships = () => {
           setMembershipSettings(newSettings);
           toast.success("Membership settings updated successfully");
         }}
+      />
+
+      <CreateBundleModal
+        isOpen={isCreateBundleModalOpen}
+        onClose={() => setIsCreateBundleModalOpen(false)}
+        onCreate={handleCreateBundle}
       />
     </div>
   );

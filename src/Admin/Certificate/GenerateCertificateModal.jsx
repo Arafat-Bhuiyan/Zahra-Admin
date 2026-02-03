@@ -24,7 +24,7 @@ const GenerateCertificateModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="bg-gradient-to-b from-slate-400 to-slate-500 px-6 py-5 border-b border-neutral-200 flex justify-between items-center shrink-0">
+        <div className="bg-gradient-to-b from-[#7AA4A5] to-[#6A9495] px-6 py-5 border-b border-neutral-200 flex justify-between items-center shrink-0">
           <div className="flex flex-col gap-1">
             <h2 className="text-white text-2xl font-bold arimo-font leading-8">
               Generate Certificates
@@ -123,15 +123,12 @@ const GenerateCertificateModal = ({
             disabled={!title || !issueDate}
             className={`px-6 py-2.5 rounded-[10px] text-white font-bold flex items-center gap-2 transition-colors ${
               !title || !issueDate
-                ? "bg-slate-300 cursor-not-allowed"
-                : "bg-slate-400 hover:bg-slate-500"
+                ? "bg-greenTeal cursor-not-allowed"
+                : "bg-greenTeal hover:bg-opacity-80"
             }`}
           >
             {/* Icon from design */}
             <div className="relative w-5 h-5">
-              {/* Simple CSS representation or SVG for the distinct icon in design if generic Award isn't close enough. 
-                     Design has a badge-like icon. I'll use Lucide Award for simplicity as it matches the previous button. 
-                 */}
               <svg
                 width="20"
                 height="20"

@@ -25,7 +25,7 @@ const EditMembershipModal = ({ isOpen, onClose, initialSettings, onSave }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-6 bg-gradient-to-b from-slate-400 to-slate-500 border-b border-neutral-200 flex justify-between items-start shrink-0">
+        <div className="px-6 py-6 bg-gradient-to-b from-[#7AA4A5] to-[#6A9495] border-b border-neutral-200 flex justify-between items-start shrink-0">
           <div className="flex flex-col gap-1 text-white">
             <h2 className="text-2xl font-bold arimo-font leading-8">
               Edit Membership Settings
@@ -128,7 +128,7 @@ const EditMembershipModal = ({ isOpen, onClose, initialSettings, onSave }) => {
           </button>
           <button
             onClick={handleSubmit}
-            className="px-8 py-2.5 bg-slate-500 hover:bg-slate-600 rounded-[10px] text-white text-base font-normal arimo-font shadow-sm flex items-center gap-2 transition-colors"
+            className="px-8 py-2.5 bg-greenTeal hover:bg-opacity-80 rounded-[10px] text-white text-base font-normal arimo-font shadow-sm flex items-center gap-2 transition-colors"
           >
             <Save size={18} />
             Save Settings
