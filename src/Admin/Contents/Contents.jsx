@@ -39,7 +39,7 @@ const Contents = () => {
       id: 2,
       type: "Article",
       thumbnail:
-        "https://images.unsplash.com/photo-1516307362428-3743a7a3b72b?q=80&w=2670&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop",
       date: "Dec 20, 2025",
       readTime: "8 min read",
       category: "Mental Health",
@@ -142,7 +142,7 @@ const Contents = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {contentsList.map((item) => (
           <div
             key={item.id}

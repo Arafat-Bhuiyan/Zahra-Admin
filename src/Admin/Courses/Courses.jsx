@@ -52,7 +52,7 @@ const Courses = () => {
       totalHours: 12,
       sessionDuration: "2hr per session",
       price: "$99",
-      image: "https://placehold.co/360x219",
+      image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2787&auto=format&fit=crop",
     },
     {
       id: 2,
@@ -65,7 +65,7 @@ const Courses = () => {
       totalHours: 12,
       sessionDuration: "2hr per session",
       price: "$99",
-      image: "https://placehold.co/360x219",
+      image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2824&auto=format&fit=crop",
     },
     {
       id: 3,
@@ -78,7 +78,7 @@ const Courses = () => {
       totalHours: 12,
       sessionDuration: "2hr per session",
       price: "$99",
-      image: "https://placehold.co/360x219",
+      image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2800&auto=format&fit=crop",
     },
     {
       id: 4,
@@ -91,7 +91,7 @@ const Courses = () => {
       totalHours: 15,
       sessionDuration: "1.5hr per session",
       price: "$79",
-      image: "https://placehold.co/360x219",
+      image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop",
     },
   ]);
 
@@ -362,7 +362,7 @@ const Courses = () => {
 
       {/* Courses Display */}
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 tracking-tight">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 tracking-tight">
           {filteredCourses.map((c) => (
             <div
               key={c.id}
