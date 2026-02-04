@@ -114,7 +114,7 @@ const BookLibrary = () => {
       type: "Digital",
       status: "Active",
       image:
-        "https://images.unsplash.com/photo-1491843331657-f050bc730ff9?q=80&w=2940&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2824&auto=format&fit=crop",
     },
   ]);
 
@@ -318,7 +318,7 @@ const BookLibrary = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-black/5">
+              <div className="flex items-center gap-2 mt-auto pt-4 border-t border-black/5">
                 <button
                   onClick={() => setSelectedBook(book)}
                   className="flex-1 h-9 bg-[#7AA4A5] hover:bg-[#6b9192] text-white rounded-lg flex items-center justify-center gap-2 text-sm font-normal transition-colors"
