@@ -83,6 +83,7 @@ const router = createBrowserRouter([
       { path: "consultations", element: <Consultations /> },
       { path: "live-sessions", element: <LiveSessions /> },
       { path: "content-upload", element: <ContentUpload /> },
+      { path: "content-details/:id", element: <ContentDetails /> },
       { path: "earnings-revenue", element: <EarningsRevenue /> },
       { path: "settings", element: <TeacherSettings /> },
     ],
