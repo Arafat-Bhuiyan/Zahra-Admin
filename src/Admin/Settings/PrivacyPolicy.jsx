@@ -178,7 +178,7 @@ const PrivacyPolicy = () => {
             </button>
           )}
           <div
-            className="text-gray-700 leading-relaxed"
+            className="text-gray-700 leading-relaxed max-w-[1440px]"
             dangerouslySetInnerHTML={{ __html: content }}
           />
         </div>
