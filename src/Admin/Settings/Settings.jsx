@@ -14,7 +14,7 @@ export default function TermsAndPolicies() {
     <div className="min-h-screen py-6">
       <div className="py-8">
         {/* Tabs */}
-        <div className="flex items-center justify-between mb-6 border-b border-black/10">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex gap-8">
             {[
               { id: "general", label: "General" },
