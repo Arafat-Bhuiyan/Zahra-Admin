@@ -1,5 +1,5 @@
 import React from "react";
-import { X, CheckCircle2, XCircle } from "lucide-react";
+import { X, CheckCircle2, XCircle, CircleCheckBig, CirclePlus } from "lucide-react";
 
 /**
  * QuizDetailsModal component to show detailed results of a student's quiz submission.
@@ -20,10 +20,10 @@ const QuizDetailsModal = ({ isOpen, onClose, submission }) => {
         <div className="px-10 py-8 bg-[#7AA4A5] text-white flex justify-between items-start relative overflow-hidden">
           <div className="relative z-10 transition-all duration-300">
             <h2 className="text-[28px] font-bold font-['Arimo'] mb-1 tracking-tight leading-tight">
-              STUDENT QUIZ RESULT
+              Quiz Title
             </h2>
-            <p className="text-white/80 text-lg font-normal font-['Arimo'] uppercase tracking-widest">
-              Quiz: {submission.assignmentTitle}
+            <p className="text-white/80 text-lg font-normal font-['Arimo'] mb-4">
+              {submission.assignmentTitle}
             </p>
           </div>
           <button
@@ -32,8 +32,6 @@ const QuizDetailsModal = ({ isOpen, onClose, submission }) => {
           >
             <X className="w-7 h-7 stroke-[2.5]" />
           </button>
-          {/* Subtle background pattern could go here */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none" />
         </div>
 
         {/* Scrollable Content */}
@@ -81,36 +79,36 @@ const QuizDetailsModal = ({ isOpen, onClose, submission }) => {
 
           {/* Total Score Card - Green/Red conditional styling */}
           <div
-            className={`p-10 rounded-2xl border-2 flex items-center justify-between transition-all duration-300 ${isPassed
+            className={`p-6 rounded-2xl border-2 flex items-center justify-between transition-all duration-300 ${isPassed
               ? "bg-[#F3FAF5] border-[#D1EBD9]"
               : "bg-[#FFF8F8] border-[#FEE2E2]"
               }`}
           >
             <div className="space-y-2">
-              <p className="text-sm font-medium text-neutral-500 font-['Arimo'] uppercase tracking-wider">
+              <p className="text-sm font-medium text-neutral-500 font-['Arimo'] uppercase">
                 Total Score
               </p>
-              <h4 className="text-[48px] font-extrabold text-neutral-800 font-['Arimo'] leading-none">
+              <h4 className="text-4xl font-extrabold text-neutral-800 font-['Arimo'] leading-none">
                 {submission.score.split(" ")[0]}
               </h4>
               <p
-                className={`text-[22px] font-bold font-['Arimo'] mt-1 ${isPassed ? "text-[#10B981]" : "text-[#EF4444]"
+                className={`text-xl font-bold font-['Arimo'] mt-1 ${isPassed ? "text-[#00A63E]" : "text-[#EF4444]"
                   }`}
               >
                 {submission.percentage} - {submission.status}
               </p>
             </div>
             <div
-              className={`flex items-center justify-center p-2 transition-transform duration-500 hover:scale-110 ${isPassed ? "text-[#10B981]" : "text-[#EF4444]"
+              className={`flex items-center justify-center p-2 transition-transform duration-500 hover:scale-110 ${isPassed ? "text-[#00A63E]" : "text-[#EF4444]"
                 }`}
             >
               {isPassed ? (
-                <div className="p-4 bg-white rounded-full shadow-lg border border-[#D1EBD9]">
-                  <CheckCircle2 className="w-20 h-20 stroke-[1.5]" />
+                <div className="p-4">
+                  <CircleCheckBig className="w-16 h-16 stroke-[2.0]" />
                 </div>
               ) : (
-                <div className="p-4 bg-white rounded-full shadow-lg border border-[#FEE2E2]">
-                  <XCircle className="w-20 h-20 stroke-[1.5]" />
+                <div className="p-4">
+                  <XCircle className="w-16 h-16 stroke-[1.5]" />
                 </div>
               )}
             </div>
@@ -126,8 +124,8 @@ const QuizDetailsModal = ({ isOpen, onClose, submission }) => {
                 <div
                   key={idx}
                   className={`p-6 rounded-2xl border-2 transition-all duration-200 hover:shadow-md ${q.isCorrect
-                    ? "bg-[#F3FAF5] border-[#D1EBD9]"
-                    : "bg-[#FFF8F8] border-[#FEE2E2]"
+                    ? "bg-[#F0FDF4] border-[#B9F8CF]"
+                    : "bg-[#FEF2F2] border-[#FFC9C9]"
                     }`}
                 >
                   <div className="flex justify-between items-start gap-4 mb-4">
@@ -137,12 +135,12 @@ const QuizDetailsModal = ({ isOpen, onClose, submission }) => {
                           Question {q.id}
                         </span>
                         {q.isCorrect ? (
-                          <div className="bg-[#10B981] rounded-full p-0.5">
-                            <CheckCircle2 className="w-4 h-4 text-white stroke-[2.5]" />
+                          <div className="">
+                            <CircleCheckBig className="w-4 h-4 text-[#00A63E] stroke-[2.5]" />
                           </div>
                         ) : (
-                          <div className="bg-[#EF4444] rounded-full p-0.5">
-                            <XCircle className="w-4 h-4 text-white stroke-[2.5]" />
+                          <div className="">
+                           <CirclePlus className="w-4 h-4 text-[#EF4444] stroke-[2.5] rotate-45" />
                           </div>
                         )}
                       </div>
@@ -182,7 +180,7 @@ const QuizDetailsModal = ({ isOpen, onClose, submission }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-10 py-7 bg-white border-t border-neutral-100 flex items-center">
+        <div className="px-10 py-7 bg-[#FAFAFA] border-t border-[#E5E5E5] flex items-center">
           <button
             onClick={onClose}
             className="px-10 py-3 border border-neutral-300 rounded-xl text-neutral-600 text-base font-bold hover:bg-neutral-50 hover:border-neutral-400 transition-all duration-200 active:scale-95"

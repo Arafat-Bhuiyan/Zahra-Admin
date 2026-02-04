@@ -37,19 +37,19 @@ export default function AdminLayout() {
     : location.pathname.startsWith(`/teacher/my-courses`)
     ? "My Assigned Courses"
     : location.pathname.startsWith(`/teacher/submissions`)
-    ? "Welcome back! Here's your overview for today."
+    ? "Submission Management"
     : location.pathname.startsWith(`/teacher/consultations`)
-    ? "Welcome back! Here's your overview for today."
+    ? "Consultation Management"
     : location.pathname.startsWith(`/teacher/live-sessions`)
-    ? "Welcome back! Here's your overview for today."
-    : location.pathname.startsWith(`teacher/content-upload`)
-    ? "Welcome back! Here's your overview for today."
+    ? "Live Sessions"
+    : location.pathname.startsWith(`/teacher/content-upload`)
+    ? "My Content"
     : location.pathname.startsWith(`/teacher/earnings-revenue`)
-    ? "Welcome back! Here's your overview for today."
+    ? "Earnings & Rates"
     : location.pathname.startsWith(`/teacher/settings`)
-    ? "Welcome back! Here's your overview for today."
+    ? "Settings"
     : location.pathname.startsWith(`/teacher/edit-profile`)
-    ? ""
+    ? "Edit Profile"
     : location.pathname.startsWith(`/teacher`)
     ? "Teacher Dashboard"
     : "Dashboard Overview";
@@ -86,19 +86,19 @@ export default function AdminLayout() {
     : location.pathname.startsWith(`/teacher/my-courses`)
     ? "View your teaching assignments and course details"
     : location.pathname.startsWith(`/teacher/submissions`)
-    ? "Welcome back! Here's your overview for today."
+    ? "View and grade student quiz and assignment submissions"
     : location.pathname.startsWith(`/teacher/consultations`)
-    ? "Welcome back! Here's your overview for today."
+    ? "Manage your consultation availability and bookings"
     : location.pathname.startsWith(`/teacher/live-sessions`)
-    ? "Welcome back! Here's your overview for today."
+    ? "View and manage live sessions"
     : location.pathname.startsWith(`teacher/content-upload`)
-    ? "Welcome back! Here's your overview for today."
+    ? "Add materials, videos, and resources for your courses"
     : location.pathname.startsWith(`/teacher/earnings-revenue`)
-    ? "Welcome back! Here's your overview for today."
+    ? "View your earnings summary and hourly rates (read-only)"
     : location.pathname.startsWith(`/teacher/settings`)
-    ? "Welcome back! Here's your overview for today."
+    ? "Manage your account settings and preferences"
       : location.pathname.startsWith(`/teacher/edit-profile`)
-    ? ""
+    ? "Edit your public profile information"
     : location.pathname.startsWith(`/teacher`)
     ? "Welcome back! Here's your overview for today."
     : "Welcome back! Here's what's happening today.";
