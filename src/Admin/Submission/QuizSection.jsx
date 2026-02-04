@@ -8,19 +8,19 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+// Important: Ensure we are importing the Quiz-specific modal
 import QuizDetailsModal from "./QuizDetailsModal";
 
 /**
- * QuizSection component to display quiz submissions.
- * Matches Figma design with purple accents and Passed/Failed status.
+ * QuizSection component to display student quiz submissions.
  */
 const QuizSection = ({ categories, submissions }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+  const [selectedQuizSubmission, setSelectedQuizSubmission] = useState(null);
 
-  const handleViewDetails = (submission) => {
-    setSelectedSubmission(submission);
-    setIsModalOpen(true);
+  const handleOpenQuizDetails = (submission) => {
+    setSelectedQuizSubmission(submission);
+    setIsQuizModalOpen(true);
   };
 
   return (
@@ -50,11 +50,10 @@ const QuizSection = ({ categories, submissions }) => {
                     {/* Tags */}
                     <div className="flex items-center gap-3">
                       <div
-                        className={`px-4 py-1 rounded-[32px] text-xs font-bold inline-flex items-center gap-1.5 border ${
-                          submission.status === "Passed"
+                        className={`px-4 py-1 rounded-[32px] text-xs font-bold inline-flex items-center gap-1.5 border ${submission.status === "Passed"
                             ? "bg-green-50 text-green-700 border-green-200"
                             : "bg-red-50 text-red-700 border-red-200"
-                        }`}
+                          }`}
                       >
                         {submission.status === "Passed" ? (
                           <CheckCircle2
@@ -123,7 +122,7 @@ const QuizSection = ({ categories, submissions }) => {
                   {/* Action Buttons */}
                   <div className="flex items-center gap-4">
                     <button
-                      onClick={() => handleViewDetails(submission)}
+                      onClick={() => handleOpenQuizDetails(submission)}
                       className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] border border-slate-300 text-slate-400 text-sm font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
                     >
                       <Eye className="w-4 h-4 stroke-[1.5]" />
@@ -135,10 +134,12 @@ const QuizSection = ({ categories, submissions }) => {
           </div>
         </div>
       ))}
+
+      {/* Explicity using QuizDetailsModal here */}
       <QuizDetailsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        submission={selectedSubmission}
+        isOpen={isQuizModalOpen}
+        onClose={() => setIsQuizModalOpen(false)}
+        submission={selectedQuizSubmission}
       />
     </div>
   );

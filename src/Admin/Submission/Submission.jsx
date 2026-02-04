@@ -3,10 +3,6 @@ import { Search, Filter } from "lucide-react";
 import AssignmentSection from "./AssignmentSection";
 import QuizSection from "./QuizSection";
 
-/**
- * Submission component for admin to view and manage student assignment and quiz submissions.
- * Matches Figma design with search, filters, and conditional rendering of sections.
- */
 const Submission = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("Assignment");
@@ -59,23 +55,65 @@ const Submission = () => {
       email: "emily.r@email.com",
       date: "Jan 14, 2026",
       time: "10:30 AM",
+      timeSpent: "18 minutes",
       score: "20/30 pts",
       percentage: "67%",
       status: "Failed",
       type: "Quiz",
-      assignmentTitle: "01 Quiz Title Here", // Reusing field for convenience
+      assignmentTitle: "01 Quiz Title Here",
+      questions: [
+        {
+          id: 1,
+          text: "What does useState return?",
+          studentAnswer: "Option 2",
+          points: "10/10",
+          isCorrect: true,
+        },
+        {
+          id: 2,
+          text: "When does useEffect run by default?",
+          studentAnswer: "Option 2",
+          points: "10/10",
+          isCorrect: true,
+        },
+        {
+          id: 3,
+          text: "Which hook is used for side effects?",
+          studentAnswer: "Option 3",
+          correctAnswer: "Option 1",
+          points: "0/10",
+          isCorrect: false,
+        },
+      ],
     },
     {
       id: 2,
-      studentName: "Emily Rodriguez",
-      email: "emily.r@email.com",
-      date: "Jan 14, 2026",
-      time: "10:30 AM",
-      score: "28/30 pts",
-      percentage: "93%",
+      studentName: "Sarah Chen",
+      email: "sarah.chen@email.com",
+      date: "Jan 13, 2026",
+      time: "09:15 AM",
+      timeSpent: "25 minutes",
+      score: "20/20 pts",
+      percentage: "100%",
       status: "Passed",
       type: "Quiz",
       assignmentTitle: "01 Quiz Title Here",
+      questions: [
+        {
+          id: 1,
+          text: "What is a list in Python?",
+          studentAnswer: "Option 1",
+          points: "10/10",
+          isCorrect: true,
+        },
+        {
+          id: 2,
+          text: "How do you define a function?",
+          studentAnswer: "Option 1",
+          points: "10/10",
+          isCorrect: true,
+        },
+      ],
     },
   ];
 

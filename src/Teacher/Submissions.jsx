@@ -5,6 +5,7 @@ import { Eye, FileText, CheckCircle, XCircle, Clock } from "lucide-react";
 import SubmissionsHeader from "../components/SubmissionsHeader";
 import AssignmentDetailsModal from "../components/Modal/AssignmentDetailsModal";
 import GradeAssignmentModal from "../components/Modal/GradeAssignmentModal";
+import QuizDetailsModal from "../Admin/Submission/QuizDetailsModal";
 
 export default function Submissions() {
   const [submissionType, setSubmissionType] = useState("assignment");
@@ -138,28 +139,105 @@ export default function Submissions() {
           submissionTime: "12:30 AM",
           points: "20/30",
           percentage: "67%",
+          // Required for QuizDetailsModal
+          score: "20/30 pts",
+          date: "Jan 14, 2026",
+          time: "12:30 AM",
+          email: "emily@email.com",
+          timeSpent: "18 minutes",
+          assignmentTitle: "01 Quiz Title Here",
+          questions: [
+            {
+              id: 1,
+              text: "What does useState return?",
+              studentAnswer: "Option 2",
+              points: "10/10",
+              isCorrect: true,
+            },
+            {
+              id: 2,
+              text: "When does useEffect run by default?",
+              studentAnswer: "Option 2",
+              points: "10/10",
+              isCorrect: true,
+            },
+            {
+              id: 3,
+              text: "Which hook is used for side effects?",
+              studentAnswer: "Option 3",
+              correctAnswer: "Option 1",
+              points: "0/10",
+              isCorrect: false,
+            },
+          ],
         },
         {
           id: 2,
-          studentName: "Emily Rodriguez",
-          studentEmail: "emily@email.com",
+          studentName: "Sarah Chen",
+          studentEmail: "sarah.chen@email.com",
           status: "Passed",
           statusColor: "bg-green-100 text-green-700",
-          submissionDate: "Jan 14, 2026",
-          submissionTime: "12:30 AM",
-          points: "29/30",
-          percentage: "97%",
+          submissionDate: "Jan 13, 2026",
+          submissionTime: "09:15 AM",
+          points: "20/20",
+          percentage: "100%",
+          // Required for QuizDetailsModal
+          score: "20/20 pts",
+          date: "Jan 13, 2026",
+          time: "09:15 AM",
+          email: "sarah.chen@email.com",
+          timeSpent: "25 minutes",
+          assignmentTitle: "01 Quiz Title Here",
+          questions: [
+            {
+              id: 1,
+              text: "What is a list in Python?",
+              studentAnswer: "Option 1",
+              points: "10/10",
+              isCorrect: true,
+            },
+            {
+              id: 2,
+              text: "How do you define a function?",
+              studentAnswer: "Option 1",
+              points: "10/10",
+              isCorrect: true,
+            },
+          ],
         },
         {
           id: 3,
-          studentName: "Emily Rodriguez",
-          studentEmail: "emily@email.com",
+          studentName: "Marcus Thorne",
+          studentEmail: "marcus@email.com",
           status: "Passed",
           statusColor: "bg-green-100 text-green-700",
           submissionDate: "Jan 14, 2026",
-          submissionTime: "12:30 AM",
-          points: "29/30",
-          percentage: "97%",
+          submissionTime: "02:20 PM",
+          points: "25/30",
+          percentage: "83%",
+          // Required for QuizDetailsModal
+          score: "25/30 pts",
+          date: "Jan 14, 2026",
+          time: "02:20 PM",
+          email: "marcus@email.com",
+          timeSpent: "22 minutes",
+          assignmentTitle: "01 Quiz Title Here",
+          questions: [
+            {
+              id: 1,
+              text: "What is JSX?",
+              studentAnswer: "JavaScript XML",
+              points: "10/10",
+              isCorrect: true,
+            },
+            {
+              id: 2,
+              text: "React is a...?",
+              studentAnswer: "Library",
+              points: "10/10",
+              isCorrect: true,
+            },
+          ],
         },
       ],
     },
@@ -282,11 +360,19 @@ export default function Submissions() {
         </div>
       </div>
 
-      {modalType === "details" && (
+      {modalType === "details" && submissionType === "assignment" && (
         <AssignmentDetailsModal
           submission={selectedSubmission}
           onClose={closeModal}
           onGrade={openGradeModal}
+        />
+      )}
+
+      {modalType === "details" && submissionType === "quiz" && (
+        <QuizDetailsModal
+          isOpen={true}
+          onClose={closeModal}
+          submission={selectedSubmission}
         />
       )}
 
