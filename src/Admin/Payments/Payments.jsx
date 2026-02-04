@@ -1,250 +1,157 @@
 import React, { useState } from "react";
-import {
-  Search,
-  Filter,
-  Download,
-  CreditCard,
-  ArrowUpRight,
-  ArrowDownLeft,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { Heart } from "lucide-react";
+import CourseTransactionsTable from "./CourseTransactionsTable";
+import DonationsTable from "./DonationsTable";
 
 const Payments = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const [transactions, setTransactions] = useState([
-    {
-      id: "TRX-98234",
-      user: "Abdullah Al-Mamun",
-      amount: "$150.00",
-      date: "2024-03-25",
-      type: "Course Purchase",
-      method: "Stripe",
-      status: "Completed",
-    },
-    {
-      id: "TRX-98235",
-      user: "Sarah Jenkins",
-      amount: "$45.00",
-      date: "2024-03-24",
-      type: "Book Sale",
-      method: "PayPal",
-      status: "Pending",
-    },
-    {
-      id: "TRX-98236",
-      user: "Michael Scott",
-      amount: "$1,200.00",
-      date: "2024-03-22",
-      type: "Membership Renewal",
-      method: "Bank Transfer",
-      status: "Failed",
-    },
-    {
-      id: "TRX-98237",
-      user: "Emma Watson",
-      amount: "$299.00",
-      date: "2024-03-20",
-      type: "Course Purchase",
-      method: "Stripe",
-      status: "Completed",
-    },
-    {
-      id: "TRX-98238",
-      user: "Kevin Hart",
-      amount: "$15.50",
-      date: "2024-03-18",
-      type: "Book Sale",
-      method: "PayPal",
-      status: "Completed",
-    },
-  ]);
-
-  const filteredTransactions = transactions.filter(
-    (t) =>
-      t.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.type.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "Completed":
-        return "bg-emerald-50 text-emerald-700 border-emerald-100";
-      case "Pending":
-        return "bg-amber-50 text-amber-700 border-amber-100";
-      case "Failed":
-        return "bg-rose-50 text-rose-700 border-rose-100";
-      default:
-        return "bg-gray-50 text-gray-700 border-gray-100";
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "Completed":
-        return <CheckCircle2 className="w-3.5 h-3.5" />;
-      case "Pending":
-        return <Clock className="w-3.5 h-3.5" />;
-      case "Failed":
-        return <AlertCircle className="w-3.5 h-3.5" />;
-      default:
-        return null;
-    }
-  };
+  const [activeTab, setActiveTab] = useState("course"); // 'course' | 'donation'
 
   return (
-    <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500">
-      {/* Financial Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-black/5 shadow-sm flex flex-col gap-2">
-          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-            <CreditCard className="w-5 h-5 text-blue-600" />
+    <div className="p-8 space-y-8 animate-in fade-in duration-500 min-h-screen">
+      {/* Top Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          {
+            title: "Total Earnings",
+            amount: "$40,400",
+            icon: "📚",
+            bg: "bg-blue-100",
+            text: "text-blue-800",
+          },
+          {
+            title: "Course Revenue",
+            amount: "$10,800",
+            icon: "🔴",
+            bg: "bg-red-100",
+            text: "text-red-800",
+          },
+          {
+            title: "Consultation Revenue",
+            amount: "$2,600",
+            icon: "⏳",
+            bg: "bg-yellow-100",
+            text: "text-yellow-800",
+          },
+        ].map((stat, index) => (
+          <div
+            key={index}
+            className="w-full p-6 bg-white rounded-2xl outline outline-1 outline-offset-[-0.91px] outline-black/10 flex flex-col justify-start items-start shadow-sm"
+          >
+            <div className="w-full flex justify-between items-center">
+              <div className="flex flex-col justify-start item-start gap-1">
+                <div className="text-gray-500 text-sm font-normal arimo-font leading-5">
+                  {stat.title}
+                </div>
+                <div className="text-neutral-950 text-2xl font-bold arimo-font leading-8">
+                  {stat.amount}
+                </div>
+              </div>
+              <div
+                className={`w-12 h-12 ${stat.bg} rounded-[10px] flex justify-center items-center`}
+              >
+                <div
+                  className={`text-xl font-normal arimo-font leading-7 ${stat.text}`}
+                >
+                  {stat.icon}
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider arimo-font mt-2">
-            Total Volume
-          </p>
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl font-bold text-neutral-900">$45,280</h3>
-            <span className="text-emerald-500 text-xs font-medium flex items-center">
-              +12%
-            </span>
+        ))}
+      </div>
+
+      {/* Donations Overview Banner */}
+      <div className="w-full bg-gradient-to-r from-pink-50 to-red-50 rounded-2xl shadow-sm outline outline-2 outline-offset-[-2px] outline-pink-200 p-8 flex flex-col gap-8">
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-red-500 rounded-2xl flex justify-center items-center shadow-md shrink-0">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-neutral-800 text-2xl font-bold arimo-font leading-8">
+              Donations Overview
+            </h2>
+            <p className="text-neutral-600 text-base font-normal arimo-font leading-6">
+              Support from our community
+            </p>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-black/5 shadow-sm flex flex-col gap-2">
-          <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
-            <ArrowDownLeft className="w-5 h-5 text-emerald-600" />
-          </div>
-          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider arimo-font mt-2">
-            Earnings
-          </p>
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl font-bold text-neutral-900">$38,120</h3>
-            <span className="text-emerald-500 text-xs font-medium flex items-center">
-              +8%
-            </span>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-black/5 shadow-sm flex flex-col gap-2">
-          <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center">
-            <ArrowUpRight className="w-5 h-5 text-rose-600" />
-          </div>
-          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider arimo-font mt-2">
-            Payouts
-          </p>
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl font-bold text-neutral-900">$7,160</h3>
-            <span className="text-rose-500 text-xs font-medium flex items-center">
-              -2%
-            </span>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-black/5 shadow-sm flex flex-col gap-2">
-          <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
-            <Clock className="w-5 h-5 text-amber-600" />
-          </div>
-          <p className="text-gray-500 text-xs font-bold uppercase tracking-wider arimo-font mt-2">
-            Pending
-          </p>
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl font-bold text-neutral-900">$2,450</h3>
-            <span className="text-gray-400 text-xs font-medium italic">
-              Wait...
-            </span>
-          </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          {[
+            { label: "Total Donations", value: "$15,240" },
+            { label: "This Month", value: "$3,850" },
+            { label: "Total Donors", value: "127" },
+          ].map((stat, index) => (
+            <div
+              key={index}
+              className="w-full p-4 bg-white/60 rounded-[10px] flex flex-col justify-start items-start gap-1 backdrop-blur-sm shadow-sm border border-white/50"
+            >
+              <div className="w-full text-neutral-600 text-sm font-normal arimo-font leading-5">
+                {stat.label}
+              </div>
+              <div className="w-full text-neutral-800 text-2xl font-bold arimo-font leading-8">
+                {stat.value}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Main Content Card */}
-      <div className="w-full bg-white rounded-2xl border border-black/10 shadow-sm p-6 flex flex-col gap-7 min-h-[610px]">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-          <div className="flex flex-col">
-            <h2 className="text-neutral-950 text-xl font-bold arimo-font">
-              Transaction History
-            </h2>
-            <p className="text-gray-500 text-sm font-normal arimo-font">
-              Monitor platform income and transaction statuses
-            </p>
-          </div>
+      {/* Tabs and Content */}
+      <div className="flex flex-col gap-6">
+        {/* Tabs */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setActiveTab("course")}
+            className={`h-10 px-6 py-2 rounded-[10px] flex items-center justify-center gap-2 transition-all ${
+              activeTab === "course"
+                ? "bg-greenTeal text-white shadow-md font-bold"
+                : "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+            }`}
+          >
+            <span className="text-sm font-normal arimo-font">
+              Course Transactions
+            </span>
+          </button>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-[300px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search user or ID..."
-                className="w-full h-10 pl-10 pr-4 bg-zinc-50 border border-black/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-greenTeal/20 focus:border-greenTeal transition-all text-sm arimo-font"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-black/10 hover:bg-gray-50 transition-colors shadow-sm text-sm font-medium text-neutral-700">
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-            <button className="p-2.5 bg-white rounded-xl border border-black/10 hover:bg-gray-50 transition-colors shadow-sm text-neutral-950">
-              <Filter className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            onClick={() => setActiveTab("donation")}
+            className={`h-10 px-6 py-2 rounded-[10px] flex items-center justify-center gap-2 transition-all ${
+              activeTab === "donation"
+                ? "bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-md font-bold"
+                : "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+            }`}
+          >
+            {activeTab === "donation" && (
+              <Heart size={14} className="text-white" />
+            )}
+            {activeTab !== "donation" && (
+              <Heart size={14} className="text-neutral-600" />
+            )}
+            <span className="text-base font-normal arimo-font leading-6">
+              Donations
+            </span>
+          </button>
         </div>
 
-        {/* Transactions Table */}
-        <div className="w-full overflow-x-auto rounded-xl border border-black/5">
-          <table className="w-full text-sm text-left arimo-font">
-            <thead className="bg-zinc-50 border-b border-black/5 text-neutral-500 font-medium">
-              <tr>
-                <th className="py-4 px-6">Transaction ID</th>
-                <th className="py-4 px-6">User</th>
-                <th className="py-4 px-6">Purpose</th>
-                <th className="py-4 px-6">Amount</th>
-                <th className="py-4 px-6">Method</th>
-                <th className="py-4 px-6">Date</th>
-                <th className="py-4 px-6">Status</th>
-                <th className="py-4 px-6 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black/5">
-              {filteredTransactions.map((t) => (
-                <tr
-                  key={t.id}
-                  className="hover:bg-zinc-50/50 transition-colors group"
-                >
-                  <td className="py-4 px-6 font-medium text-blue-600">
-                    {t.id}
-                  </td>
-                  <td className="py-4 px-6 text-neutral-900 font-semibold">
-                    {t.user}
-                  </td>
-                  <td className="py-4 px-6 text-neutral-500">{t.type}</td>
-                  <td className="py-4 px-6 font-bold text-neutral-900">
-                    {t.amount}
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                      <span className="text-neutral-600">{t.method}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6 text-neutral-500">{t.date}</td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center justify-center gap-1.5 w-fit ${getStatusStyle(t.status)}`}
-                    >
-                      {getStatusIcon(t.status)}
-                      {t.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <button className="text-blue-600 hover:underline font-medium text-xs">
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Content */}
+        <div className="w-full">
+          {activeTab === "course" ? (
+            <CourseTransactionsTable />
+          ) : (
+            <DonationsTable />
+          )}
         </div>
       </div>
     </div>

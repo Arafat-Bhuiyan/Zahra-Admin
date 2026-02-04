@@ -1,20 +1,16 @@
-import { Eye, EyeOff, Lock, Save, Edit } from "lucide-react";
-import { useState } from "react";
+import { Save, Edit, Globe } from "lucide-react";
+import { useState, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function General() {
   const [isEditing, setIsEditing] = useState(false);
+  const [logoUrl, setLogoUrl] = useState(null);
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
-    adminName: "Admin User",
-    email: "admin@icecream.com",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [showPassword, setShowPassword] = useState({
-    current: false,
-    new: false,
-    confirm: false,
+    platformName: "Learning Management System",
+    platformUrl: "https://lms.school.com",
+    platformDescription:
+      "A comprehensive learning management system for students and teachers",
   });
 
   const handleInputChange = (e) => {
@@ -22,201 +18,149 @@ export default function General() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    // Password validation check
-    if (formData.newPassword || formData.confirmPassword) {
-      if (formData.newPassword !== formData.confirmPassword) {
-        toast.error("New Password and Confirm Password must be match.");
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
         return;
       }
-      if (formData.newPassword.length > 0 && formData.newPassword.length < 6) {
-        toast.error("New password must be at least 6 characters long.");
-        return;
-      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoUrl(reader.result);
+        toast.success("Logo uploaded locally!");
+      };
+      reader.readAsDataURL(file);
     }
+  };
 
+  const handleSave = () => {
     // In a real application, you would send the data to your server here.
-    console.log("Saving data:", formData);
-    toast.success("Admin settings saved successfully!");
-
-    // Reset password fields
-    setFormData((prev) => ({
-      ...prev,
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    }));
-
-    // Reset password visibility and disable editing
-    setShowPassword({ current: false, new: false, confirm: false });
+    console.log("Saving platform data:", { ...formData, logoUrl });
+    toast.success("Platform information saved successfully!");
     setIsEditing(false);
   };
+
   return (
-    <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col gap-6">
+    <div className="w-full bg-white rounded-2xl outline outline-1 outline-offset-[-1px] outline-black/10 flex flex-col">
       <Toaster position="top-right" />
-      <div className="px-6 pt-6 flex justify-between">
-        <div>
-          <h2 className="text-gray-900 text-base font-normal leading-4">
-            Admin Account
-          </h2>
-          <p className="text-gray-600 text-base font-normal leading-6">
-            Update your admin login credentials
+
+      {/* Header */}
+      <div className="p-6 flex justify-between items-start">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <Globe className="w-5 h-5 text-neutral-950" />
+            <h2 className="text-neutral-950 text-base font-normal arimo-font leading-4">
+              Platform Information
+            </h2>
+          </div>
+          <p className="text-gray-500 text-base font-normal arimo-font leading-6 mt-1">
+            Basic configuration for your platform
           </p>
         </div>
+
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 bg-gray-600 rounded-[10px] text-white text-sm font-medium leading-5 hover:bg-gray-700 transition-colors"
+            className="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 bg-greenTeal rounded-[10px] text-white text-sm font-medium leading-5 hover:bg-greenTeal/90 transition-colors"
           >
             <Edit size={16} />
             <span>Edit</span>
           </button>
         )}
       </div>
-      <div className="flex-1 relative px-6 pb-6">
-        <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-gray-900 text-sm font-medium leading-4">
-                Admin Name
-              </label>
-              <input
-                type="text"
-                name="adminName"
-                value={formData.adminName}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="h-9 px-3 py-1 bg-white rounded-[10px] border border-gray-200 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+
+      <div className="px-6 pb-6 flex flex-col gap-6">
+        {/* Logo Section */}
+        <div className="flex items-center gap-5">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            accept="image/*"
+            className="hidden"
+          />
+          <div className="w-14 h-14 bg-greenTeal rounded-full flex justify-center items-center shrink-0 overflow-hidden">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Platform Logo"
+                className="w-full h-full object-cover"
               />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-gray-900 text-sm font-medium leading-4">
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="h-9 px-3 py-1 bg-white rounded-[10px] border border-gray-200 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-              />
-            </div>
+            ) : (
+              <span className="text-white text-3xl font-normal leading-9">
+                FR
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => fileInputRef.current.click()}
+              disabled={!isEditing}
+              className="px-4 py-2 bg-greenTeal rounded-lg text-white text-sm font-medium leading-5 hover:bg-greenTeal/90 transition-colors disabled:opacity-50"
+            >
+              Upload Platform logo
+            </button>
+            <p className="text-gray-500 text-xs font-normal leading-4">
+              Professional photo recommended (JPG, PNG - Max. 5MB)
+            </p>
           </div>
         </div>
 
-        <div className="my-6 h-px bg-gray-200" />
-
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <Lock size={16} className="text-gray-900" />
-            <h3 className="text-gray-900 text-base font-normal leading-6">
-              Change Password
-            </h3>
+        {/* Fields Section */}
+        <div className="grid grid-cols-2 gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-neutral-950 text-sm font-normal arimo-font leading-4">
+              Platform Name
+            </label>
+            <input
+              type="text"
+              name="platformName"
+              value={formData.platformName}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              placeholder="Enter platform name"
+              className="h-10 px-3 py-1 bg-zinc-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-black/0 text-neutral-950 text-sm font-normal arimo-font leading-5 disabled:opacity-70 focus:outline-black/10"
+            />
           </div>
-
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-gray-900 text-sm font-medium leading-4">
-                Current Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword.current ? "text" : "password"}
-                  name="currentPassword"
-                  value={formData.currentPassword}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  placeholder="Enter current password"
-                  className="w-full h-9 px-3 py-1 bg-white rounded-[10px] border border-gray-200 text-sm placeholder-stone-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPassword((p) => ({ ...p, current: !p.current }))
-                  }
-                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 disabled:cursor-not-allowed"
-                  disabled={!isEditing}
-                >
-                  {showPassword.current ? (
-                    <EyeOff size={16} />
-                  ) : (
-                    <Eye size={16} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-gray-900 text-sm font-medium leading-4">
-                  New Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword.new ? "text" : "password"}
-                    name="newPassword"
-                    value={formData.newPassword}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    placeholder="Min 8 characters"
-                    className="w-full h-9 px-3 py-1 bg-white rounded-[10px] border border-gray-200 text-sm placeholder-stone-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword((p) => ({ ...p, new: !p.new }))
-                    }
-                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 disabled:cursor-not-allowed"
-                    disabled={!isEditing}
-                  >
-                    {showPassword.new ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
-                  </button>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-gray-900 text-sm font-medium leading-4">
-                  Confirm New Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword.confirm ? "text" : "password"}
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    placeholder="Confirm password"
-                    className="w-full h-9 px-3 py-1 bg-white rounded-[10px] border border-gray-200 text-sm placeholder-stone-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setShowPassword((p) => ({ ...p, confirm: !p.confirm }))
-                    }
-                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 disabled:cursor-not-allowed"
-                    disabled={!isEditing}
-                  >
-                    {showPassword.confirm ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-neutral-950 text-sm font-normal arimo-font leading-4">
+              Platform URL
+            </label>
+            <input
+              type="text"
+              name="platformUrl"
+              value={formData.platformUrl}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              placeholder="https://example.com"
+              className="h-10 px-3 py-1 bg-zinc-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-black/0 text-neutral-950 text-sm font-normal arimo-font leading-5 disabled:opacity-70 focus:outline-black/10"
+            />
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="h-px bg-black/10" />
+
+        <div className="flex flex-col gap-2">
+          <label className="text-neutral-950 text-sm font-normal arimo-font leading-4">
+            Platform Description
+          </label>
+          <textarea
+            name="platformDescription"
+            value={formData.platformDescription}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            rows={2}
+            className="p-3 bg-zinc-100 rounded-lg outline outline-1 outline-offset-[-1px] outline-black/0 text-neutral-950 text-sm font-normal arimo-font leading-5 resize-none disabled:opacity-70 focus:outline-black/10"
+          />
+        </div>
+
+        {/* Action Button */}
+        <div className="mt-2 text-right">
           {isEditing && (
             <button
               onClick={handleSave}
-              className="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 bg-blue-500 rounded-[10px] text-white text-sm font-medium leading-5 hover:bg-blue-600 transition-colors"
+              className="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 bg-greenTeal rounded-[10px] text-white text-sm font-medium leading-5 hover:bg-greenTeal/90 transition-colors"
             >
               <Save size={16} />
               <span>Save Admin Settings</span>

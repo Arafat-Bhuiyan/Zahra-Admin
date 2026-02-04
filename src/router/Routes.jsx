@@ -18,7 +18,6 @@ import CourseDetailsPage from "../Teacher/CourseDetails/CourseDetailsPage";
 import User from "../Admin/User/User";
 import Scholarships from "../Admin/Scholarships/Scholarships";
 import Payments from "../Admin/Payments/Payments";
-import Certificates from "../Admin/Certificates/Certificates";
 import Memberships from "../Admin/Memberships/Memberships";
 import Courses from "../Admin/Courses/Courses";
 import Contents from "../Admin/Contents/Contents";
@@ -28,6 +27,9 @@ import BookSales from "../Admin/BookSales/BookSales";
 import Submission from "../Admin/Submission/Submission";
 import Announcement from "../Admin/Announesement/Announcement";
 import EditProfile from "../components/EditProfile";
+import Newsletter from "../Admin/Newsletter/Newsletter";
+import Certificate from "../Admin/Certificate/Certificate";
+
 
 const router = createBrowserRouter([
   {
@@ -54,13 +56,13 @@ const router = createBrowserRouter([
       { path: "contents", element: <Contents /> },
       { path: "contents/:id", element: <ContentDetails /> },
       { path: "book-library", element: <BookLibrary /> },
-      { path: "book-library/:id", element: <>Book Library Details</> },
+      // { path: "book-library/:id", element: <>Book Library Details</> },
       { path: "book-sales", element: <BookSales /> },
-      { path: "book-sales/:id", element: <>Book Sales Details</> },
+      // { path: "book-sales/:id", element: <>Book Sales Details</> },
       { path: "announcements", element: <Announcement /> },
-      { path: "newsletter", element: <>Newsletter</> },
+      { path: "newsletter", element: <Newsletter /> },
       { path: "scholarships", element: <Scholarships /> },
-      { path: "certificates", element: <Certificates /> },
+      { path: "certificates", element: <Certificate /> },
       { path: "memberships", element: <Memberships /> },
       { path: "payments", element: <Payments /> },
     ],
