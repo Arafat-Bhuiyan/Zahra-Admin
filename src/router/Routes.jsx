@@ -13,6 +13,7 @@ import LiveSessions from "../Teacher/LiveSessions";
 import ContentUpload from "../Teacher/ContentUpload";
 import EarningsRevenue from "../Teacher/EarningsRevenue";
 import TeacherSettings from "../Teacher/Settings";
+import CourseDetailsPage from "../Teacher/CourseDetails/CourseDetailsPage";
 
 import User from "../Admin/User/User";
 import Scholarships from "../Admin/Scholarships/Scholarships";
@@ -25,6 +26,7 @@ import BookLibrary from "../Admin/BookLibrary/BookLibrary";
 import BookSales from "../Admin/BookSales/BookSales";
 import Submission from "../Admin/Submission/Submission";
 import Announcement from "../Admin/Announesement/Announcement";
+import EditProfile from "../components/EditProfile";
 import Newsletter from "../Admin/Newsletter/Newsletter";
 import Certificate from "../Admin/Certificate/Certificate";
 
@@ -74,7 +76,9 @@ const router = createBrowserRouter([
         element: <TeacherDashboard />,
       },
       { path: "public-profile", element: <PublicProfile /> },
+      { path: "edit-profile", element: <EditProfile /> },
       { path: "my-courses", element: <MyCourses /> },
+      { path: "course/:courseId", element: <CourseDetailsPage /> },
       { path: "submissions", element: <Submissions /> },
       { path: "consultations", element: <Consultations /> },
       { path: "live-sessions", element: <LiveSessions /> },

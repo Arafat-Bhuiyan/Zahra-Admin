@@ -4,9 +4,6 @@ import { Sidebar } from "@/Admin/Dashboard/Sidebar";
 import Header from "@/Admin/Dashboard/Header";
 
 export default function AdminLayout() {
-  // State for currently selected menu in the sidebar
-  console.log("first");
-
   const location = useLocation();
 
   const title = location.pathname.startsWith(`/admin/users-management`)
@@ -35,6 +32,24 @@ export default function AdminLayout() {
     ? "Payments & Revenue"
     : location.pathname.startsWith(`/admin/settings`)
     ? "Settings"
+    : location.pathname.startsWith(`/teacher/public-profile`)
+    ? "Public Profile"
+    : location.pathname.startsWith(`/teacher/my-courses`)
+    ? "My Assigned Courses"
+    : location.pathname.startsWith(`/teacher/submissions`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/consultations`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/live-sessions`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`teacher/content-upload`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/earnings-revenue`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/settings`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/edit-profile`)
+    ? ""
     : location.pathname.startsWith(`/teacher`)
     ? "Teacher Dashboard"
     : "Dashboard Overview";
@@ -65,6 +80,25 @@ export default function AdminLayout() {
     ? "Track payments and platform earnings"
     : location.pathname.startsWith(`/admin/settings`)
     ? "Manage admin account and system configuration"
+    
+    : location.pathname.startsWith(`/teacher/public-profile`)
+    ? "Manage what students see on your profile"
+    : location.pathname.startsWith(`/teacher/my-courses`)
+    ? "View your teaching assignments and course details"
+    : location.pathname.startsWith(`/teacher/submissions`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/consultations`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/live-sessions`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`teacher/content-upload`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/earnings-revenue`)
+    ? "Welcome back! Here's your overview for today."
+    : location.pathname.startsWith(`/teacher/settings`)
+    ? "Welcome back! Here's your overview for today."
+      : location.pathname.startsWith(`/teacher/edit-profile`)
+    ? ""
     : location.pathname.startsWith(`/teacher`)
     ? "Welcome back! Here's your overview for today."
     : "Welcome back! Here's what's happening today.";
