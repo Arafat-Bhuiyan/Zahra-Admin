@@ -1,58 +1,74 @@
+import { Star } from "lucide-react";
+
 export default function CourseReviews({ course }) {
   const reviews = [
     {
       id: 1,
-      name: "Student One",
+      name: "Fatima Ahmed",
       rating: 5,
-      date: "Jan 15, 2024",
-      text: "Excellent course! Very informative and well-structured.",
+      date: "Jan 2024",
+      text: "This course completely changed my perspective on managing anxiety. The combination of Islamic teachings and modern psychology is brilliant. Highly recommended!",
     },
     {
       id: 2,
-      name: "Student Two",
+      name: "Omar Hassan",
+      rating: 5,
+      date: "Jan 2024",
+      text: "MashAllah, an excellent course. Dr. Sarah explains complex concepts in such an accessible way. The practical exercises have been life-changing.",
+    },
+    {
+      id: 3,
+      name: "Aisha Ibrahim",
+      rating: 5,
+      date: "Dec 2023",
+      text: "I appreciated the balance between spiritual and scientific approaches. The dhikr practices have become part of my daily routine now.",
+    },
+    {
+      id: 4,
+      name: "Yusuf Ali",
       rating: 4,
-      date: "Jan 10, 2024",
-      text: "Great content. Would appreciate more practical exercises.",
+      date: "Dec 2023",
+      text: "Very informative and well-structured. Some lessons could be a bit shorter, but overall excellent content.",
     },
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="flex items-center gap-1">
-          {[...Array(5)].map((_, i) => (
-            <span key={i} className="text-yellow-400">
-              ★
-            </span>
-          ))}
+    <div className="bg-white border border-stone-100 rounded-xl p-8 shadow-sm">
+      <div className="flex justify-between items-center mb-10">
+        <h2 className="text-2xl font-bold text-[#3A6E73] font-['Arimo']">Student Reviews</h2>
+        <div className="flex items-center gap-2">
+          <Star className="w-5 h-5 fill-[#FBBF24] text-[#FBBF24]" />
+          <span className="text-base font-bold text-gray-900">4.7</span>
+          <span className="text-sm text-gray-500 font-medium">(245 reviews)</span>
         </div>
-        <span className="text-gray-700">4.8 ({reviews.length} reviews)</span>
       </div>
-      {reviews.map((review) => (
-        <div key={review.id} className="border border-gray-200 rounded-lg p-4">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <p className="font-semibold text-gray-900">{review.name}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex gap-0.5">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <span key={i} className="text-yellow-400 text-sm">
-                      ★
-                    </span>
-                  ))}
-                  {[...Array(5 - review.rating)].map((_, i) => (
-                    <span key={i} className="text-gray-300 text-sm">
-                      ★
-                    </span>
-                  ))}
-                </div>
-              </div>
+
+      <div className="space-y-6">
+        {reviews.map((review) => (
+          <div key={review.id} className="border border-stone-200 rounded-xl p-8 transition-all duration-300 hover:shadow-md hover:border-stone-300">
+            <div className="flex justify-between items-start mb-2">
+              <h4 className="text-lg font-bold text-[#3C3C3C] font-['Arimo']">{review.name}</h4>
+              <span className="text-sm text-gray-400 font-medium">{review.date}</span>
             </div>
-            <span className="text-gray-500 text-sm">{review.date}</span>
+
+            <div className="flex items-center gap-0.5 mb-4">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${i < review.rating
+                      ? "fill-[#FBBF24] text-[#FBBF24]"
+                      : "fill-stone-200 text-stone-200"
+                    }`}
+                />
+              ))}
+            </div>
+
+            <p className="text-gray-600 leading-relaxed text-sm">
+              {review.text}
+            </p>
           </div>
-          <p className="text-gray-700">{review.text}</p>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
