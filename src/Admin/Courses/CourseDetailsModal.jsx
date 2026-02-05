@@ -41,7 +41,7 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
               Course Details
             </h2>
             <p className="text-sm text-stone-500 font-['Arimo']">
-              Complete information about the course
+             Complete information about the course
             </p>
           </div>
           <div className="flex items-center gap-3">

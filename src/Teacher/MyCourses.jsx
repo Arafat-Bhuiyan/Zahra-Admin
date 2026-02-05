@@ -1,8 +1,10 @@
-"use client";
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, X } from "lucide-react";
+import { BookOpen, CalendarDays, Clock, Eye, Lock, X } from "lucide-react";
+import featuredCourse1 from "../assets/img/featuredCourse1.png";
+import featuredCourse2 from "../assets/img/featuredCourse2.png";
+import featuredCourse3 from "../assets/img/featuredCourse3.png";
+import { FaUserDoctor } from "react-icons/fa6";
 
 export default function MyCourses() {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ export default function MyCourses() {
     "Relationships",
     "Professional",
   ];
+
   const statuses = ["All", "Live", "Recorded", "Upcoming"];
 
   const courses = [
@@ -24,15 +27,15 @@ export default function MyCourses() {
       id: 1,
       title: "Tafair Al-Quran: Understanding D...",
       instructor: "Dr. Ahmed Hassan",
-      category: "Spiritual Growth",
       status: "Upcoming",
-      statusColor: "bg-green-100 text-green-800",
+      category: "Mental Health",
+      statusColor: "bg-[#5BB814] text-white",
       lessons: 24,
       weeks: 12,
       totalHours: 12,
       perSession: 20,
       price: "$99",
-      image: "/images/image.png",
+      image: featuredCourse1,
       description:
         "Learn the fundamentals of Quranic interpretation with expert guidance from Dr. Ahmed Hassan. This comprehensive course covers essential concepts and methodologies.",
       level: "Beginner",
@@ -44,13 +47,13 @@ export default function MyCourses() {
       instructor: "Dr. Ahmed Hassan",
       category: "Spiritual Growth",
       status: "Live",
-      statusColor: "bg-red-100 text-red-800",
+      statusColor: "bg-[#D3130C] text-white",
       lessons: 24,
       weeks: 12,
       totalHours: 12,
       perSession: 20,
       price: "$99",
-      image: "/images/image.png",
+      image: featuredCourse2,
       description:
         "Join our live Quranic interpretation sessions. Interactive learning with real-time Q&A opportunities.",
       level: "Intermediate",
@@ -62,13 +65,13 @@ export default function MyCourses() {
       instructor: "Dr. Ahmed Hassan",
       category: "Spiritual Growth",
       status: "Recorded",
-      statusColor: "bg-teal-100 text-teal-800",
+      statusColor: "bg-[#2E9BDF] text-white",
       lessons: 24,
       weeks: 12,
       totalHours: 12,
       perSession: 20,
       price: "$99",
-      image: "/images/image.png",
+      image: featuredCourse3,
       description:
         "Access recorded sessions of our Quranic interpretation course. Learn at your own pace with lifetime access.",
       level: "Advanced",
@@ -93,20 +96,10 @@ export default function MyCourses() {
       <div className="max-w-7xl mx-auto">
         {/* View-Only Access Alert */}
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
-          <svg
-            className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <Lock className="text-sm text-[#155DFC]" />
           <div>
-            <p className="font-semibold text-blue-900">View-Only Access</p>
-            <p className="text-sm text-blue-800">
+            <p className="font-bold text-[#1C398E]">View-Only Access</p>
+            <p className="text-sm text-[#155DFC]">
               You can view course content and student progress, but cannot edit
               materials or upload content. Contact the admin for any course
               updates needed.
@@ -129,11 +122,10 @@ export default function MyCourses() {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    selectedCategory === cat
-                      ? "bg-teal-600 text-white"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                  }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat
+                    ? "bg-teal-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    }`}
                 >
                   {cat}
                 </button>
@@ -149,11 +141,10 @@ export default function MyCourses() {
                 <button
                   key={status}
                   onClick={() => setSelectedStatus(status)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    selectedStatus === status
-                      ? "bg-teal-600 text-white"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                  }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedStatus === status
+                    ? "bg-teal-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    }`}
                 >
                   {status}
                 </button>
@@ -181,89 +172,56 @@ export default function MyCourses() {
                 />
                 {/* Status Badge */}
                 <div
-                  className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${course.statusColor}`}
+                  className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold bg-white/70 border border-[#D6D3D1]`}
                 >
-                  {course.status}
+                  {course.category}
                 </div>
               </div>
 
               {/* Course Info */}
               <div className="p-4">
+                <div className="flex justify-between items-center mb-2">
+
+                  <div
+                    className={`px-3 py-1 rounded-full text-xs font-medium mb-2 ${course.statusColor}`}
+                  >
+                    {course.status}
+                  </div>
+                </div>
                 <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                   {course.title}
                 </h3>
 
                 {/* Instructor */}
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
-                  </svg>
+                  <FaUserDoctor className="text-lg" />
                   {course.instructor}
                 </div>
 
                 {/* Course Details */}
                 <div className="grid grid-cols-2 gap-3 mb-4 text-xs text-gray-600">
                   <div className="flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M7 3a1 1 0 000 2h6a1 1 0 000-2H7zM4 7a1 1 0 011-1h10a1 1 0 011 1v10a1 1 0 01-1 1H5a1 1 0 01-1-1V7z" />
-                    </svg>
+                    <BookOpen size={18} />
                     {course.lessons} Lessons
                   </div>
                   <div className="flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <CalendarDays size={18} />
                     {course.weeks} weeks
                   </div>
                   <div className="flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <Clock size={18} />
                     {course.totalHours} hr
                   </div>
                   <div className="flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <Clock size={18} />
+
                     {course.perSession} per session
                   </div>
                 </div>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                  <span className="text-lg font-semibold text-teal-600">
+                  <span className="text-2xl font-semibold text-[#7AA4A5]">
                     {course.price}
                   </span>
                   <button
@@ -271,10 +229,10 @@ export default function MyCourses() {
                       e.stopPropagation();
                       setSelectedCourse(course);
                     }}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-[#7AA4A5]"
                     title="View Quick Details"
                   >
-                    <Eye className="w-5 h-5 text-gray-600" />
+                    <Eye className="w-5 h-5 text-[#7AA4A5]" />
                   </button>
                 </div>
               </div>
@@ -294,105 +252,86 @@ export default function MyCourses() {
       {/* Course Details Modal - Eye Button */}
       {selectedCourse && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full overflow-y-auto">
-            <div className="p-6 flex items-center justify-between border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">
-                Course Details
-              </h2>
-              <button
-                onClick={() => setSelectedCourse(null)}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+          <div className="bg-white rounded-lg max-w-xl w-full overflow-y-auto">
+            <div className="p-6 border-b border-stone-100 sticky top-0 bg-white z-10 flex justify-between items-start">
+              <div className="space-y-1">
+                <h2 className="text-xl font-bold text-stone-900 font-['Arimo']">
+                  Course Details
+                </h2>
+                <p className="text-sm text-stone-500 font-['Arimo']">
+                  Complete information about the course
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSelectedCourse(null)}
+                  className="p-1.5 hover:bg-stone-100 rounded-lg text-stone-400 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
-
             <div className="p-6 space-y-4">
               {/* Two Column Layout */}
               <div className="grid grid-cols-2 gap-4">
                 {/* Left Column */}
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Course Name
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {selectedCourse.title}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Instructor
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {selectedCourse.instructor}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Status
-                    </p>
-                    <p
-                      className={`text-sm font-semibold px-2 py-1 rounded w-fit ${selectedCourse.statusColor}`}
-                    >
-                      {selectedCourse.status}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Duration
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {selectedCourse.weeks} weeks
-                    </p>
-                  </div>
-                </div>
 
-                {/* Right Column */}
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Price
-                    </p>
-                    <p className="text-sm font-semibold text-teal-600">
-                      {selectedCourse.price}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Category
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {selectedCourse.category}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Level
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {selectedCourse.level}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                      Start Date
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {selectedCourse.startDate}
-                    </p>
-                  </div>
+                <div>
+                  <p className="font-semibold text-gray-500 mb-1">
+                    Course Title
+                  </p>
+                  <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
+                    {selectedCourse.title}
+                  </p>
                 </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
-                  Description
-                </p>
-                <p className="text-sm text-gray-700">
-                  {selectedCourse.description}
-                </p>
+                <div>
+                  <p className="font-semibold text-gray-500 mb-1">
+                    Instructor
+                  </p>
+                  <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
+                    {selectedCourse.instructor}
+                  </p>
+                </div>    <div>
+                  <p className="font-semibold text-gray-500 mb-1">
+                    Category
+                  </p>
+                  <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
+                    {selectedCourse.category}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500 mb-1">
+                    Status
+                  </p>
+                  <p
+                    className={`bg-[#F9FAFB] p-4 rounded-lg text-sm font-medium rounded`}
+                  >
+                    <span className={`w-2 h-2 px-2 py-1 rounded-full ${selectedCourse.statusColor}`}> {selectedCourse.status}</span>
+                  </p>
+                </div> <div>
+                  <p className="font-semibold text-gray-500 mb-1">
+                    Price
+                  </p>
+                  <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-teal-600">
+                    {selectedCourse.price}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500 mb-1">
+                    Duration
+                  </p>
+                  <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
+                    {selectedCourse.weeks} weeks
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500 mb-1">
+                    Total Lessions
+                  </p>
+                  <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
+                    {selectedCourse.lessons} lessons
+                  </p>
+                </div>
               </div>
             </div>
 

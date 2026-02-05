@@ -319,7 +319,7 @@ export default function CourseDetails({ course, onBackClick }) {
           <div className="col-span-1">
             <div className="bg-white rounded-lg p-6 border border-gray-200 sticky top-24">
               <img
-                src={courseData.thumbnail || "/placeholder.svg"}
+                src={courseData.thumbnail}
                 alt="Course Thumbnail"
                 className="w-full rounded-lg mb-4 aspect-video object-cover"
               />

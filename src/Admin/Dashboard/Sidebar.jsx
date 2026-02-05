@@ -26,9 +26,7 @@ import logo from "../../assets/img/logo.png";
 
 export const Sidebar = () => {
   const navigate = useNavigate();
-
   const role = useSelector((state) => state.auth.role);
-
   let menuItems = [];
 
   if (role === "admin") {
