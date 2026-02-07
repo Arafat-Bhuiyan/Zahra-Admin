@@ -2,6 +2,8 @@ import MainDashboard from "@/Admin/Dashboard/MainDashboard";
 import AdminLayout from "@/layouts/AdminLayout";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import TermsAndPolicies from "@/Admin/Settings/Settings";
+import ProtectedRoute from "./ProtectedRoute";
+import { useSelector } from "react-redux";
 
 import Login from "../components/Login";
 import TeacherDashboard from "../Teacher/TeacherDashboard";
@@ -30,11 +32,22 @@ import EditProfile from "../components/EditProfile";
 import Newsletter from "../Admin/Newsletter/Newsletter";
 import Certificate from "../Admin/Certificate/Certificate";
 
+const RootRedirect = () => {
+  const { role } = useSelector((state) => state.auth);
+
+  if (role === "admin") {
+    return <Navigate to="/admin" replace />;
+  } else if (role === "teacher") {
+    return <Navigate to="/teacher" replace />;
+  } else {
+    return <Navigate to="/login" replace />;
+  }
+};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/admin" replace />,
+    element: <RootRedirect />,
   },
   {
     path: "/login",
@@ -42,7 +55,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     errorElement: <h2>Route not found</h2>,
     children: [
       {
@@ -69,7 +86,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/teacher",
-    element: <AdminLayout />,
+    element: (
+      <ProtectedRoute allowedRoles={["teacher"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,

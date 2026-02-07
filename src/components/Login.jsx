@@ -4,15 +4,26 @@ import logo from "../assets/img/logo.png";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setRole } from "@/Redux/features/auth/authSlice";
+import { useEffect } from "react";
 
 export default function Login() {
+  const { role } = useSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const dispatch = useDispatch();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (role === "admin") {
+      navigate("/admin");
+    } else if (role === "teacher") {
+      navigate("/teacher");
+    }
+  }, [role, navigate]);
+
   const handleLogin = (e) => {
     e.preventDefault();
     console.log("Login attempt:", { email, password });

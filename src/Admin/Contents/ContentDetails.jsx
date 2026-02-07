@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ArrowLeft,
   User,
@@ -7,12 +7,14 @@ import {
   Play,
   ChevronRight,
   Maximize2,
+  X,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const ContentDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Mock data for the specific article in the design
   const content = {
@@ -30,6 +32,7 @@ const ContentDetails = () => {
     videoDuration: "16:55",
     videoThumbnail:
       "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2899&auto=format&fit=crop",
+    videoUrl: "https://www.youtube.com/embed/FXNsrLUksuY?autoplay=1", // A related inspirational video
   };
 
   return (
@@ -142,35 +145,64 @@ const ContentDetails = () => {
 
         {/* Video Section Card */}
         <div className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden mt-14 shadow-sm">
-          <div className="bg-white border-b border-stone-200 p-6 space-y-2">
-            <div className="flex items-center gap-2 text-[#7AA4A5] text-xs font-bold uppercase tracking-tight">
-              <Play className="w-4 h-4 fill-current" />
-              Watch Video
+          <div className="bg-white border-b border-stone-200 p-6 flex justify-between items-center">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-[#7AA4A5] text-xs font-bold uppercase tracking-tight">
+                <Play className="w-4 h-4 fill-current" />
+                Watch Video
+              </div>
+              <h2 className="text-stone-900 text-lg font-bold leading-7">
+                {content.videoTitle}
+              </h2>
             </div>
-            <h2 className="text-stone-900 text-lg font-bold leading-7">
-              {content.videoTitle}
-            </h2>
+            {isPlaying && (
+              <button
+                onClick={() => setIsPlaying(false)}
+                className="p-2 hover:bg-stone-50 rounded-full transition-colors text-stone-500"
+                title="Close Video"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
           </div>
 
-          <div className="relative aspect-video group cursor-pointer">
-            <img
-              src={content.videoThumbnail}
-              alt="Video Thumbnail"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <div className="w-20 h-20 bg-white/95 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
-                <Play className="w-10 h-10 text-[#7AA4A5] fill-current ml-1" />
+          <div className="relative aspect-video group overflow-hidden bg-black">
+            {!isPlaying ? (
+              <div
+                className="w-full h-full cursor-pointer relative"
+                onClick={() => setIsPlaying(true)}
+              >
+                <img
+                  src={content.videoThumbnail}
+                  alt="Video Thumbnail"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div className="w-20 h-20 bg-white/95 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
+                    <Play className="w-10 h-10 text-[#7AA4A5] fill-current ml-1" />
+                  </div>
+                </div>
+                <div className="absolute bottom-6 right-6 bg-black/80 px-3 py-1.5 rounded text-white text-sm font-bold">
+                  {content.videoDuration}
+                </div>
               </div>
-            </div>
-            <div className="absolute bottom-6 right-6 bg-black/80 px-3 py-1.5 rounded text-white text-sm font-bold">
-              {content.videoDuration}
-            </div>
+            ) : (
+              <iframe
+                className="w-full h-full"
+                src={content.videoUrl}
+                title={content.videoTitle}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              ></iframe>
+            )}
           </div>
 
           <div className="bg-white p-4 px-6 border-t border-stone-200 flex justify-between items-center">
             <p className="text-stone-600 text-sm font-normal">
-              Click to play embedded video
+              {isPlaying
+                ? "Currently playing video"
+                : "Click to play embedded video"}
             </p>
             <button className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-300 rounded-lg text-stone-700 text-sm font-normal hover:bg-stone-50 transition-colors">
               Watch Full Page
