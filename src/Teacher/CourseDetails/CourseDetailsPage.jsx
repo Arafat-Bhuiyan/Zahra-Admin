@@ -168,62 +168,64 @@ export default function CourseDetailsPage() {
                 <button className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-teal-600 text-white p-4 rounded-full shadow-lg">
                   <Play size={20} />
                 </button>
+                <div className="mt-4">
+                  <h1 className="text-3xl text-[#7AA4A5] font-semibold">Course Builder</h1>
+                  <p className="">Create comprehensive course content for students</p>
+                </div>
               </div>
 
               {/* Right: info card */}
               <div className="w-full lg:w-80">
-                <div className="bg-white border rounded-lg p-4 shadow-sm h-full flex flex-col justify-between">
+                <div className="bg-white border rounded-lg shadow-sm h-full flex flex-col justify-between">
                   <div>
-                    <div className="flex items-start gap-4">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden">
-                        <img
-                          src={course.image}
-                          alt="thumb"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h2 className="text-lg font-semibold">
-                          {course.title}
-                        </h2>
-                        <p className="text-sm text-gray-600">
-                          {course.instructor}
-                        </p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-500 text-white">
-                            {course.status}
-                          </span>
-                        </div>
-                      </div>
+
+                    <div className="rounded-t-lg overflow-hidden">
+                      <img
+                        src={course.image}
+                        alt="thumb"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
 
-                    <div className="mt-4">
+                    <div className="flex-1 px-4 pt-4">
+
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-red-500 text-white">
+                          {course.status}
+                        </span>
+                      </div>
+                      <h2 className="text-lg font-semibold">
+                        {course.title}
+                      </h2>
+                    </div>
+
+                    <div className="px-4 pb-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-500">Price</p>
-                          <p className="text-lg font-semibold text-teal-600">
+                          <p className="text-2xl font-semibold text-[#3A6E73]">
                             {course.price}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-500">
-                            Total Enrolled
-                          </p>
-                          <p className="text-sm font-semibold text-gray-700">
-                            245 Students
-                          </p>
+                        <div className="px-3 py-1 text-sm border text-gray-500 rounded-full font-medium">
+                          Enrolled
                         </div>
                       </div>
-
-                      <div className="mt-4 border-t pt-3 flex items-center justify-between">
+                      <div className="flex items-center text-gray-500 justify-between mt-3">
+                        <p className="text-sm">
+                          Total Enrolled
+                        </p>
+                        <p className="text-sm font-semibold">
+                          245 Students
+                        </p>
+                      </div>
+                      <div className="mt-4 border-t p-3 border rounded-xl items-center justify-between">
+                        <p className="mb-2">Share this course</p>
                         <div className="flex items-center gap-3 text-gray-600">
                           <Share2 size={16} />
                           <Twitter size={16} />
                           <Facebook size={16} />
                         </div>
-                        <button className="px-3 py-1 bg-teal-600 text-white rounded-md text-sm font-medium">
-                          Enrolled
-                        </button>
+
                       </div>
                     </div>
                   </div>
@@ -234,17 +236,16 @@ export default function CourseDetailsPage() {
         </div>
 
         {/* Tabs Navigation */}
-        <div className="bg-white rounded-t-lg border-b border-gray-200">
+        <div className="rounded-t-lg border-b border-gray-200">
           <div className="flex gap-6 px-6">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-4 font-medium border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? "border-teal-600 text-teal-600"
-                    : "border-transparent text-gray-600 hover:text-gray-900"
-                }`}
+                className={`py-4 px-4 font-medium border-b-2 transition-colors ${activeTab === tab.id
+                  ? "border-teal-600 text-teal-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
               >
                 {tab.label === "community"
                   ? "Community Chat"
@@ -255,7 +256,7 @@ export default function CourseDetailsPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-b-lg shadow-sm p-8">
+        <div className="rounded-b-lg p-8">
           {activeTab === "community" && course.status === "Live" ? (
             <div>
               {/* Live Community Chat UI */}
