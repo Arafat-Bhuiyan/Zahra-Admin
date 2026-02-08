@@ -11,6 +11,7 @@ import {
   Filter,
 } from "lucide-react";
 import CertificateDetails from "./CertificateDetails";
+import GenerateCertificateModal from "./GenerateCertificateModal";
 import toast from "react-hot-toast";
 
 const StatsCard = ({ icon: Icon, color, label, value }) => {
@@ -112,7 +113,7 @@ const StepItem = ({ number, title, subtitle }) => (
   </div>
 );
 
-const CourseCard = ({ course, onClick }) => {
+const CourseCard = ({ course, onClick, onGenerate }) => {
   return (
     <div
       onClick={() => onClick(course)}
@@ -131,7 +132,7 @@ const CourseCard = ({ course, onClick }) => {
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-12 mr-4">
+      <div className="flex items-center gap-12 mr-6">
         <div className="flex flex-col items-center w-24">
           <span className="text-neutral-800 text-2xl font-bold arimo-font">
             {course.totalStudents}
@@ -148,8 +149,22 @@ const CourseCard = ({ course, onClick }) => {
             Completed
           </span>
         </div>
+        <div className="h-10 w-[1px] bg-neutral-200 ml-4"></div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onGenerate(course);
+          }}
+          className="flex items-center gap-2 bg-slate-400 hover:bg-slate-500 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm group/btn active:scale-95"
+        >
+          <Award
+            size={18}
+            className="group-hover/btn:rotate-12 transition-transform"
+          />
+          <span className="text-sm">Generate</span>
+        </button>
       </div>
-      <div className="pr-4 text-neutral-300 group-hover:text-blue-500 transition-colors">
+      <div className="pr-2 text-neutral-300 group-hover:text-blue-500 transition-colors">
         <ChevronRight size={24} />
       </div>
     </div>
@@ -235,6 +250,51 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
 
 const Certificate = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [generateTargetCourse, setGenerateTargetCourse] = useState(null);
+
+  const mockStudents = [
+    {
+      id: 1,
+      name: "Emily Rodriguez",
+      initials: "ER",
+      email: "emily.r@email.com",
+    },
+    {
+      id: 2,
+      name: "Marcus Johnson",
+      initials: "MJ",
+      email: "marcus.j@email.com",
+    },
+    {
+      id: 3,
+      name: "Sarah Chen",
+      initials: "SC",
+      email: "sarah.chen@email.com",
+    },
+    { id: 4, name: "Ahmed Hassan", initials: "AH", email: "ahmed.h@email.com" },
+    { id: 5, name: "Lisa Park", initials: "LP", email: "lisa.p@email.com" },
+    { id: 6, name: "David Smith", initials: "DS", email: "david.s@email.com" },
+    { id: 7, name: "Maria Garcia", initials: "MG", email: "maria.g@email.com" },
+  ];
+
+  const handleGenerateClick = (course) => {
+    setGenerateTargetCourse(course);
+    setIsGenerateModalOpen(true);
+  };
+
+  const handleGenerateConfirm = (data) => {
+    console.log(
+      "Generating certificates for course:",
+      generateTargetCourse.title,
+      data,
+    );
+    toast.success(
+      `Certificates generated successfully for all ${generateTargetCourse.completed} completed students in ${generateTargetCourse.title}!`,
+    );
+    setIsGenerateModalOpen(false);
+    setGenerateTargetCourse(null);
+  };
 
   const stats = [
     {
@@ -382,9 +442,20 @@ const Certificate = () => {
               key={course.id}
               course={course}
               onClick={setSelectedCourse}
+              onGenerate={handleGenerateClick}
             />
           ))}
         </div>
+
+        <GenerateCertificateModal
+          isOpen={isGenerateModalOpen}
+          onClose={() => {
+            setIsGenerateModalOpen(false);
+            setGenerateTargetCourse(null);
+          }}
+          selectedStudents={mockStudents}
+          onGenerate={handleGenerateConfirm}
+        />
       </div>
     </div>
   );
