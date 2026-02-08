@@ -1,188 +1,26 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  Italic,
-  Underline,
-} from "lucide-react";
+import React, { useState } from "react";
 
 const TermsAndConditions = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [content, setContent] = useState(`<ul>
-<li>Lorem ipsum dolor sit amet consectetur. Lacus at venenatis gravida vivamus mauris. Quisque mi est vel dis. Donec rhoncus laoreet odio orci sed risus elit accumsan. Mattis ut est tristique amet vitae at aliquet. Ac vel porttitor egestas scelerisque enim quisque senectus. Euismod ultricies vulputate id cras bibendum sollicitudin proin odio bibendum. Velit velit in scelerisque erat etiam rutrum phasellus nunc. Sed lectus sed a at eget. Nunc purus sed quis at risus. Consectetur nibh justo proin placerat condimentum id at adipiscing.</li>
-<li>Vel blandit mi nulla sodales consectetur. Egestas tristique ultrices gravida duis nisl odio. Posuere curabitur eu platea pellentesque ut. Facilisi elementum neque mauris facilisis in. Cursus condimentum ipsum pretium consequat turpis at porttitor nisl.</li>
-<li>Scelerisque tellus praesent condimentum euismod a faucibus. Auctor at ultricies at urna aliquam massa pellentesque. Vitae vulputate nulla diam placerat m.</li>
-</ul>`);
-
-  const [editContent, setEditContent] = useState(content);
-  const [fontSize, setFontSize] = useState("14");
-  const editorRef = useRef(null);
-
-  useEffect(() => {
-    if (isEditing) {
-      const el = editorRef.current;
-      if (!el) return;
-      const handlePaste = (e) => {
-        e.preventDefault();
-        const text = e.clipboardData?.getData("text/plain") ?? "";
-        document.execCommand("insertText", false, text);
-      };
-      el.addEventListener("paste", handlePaste);
-      return () => el.removeEventListener("paste", handlePaste);
-    }
-  }, [isEditing]);
-
-  const handleSaveEdit = () => {
-    const html = editorRef.current?.innerHTML ?? editContent;
-    setContent(html);
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setEditContent(content);
-    setIsEditing(false);
-  };
-
-  const applyFormat = (command, value) => {
-    if (editorRef.current && isEditing) {
-      document.execCommand(command, false, value);
-      editorRef.current.focus();
-    }
-  };
-
-  const handleFontSizeChange = (e) => {
-    const newSize = e.target.value;
-    setFontSize(newSize);
-    applyFontSizeToSelection(newSize);
-  };
-
-  const applyFontSizeToSelection = (size) => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-    const range = selection.getRangeAt(0);
-    if (range) {
-      const span = document.createElement("span");
-      span.style.fontSize = `${size}px`;
-      range.surroundContents(span);
-    }
-  };
+  const [content] = useState(`<ul>
+  <li><strong>Terms and Conditions</strong></li>
+  <li>By accessing or using this website/application, you agree to comply with and be bound by these terms.</li>
+  <li>You are responsible for maintaining the confidentiality of your account and for all activities that occur under it.</li>
+  <li>You agree not to misuse the service, attempt unauthorized access, or engage in any activity that disrupts or harms the platform.</li>
+  <li>All content and services are provided “as is” without warranties of any kind. We do not guarantee uninterrupted or error-free operation.</li>
+  <li>We reserve the right to modify, suspend, or terminate the service at any time without prior notice.</li>
+  <li>We are not liable for any direct or indirect damages arising from the use or inability to use the service.</li>
+  <li>These terms may be updated periodically. Continued use of the service constitutes acceptance of the revised terms.</li>
+</ul>
+`);
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Edit Header removed - button moved inside content card */}
-
-      {isEditing && (
-        <div className="flex items-center flex-wrap gap-2 p-2 border border-gray-300 rounded bg-gray-50">
-          <select
-            value={fontSize}
-            onChange={handleFontSizeChange}
-            className="px-2 py-1 border border-gray-300 rounded text-sm"
-          >
-            {[10, 12, 14, 16, 18, 20, 24].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          <button
-            onClick={() => applyFormat("bold")}
-            className="p-1 hover:bg-gray-200 rounded"
-            title="Bold"
-          >
-            <Bold size={16} />
-          </button>
-          <button
-            onClick={() => applyFormat("italic")}
-            className="p-1 hover:bg-gray-200 rounded"
-            title="Italic"
-          >
-            <Italic size={16} />
-          </button>
-          <button
-            onClick={() => applyFormat("underline")}
-            className="p-1 hover:bg-gray-200 rounded"
-            title="Underline"
-          >
-            <Underline size={16} />
-          </button>
-
-          <div className="w-px h-6 bg-gray-300" />
-
-          <button
-            onClick={() => applyFormat("justifyLeft")}
-            className="p-1 hover:bg-gray-200 rounded"
-            title="Align Left"
-          >
-            <AlignLeft size={16} />
-          </button>
-          <button
-            onClick={() => applyFormat("justifyCenter")}
-            className="p-1 hover:bg-gray-200 rounded"
-            title="Align Center"
-          >
-            <AlignCenter size={16} />
-          </button>
-          <button
-            onClick={() => applyFormat("justifyRight")}
-            className="p-1 hover:bg-gray-200 rounded"
-            title="Align Right"
-          >
-            <AlignRight size={16} />
-          </button>
-        </div>
-      )}
-
-      {isEditing ? (
-        <>
-          <div
-            ref={editorRef}
-            contentEditable
-            suppressContentEditableWarning
-            className="min-h-[400px] p-4 border border-gray-300 rounded focus:outline-none focus:ring-2 text-gray-800 leading-relaxed bg-white"
-            style={{ fontSize: `${fontSize}px` }}
-            dangerouslySetInnerHTML={{
-              __html: (editContent ?? content ?? "").replace(/\n/g, "<br>"),
-            }}
-            onBlur={(e) =>
-              setEditContent(e.currentTarget.innerHTML.replace(/<br>/g, "\n"))
-            }
-          />
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={handleSaveEdit}
-              className="px-6 py-2 bg-greenTeal text-white font-semibold rounded hover:bg-opacity-90 transition-colors"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleCancelEdit}
-              className="px-6 py-2 bg-gray-200 text-gray-900 font-semibold rounded hover:bg-gray-300 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      ) : (
-        <div className="prose prose-sm max-w-none bg-white p-6 rounded-2xl outline outline-1 outline-offset-[-1px] outline-black/10 relative">
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="absolute top-6 right-6 px-4 py-2 bg-greenTeal text-white font-semibold rounded hover:bg-opacity-90 transition-colors"
-            >
-              Edit
-            </button>
-          )}
-          <div
-            className="text-gray-700 leading-relaxed max-w-[1440px]"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
-        </div>
-      )}
+      <div className="prose prose-sm max-w-none bg-white p-6 rounded-2xl outline outline-1 outline-offset-[-1px] outline-black/10 relative">
+        <div
+          className="text-gray-700 leading-relaxed max-w-[1440px]"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      </div>
     </div>
   );
 };
