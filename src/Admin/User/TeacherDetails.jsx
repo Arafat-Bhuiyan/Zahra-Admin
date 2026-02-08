@@ -45,22 +45,10 @@ const TeacherDetails = ({ teacher, onBack }) => {
               src={`https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=89A6A7&color=fff&size=512`}
               alt={teacher.name}
             />
-            {teacher.status === "active" && (
-              <div className="absolute bottom-4 right-4 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
-            )}
           </div>
 
           {/* Profile Info */}
           <div className="flex-1 flex flex-col gap-5">
-            <div className="flex flex-col md:flex-row gap-3 items-center md:items-start">
-              <div className="px-3 py-1 bg-emerald-50 rounded-xl border border-green-200 flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></div>
-                <span className="text-green-700 text-xs font-medium arimo-font uppercase tracking-wider">
-                  Available
-                </span>
-              </div>
-            </div>
-
             <div className="flex flex-col gap-2">
               <h2 className="text-stone-900 text-4xl font-normal arimo-font">
                 {teacher.name}

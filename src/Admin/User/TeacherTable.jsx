@@ -12,7 +12,6 @@ const TeacherTable = ({ data, onView, onDelete }) => {
             <th className="py-3 px-2 font-normal w-28 text-left">Department</th>
             <th className="py-3 px-2 font-normal w-20">Courses</th>
             <th className="py-3 px-2 font-normal w-20">Students</th>
-            <th className="py-3 px-2 font-normal w-20">Status</th>
             <th className="py-3 px-2 font-normal w-48">Actions</th>
           </tr>
         </thead>
@@ -33,17 +32,7 @@ const TeacherTable = ({ data, onView, onDelete }) => {
               </td>
               <td className="py-4 px-2 text-neutral-950">{user.courses}</td>
               <td className="py-4 px-2 text-neutral-950">{user.students}</td>
-              <td className="py-4 px-2">
-                <span
-                  className={`px-3 py-1 rounded-lg text-xs arimo-font inline-flex items-center justify-center whitespace-nowrap ${
-                    user.status === "active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {user.status}
-                </span>
-              </td>
+
               <td className="py-4 px-2">
                 <div className="flex justify-center items-center gap-2">
                   <button

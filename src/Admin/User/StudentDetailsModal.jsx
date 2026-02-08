@@ -60,22 +60,6 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                 {student.joined}
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-neutral-950 text-sm font-normal arimo-font">
-                Status
-              </label>
-              <div className="px-3 py-3 bg-gray-50 rounded-lg border border-black/5 h-[48px] flex items-center">
-                <span
-                  className={`px-3 py-1 rounded-lg text-xs arimo-font inline-flex items-center justify-center whitespace-nowrap ${
-                    student.status === "active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {student.status}
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* Enrolled Courses Section */}

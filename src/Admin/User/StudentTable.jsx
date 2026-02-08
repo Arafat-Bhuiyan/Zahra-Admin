@@ -21,7 +21,6 @@ const StudentTable = ({ data, onDelete }) => {
               <th className="py-3 px-2 font-normal w-52 text-left">Email</th>
               <th className="py-3 px-2 font-normal w-24">Courses</th>
               <th className="py-3 px-2 font-normal w-32">Joined</th>
-              <th className="py-3 px-2 font-normal w-24">Status</th>
               <th className="py-3 px-2 font-normal w-48">Actions</th>
             </tr>
           </thead>
@@ -39,17 +38,7 @@ const StudentTable = ({ data, onDelete }) => {
                 </td>
                 <td className="py-4 px-2 text-neutral-950">{user.courses}</td>
                 <td className="py-4 px-2 text-neutral-950">{user.joined}</td>
-                <td className="py-4 px-2">
-                  <span
-                    className={`px-3 py-1 rounded-lg text-xs arimo-font inline-flex items-center justify-center whitespace-nowrap ${
-                      user.status === "active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {user.status}
-                  </span>
-                </td>
+
                 <td className="py-4 px-2">
                   <div className="flex justify-center items-center gap-2">
                     <button

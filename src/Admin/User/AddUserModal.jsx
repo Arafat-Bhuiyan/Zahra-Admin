@@ -96,7 +96,6 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
       id: Date.now(),
       courses: 0,
       joined: new Date().toISOString().split("T")[0],
-      status: "active",
     });
     onClose();
   };
@@ -110,7 +109,6 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
       courses: teacherData.education.length, // mock
       students: 0,
       joined: new Date().toISOString().split("T")[0],
-      status: "active",
     });
     onClose();
   };

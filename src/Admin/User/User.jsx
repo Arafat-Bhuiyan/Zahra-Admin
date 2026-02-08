@@ -19,7 +19,6 @@ const User = () => {
       email: "emma.w@email.com",
       courses: 5,
       joined: "2024-01-15",
-      status: "active",
     },
     {
       id: 2,
@@ -27,7 +26,6 @@ const User = () => {
       email: "michael.c@email.com",
       courses: 0,
       joined: "2024-02-20",
-      status: "active",
     },
     {
       id: 3,
@@ -35,7 +33,6 @@ const User = () => {
       email: "sarah.p@email.com",
       courses: 0,
       joined: "2023-11-10",
-      status: "active",
     },
     {
       id: 4,
@@ -43,7 +40,6 @@ const User = () => {
       email: "david.k@email.com",
       courses: 0,
       joined: "2024-03-05",
-      status: "inactive",
     },
     {
       id: 5,
@@ -51,7 +47,6 @@ const User = () => {
       email: "lisa.a@email.com",
       courses: 7,
       joined: "2023-09-12",
-      status: "active",
     },
     {
       id: 6,
@@ -59,7 +54,6 @@ const User = () => {
       email: "james.r@email.com",
       courses: 4,
       joined: "2024-01-22",
-      status: "inactive",
     },
     {
       id: 7,
@@ -67,7 +61,6 @@ const User = () => {
       email: "olivia.t@email.com",
       courses: 5,
       joined: "2023-12-08",
-      status: "active",
     },
     {
       id: 8,
@@ -75,7 +68,6 @@ const User = () => {
       email: "robert.l@email.com",
       courses: 6,
       joined: "2024-02-14",
-      status: "active",
     },
   ]);
 
@@ -87,7 +79,6 @@ const User = () => {
       department: "Mathematics",
       courses: 3,
       students: 245,
-      status: "active",
     },
     {
       id: 2,
@@ -96,7 +87,6 @@ const User = () => {
       department: "Science",
       courses: 4,
       students: 320,
-      status: "active",
     },
     {
       id: 3,
@@ -105,7 +95,6 @@ const User = () => {
       department: "English",
       courses: 2,
       students: 180,
-      status: "active",
     },
     {
       id: 4,
@@ -114,7 +103,6 @@ const User = () => {
       department: "History",
       courses: 3,
       students: 210,
-      status: "active",
     },
     {
       id: 5,
@@ -123,7 +111,6 @@ const User = () => {
       department: "Arts",
       courses: 2,
       students: 150,
-      status: "inactive",
     },
   ]);
 
