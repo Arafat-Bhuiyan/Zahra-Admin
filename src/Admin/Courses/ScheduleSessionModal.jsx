@@ -14,7 +14,7 @@ const ScheduleSessionModal = ({ isOpen, onClose, onSchedule }) => {
   const [formData, setFormData] = useState({
     course: "",
     title: "",
-    date: "",
+    day: "",
     startTime: "",
     endTime: "",
     zoomLink: "",
@@ -23,6 +23,23 @@ const ScheduleSessionModal = ({ isOpen, onClose, onSchedule }) => {
   });
 
   if (!isOpen) return null;
+
+  const days = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  const teachers = [
+    { name: "Fatima Ara", email: "fatimaara10@gmail.com" },
+    { name: "Dr. Jannat Ara", email: "jannatara10@gmail.com" },
+    { name: "Zaid Al-Habib", email: "zaid.alhabib@example.com" },
+    { name: "Maryam Siddiqua", email: "maryam.s@example.com" },
+  ];
 
   const courses = [
     "Mindfulness in Islam",
@@ -45,7 +62,7 @@ const ScheduleSessionModal = ({ isOpen, onClose, onSchedule }) => {
     setFormData({
       course: "",
       title: "",
-      date: "",
+      day: "",
       startTime: "",
       endTime: "",
       zoomLink: "",
@@ -128,17 +145,23 @@ const ScheduleSessionModal = ({ isOpen, onClose, onSchedule }) => {
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
                 <Calendar className="w-4 h-4 text-stone-400" />
-                Date <span className="text-red-500">*</span>
+                Select Day <span className="text-red-500">*</span>
               </label>
-              <input
-                type="date"
+              <select
                 required
-                value={formData.date}
+                value={formData.day}
                 onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
+                  setFormData({ ...formData, day: e.target.value })
                 }
-                className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
-              />
+                className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font appearance-none"
+              >
+                <option value="">Choose day...</option>
+                {days.map((day) => (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
@@ -194,39 +217,33 @@ const ScheduleSessionModal = ({ isOpen, onClose, onSchedule }) => {
           </div>
 
           {/* Teacher Info Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
-                <User className="w-4 h-4 text-stone-400" />
-                Select Teacher <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.teacher}
-                onChange={(e) =>
-                  setFormData({ ...formData, teacher: e.target.value })
-                }
-                placeholder="Teacher Name"
-                className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
-                <Mail className="w-4 h-4 text-stone-400" />
-                Teacher's email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                required
-                value={formData.teacherEmail}
-                onChange={(e) =>
-                  setFormData({ ...formData, teacherEmail: e.target.value })
-                }
-                placeholder="teacher@example.com"
-                className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
+              <User className="w-4 h-4 text-stone-400" />
+              Select Teacher <span className="text-red-500">*</span>
+            </label>
+            <select
+              required
+              value={formData.teacherEmail}
+              onChange={(e) => {
+                const selectedTeacher = teachers.find(
+                  (t) => t.email === e.target.value,
+                );
+                setFormData({
+                  ...formData,
+                  teacher: selectedTeacher ? selectedTeacher.name : "",
+                  teacherEmail: e.target.value,
+                });
+              }}
+              className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font appearance-none"
+            >
+              <option value="">Choose a teacher...</option>
+              {teachers.map((t) => (
+                <option key={t.email} value={t.email}>
+                  {t.name} ({t.email})
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Actions */}

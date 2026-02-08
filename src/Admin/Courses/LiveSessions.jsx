@@ -75,7 +75,7 @@ const LiveSessions = ({ onBack }) => {
       title: newSession.title,
       instructor: newSession.teacher,
       email: newSession.teacherEmail,
-      date: newSession.date,
+      date: newSession.day,
       time: newSession.startTime,
       students: 0,
       status: "Scheduled",
