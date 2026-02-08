@@ -9,7 +9,6 @@ const EditBookModal = ({ book, onClose, onSave }) => {
     category: "",
     price: "",
     type: "",
-    status: "Active",
   });
 
   useEffect(() => {
@@ -21,7 +20,6 @@ const EditBookModal = ({ book, onClose, onSave }) => {
         category: book.category || "",
         price: book.price || "",
         type: book.type || "",
-        status: book.status || "Active",
       });
     }
   }, [book]);
@@ -147,44 +145,23 @@ const EditBookModal = ({ book, onClose, onSave }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Book Type */}
-              <div className="space-y-2">
-                <label className="text-neutral-950 text-sm font-normal">
-                  Book Type
-                </label>
-                <div className="relative">
-                  <select
-                    name="type"
-                    value={formData.type}
-                    onChange={handleChange}
-                    className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-neutral-950 text-sm focus:ring-2 focus:ring-teal-600/20"
-                  >
-                    <option value="Both">Both (Physical & Digital)</option>
-                    <option value="Digital">Digital</option>
-                    <option value="Physical">Physical</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Status */}
-              <div className="space-y-2">
-                <label className="text-neutral-950 text-sm font-normal">
-                  Status
-                </label>
-                <div className="relative">
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-neutral-950 text-sm focus:ring-2 focus:ring-teal-600/20"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
+            {/* Book Type */}
+            <div className="space-y-2">
+              <label className="text-neutral-950 text-sm font-normal">
+                Book Type
+              </label>
+              <div className="relative">
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-neutral-950 text-sm focus:ring-2 focus:ring-teal-600/20"
+                >
+                  <option value="Both">Both (Physical & Digital)</option>
+                  <option value="Digital">Digital</option>
+                  <option value="Physical">Physical</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
             </div>
 

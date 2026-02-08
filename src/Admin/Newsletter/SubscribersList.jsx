@@ -3,8 +3,6 @@ import { Search, Trash2, Filter, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 
 const SubscribersList = () => {
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
   const [subscribers, setSubscribers] = useState([
@@ -12,35 +10,30 @@ const SubscribersList = () => {
       id: 1,
       name: "Sarah Johnson",
       email: "sarah.j@example.com",
-      status: "Active",
       date: "2026-01-11",
     },
     {
       id: 2,
       name: "Michael Chen",
       email: "m.chen99@example.com",
-      status: "Inactive",
       date: "2026-01-12",
     },
     {
       id: 3,
       name: "Emma Wilson",
       email: "emma.wilson@example.com",
-      status: "Active",
       date: "2026-01-13",
     },
     {
       id: 4,
       name: "James Rodriguez",
       email: "james.rod@example.com",
-      status: "Active",
       date: "2026-01-14",
     },
     {
       id: 5,
       name: "Lisa Patel",
       email: "lisa.patel@example.com",
-      status: "Inactive",
       date: "2026-01-15",
     },
   ]);
@@ -99,11 +92,10 @@ const SubscribersList = () => {
   };
 
   const filteredSubscribers = subscribers.filter((sub) => {
-    const matchesStatus = statusFilter === "All" || sub.status === statusFilter;
     const matchesSearch =
       sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       sub.email.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
+    return matchesSearch;
   });
 
   return (
@@ -126,37 +118,6 @@ const SubscribersList = () => {
           <span className="text-sm font-bold text-neutral-500">
             {filteredSubscribers.length} Total Subscribers
           </span>
-
-          <div className="relative">
-            <button
-              onClick={() => setFilterOpen(!filterOpen)}
-              className="flex items-center gap-2 text-sm font-bold bg-white border border-neutral-200 text-neutral-600 px-4 py-2 rounded-lg hover:bg-neutral-50 transition-colors"
-            >
-              <Filter size={16} />
-              <span>{statusFilter}</span>
-              <ChevronDown size={14} />
-            </button>
-            {filterOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border border-neutral-200 rounded-xl shadow-lg z-10 overflow-hidden">
-                {["All", "Active", "Inactive"].map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => {
-                      setStatusFilter(status);
-                      setFilterOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 transition-colors ${
-                      statusFilter === status
-                        ? "text-[#7BA0A0] font-bold"
-                        : "text-neutral-600"
-                    }`}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
@@ -166,7 +127,6 @@ const SubscribersList = () => {
             <tr className="text-neutral-500 text-sm font-bold border-b border-neutral-200">
               <th className="px-6 py-4">Name</th>
               <th className="px-6 py-4">Email</th>
-              <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4">Subscribed At</th>
               <th className="px-6 py-4 text-right">Action</th>
             </tr>
@@ -182,17 +142,6 @@ const SubscribersList = () => {
                 </td>
                 <td className="px-6 py-4 text-neutral-600">
                   {subscriber.email}
-                </td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`px-2.5 py-1 text-[10px] font-bold uppercase rounded-full ${
-                      subscriber.status === "Active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {subscriber.status}
-                  </span>
                 </td>
                 <td className="px-6 py-4 text-neutral-500 text-sm">
                   {subscriber.date}

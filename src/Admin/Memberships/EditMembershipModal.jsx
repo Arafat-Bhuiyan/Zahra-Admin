@@ -54,18 +54,6 @@ const EditMembershipModal = ({ isOpen, onClose, initialSettings, onSave }) => {
                 Allow students to subscribe to full access
               </span>
             </div>
-            <button
-              onClick={() => handleChange("active", !settings.active)}
-              className={`w-11 h-6 rounded-full transition-colors relative flex items-center ${
-                settings.active ? "bg-greenTeal" : "bg-neutral-300"
-              }`}
-            >
-              <div
-                className={`w-5 h-5 bg-white rounded-full shadow-sm absolute transition-transform ${
-                  settings.active ? "translate-x-5.5 left-[2px]" : "left-[2px]"
-                }`}
-              />
-            </button>
           </div>
 
           {/* Price */}

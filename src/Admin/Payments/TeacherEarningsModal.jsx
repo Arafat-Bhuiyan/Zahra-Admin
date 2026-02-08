@@ -3,7 +3,7 @@ import { X, Users, Clock } from "lucide-react";
 import { MessageSquare, BookOpen } from "lucide-react";
 
 const TeacherEarningsModal = ({ teacher, onClose }) => {
-    console.log(teacher);
+  console.log(teacher);
   if (!teacher) return null;
 
   const statsData = [
@@ -104,11 +104,8 @@ const TeacherEarningsModal = ({ teacher, onClose }) => {
                     <th className="py-3 px-2 text-left text-neutral-950 text-sm font-normal arimo-font leading-5 w-[15%]">
                       Total Sales
                     </th>
-                    <th className="py-3 px-2 text-left text-neutral-950 text-sm font-normal arimo-font leading-5 w-[13%]">
+                    <th className="py-3 px-2 text-left text-neutral-950 text-sm font-normal arimo-font leading-5 w-[15%]">
                       Revenue
-                    </th>
-                    <th className="py-3 px-2 text-left text-neutral-950 text-sm font-normal arimo-font leading-5 w-[10%]">
-                      Status
                     </th>
                   </tr>
                 </thead>
@@ -120,7 +117,6 @@ const TeacherEarningsModal = ({ teacher, onClose }) => {
                       price: "$99",
                       sales: "42 sales",
                       revenue: "$4,158",
-                      active: true,
                     },
                     {
                       name: "Quran: Understanding Daily Supplication",
@@ -128,7 +124,6 @@ const TeacherEarningsModal = ({ teacher, onClose }) => {
                       price: "$99",
                       sales: "38 sales",
                       revenue: "$3,762",
-                      active: true,
                     },
                     {
                       name: "Islamic Psychology Basics",
@@ -136,7 +131,6 @@ const TeacherEarningsModal = ({ teacher, onClose }) => {
                       price: "$75",
                       sales: "28 sales",
                       revenue: "$2,100",
-                      active: true,
                     },
                   ].map((row, idx) => (
                     <tr
@@ -162,15 +156,6 @@ const TeacherEarningsModal = ({ teacher, onClose }) => {
                       </td>
                       <td className="py-3 px-2 text-teal-600 text-sm font-bold arimo-font leading-5">
                         {row.revenue}
-                      </td>
-                      <td className="py-3 px-2">
-                        <div
-                          className={`w-fit h-5 px-2 py-0.5 rounded-lg flex items-center justify-center gap-1 ${row.active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
-                        >
-                          <span className="text-xs font-normal arimo-font leading-4">
-                            {row.active ? "active" : "inactive"}
-                          </span>
-                        </div>
                       </td>
                     </tr>
                   ))}

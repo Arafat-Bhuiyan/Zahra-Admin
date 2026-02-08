@@ -12,7 +12,6 @@ const teachersData = [
     consultationRevenue: "$2,600",
     students: 247,
     sessions: 52,
-    status: "active",
   },
   {
     id: 2,
@@ -23,7 +22,6 @@ const teachersData = [
     consultationRevenue: "$4,550",
     students: 382,
     sessions: 91,
-    status: "active",
   },
   {
     id: 3,
@@ -34,7 +32,6 @@ const teachersData = [
     consultationRevenue: "$2,400",
     students: 198,
     sessions: 48,
-    status: "active",
   },
   {
     id: 4,
@@ -45,7 +42,6 @@ const teachersData = [
     consultationRevenue: "$3,800",
     students: 305,
     sessions: 76,
-    status: "active",
   },
   {
     id: 5,
@@ -56,7 +52,6 @@ const teachersData = [
     consultationRevenue: "$1,950",
     students: 142,
     sessions: 39,
-    status: "inactive",
   },
 ];
 
@@ -116,9 +111,6 @@ const CourseTransactionsTable = () => {
                 <th className="text-left p-4 text-neutral-950 text-sm font-normal arimo-font w-20">
                   Sessions
                 </th>
-                <th className="text-left p-4 text-neutral-950 text-sm font-normal arimo-font w-24">
-                  Status
-                </th>
                 <th className="text-center p-4 text-neutral-950 text-sm font-normal arimo-font w-20">
                   Actions
                 </th>
@@ -164,19 +156,6 @@ const CourseTransactionsTable = () => {
                     <span className="text-neutral-950 text-sm font-normal arimo-font leading-5">
                       {teacher.sessions}
                     </span>
-                  </td>
-                  <td className="p-4">
-                    <div
-                      className={`inline-flex px-2 py-0.5 rounded-lg items-center gap-1 ${
-                        teacher.status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      <span className="text-xs font-normal arimo-font leading-4 capitalize">
-                        {teacher.status}
-                      </span>
-                    </div>
                   </td>
                   <td className="p-4 text-center">
                     <button

@@ -6,25 +6,22 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
 
   // Mock student data - in a real app, this would come from the course object or an API
   const students = [
-    { id: 1, name: "Emma Wilson", email: "emma.w@email.com", status: "Active" },
+    { id: 1, name: "Emma Wilson", email: "emma.w@email.com" },
     {
       id: 2,
       name: "Michael Chen",
       email: "michael.c@email.com",
-      status: "Active",
     },
     {
       id: 3,
       name: "Sarah Parker",
       email: "sarah.p@email.com",
-      status: "Active",
     },
-    { id: 4, name: "David Kim", email: "david.k@email.com", status: "Behind" },
+    { id: 4, name: "David Kim", email: "david.k@email.com" },
     {
       id: 5,
       name: "Lisa Anderson",
       email: "lisa.a@email.com",
-      status: "Active",
     },
   ];
 
@@ -41,7 +38,7 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
               Course Details
             </h2>
             <p className="text-sm text-stone-500 font-['Arimo']">
-             Complete information about the course
+              Complete information about the course
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -61,24 +58,7 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
             <DetailItem label="Course Title" value={course.title} />
             <DetailItem label="Instructor" value={course.instructor} />
             <DetailItem label="Category" value={course.category} />
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium text-stone-500 font-['Arimo']">
-                Status
-              </span>
-              <div className="flex">
-                <span
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold ${
-                    course.status === "Live"
-                      ? "bg-red-50 text-red-600 border border-red-100"
-                      : course.status === "Upcoming"
-                        ? "bg-lime-50 text-lime-600 border border-lime-100"
-                        : "bg-sky-50 text-sky-600 border border-sky-100"
-                  }`}
-                >
-                  {course.status}
-                </span>
-              </div>
-            </div>
+
             <DetailItem label="Price" value={course.price} />
             <DetailItem label="Duration" value={course.duration} />
             <DetailItem
@@ -109,7 +89,6 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
                 <tr>
                   <th className="px-4 py-3">Student Name</th>
                   <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -123,17 +102,6 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
                     </td>
                     <td className="px-4 py-3 text-stone-500">
                       {student.email}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          student.status === "Active"
-                            ? "bg-green-50 text-green-700"
-                            : "bg-yellow-50 text-yellow-700"
-                        }`}
-                      >
-                        {student.status}
-                      </span>
                     </td>
                   </tr>
                 ))}

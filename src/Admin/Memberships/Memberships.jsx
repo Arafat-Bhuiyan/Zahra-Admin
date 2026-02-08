@@ -33,15 +33,6 @@ const MembershipCard = ({ settings, onEdit }) => {
                   <h2 className="text-2xl font-bold arimo-font">
                     Full Membership Subscription
                   </h2>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                      settings.active
-                        ? "bg-emerald-500 text-green-900"
-                        : "bg-neutral-400 text-neutral-800"
-                    }`}
-                  >
-                    {settings.active ? "Active" : "Inactive"}
-                  </span>
                 </div>
                 <p className="text-white/90 text-base arimo-font">
                   {settings.description}
