@@ -4,7 +4,6 @@ import { X, Search, Bell, Mail, AlertCircle, Send } from "lucide-react";
 const CreateAnnouncementModal = ({ isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
     title: "",
-    summary: "",
     course: "", // empty means platform-wide
     message: "",
     onSite: true,
@@ -18,7 +17,7 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAdd }) => {
     e.preventDefault();
 
     // Basic validation
-    if (!formData.title || !formData.summary || !formData.message) {
+    if (!formData.title || !formData.message) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -26,7 +25,6 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAdd }) => {
     const newAnnouncement = {
       id: Date.now(),
       title: formData.title,
-      subtitle: formData.summary,
       description: formData.message,
       publishedDate: new Date().toISOString().split("T")[0],
       author: "Admin User",
@@ -50,7 +48,6 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAdd }) => {
     // Reset form and close
     setFormData({
       title: "",
-      summary: "",
       course: "",
       message: "",
       onSite: true,
@@ -108,22 +105,6 @@ const CreateAnnouncementModal = ({ isOpen, onClose, onAdd }) => {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g., New Course Module Released"
-                className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all placeholder:text-neutral-400"
-                required
-              />
-            </div>
-
-            {/* Summary */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-neutral-700 flex items-center gap-1">
-                Summary <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="summary"
-                value={formData.summary}
-                onChange={handleChange}
-                placeholder="Brief one-line summary"
                 className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all placeholder:text-neutral-400"
                 required
               />

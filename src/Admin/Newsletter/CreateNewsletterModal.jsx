@@ -101,13 +101,6 @@ const CreateNewsletterModal = ({ isOpen, onClose, onSave }) => {
               <label className="text-sm font-bold text-neutral-700">
                 Newsletter Content
               </label>
-              <div className="flex items-center gap-2 text-neutral-500 text-xs mb-1">
-                <Info size={14} />
-                <span>
-                  Rich text editor (In production, this would be a WYSIWYG
-                  editor)
-                </span>
-              </div>
               <textarea
                 name="content"
                 value={formData.content}

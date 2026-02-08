@@ -71,6 +71,7 @@ const BookSales = () => {
         country: "United States",
       },
       payment: "Paid",
+      status: "Delivered",
       date: "Feb 16, 2024",
       time: "2:45 PM",
     },
@@ -95,6 +96,7 @@ const BookSales = () => {
         country: "United States",
       },
       payment: "Paid",
+      status: "Pending",
       date: "Jan 30, 2024",
       time: "3:15 PM",
     },
@@ -119,6 +121,7 @@ const BookSales = () => {
         country: "United States",
       },
       payment: "Paid",
+      status: "Delivered",
       date: "Jan 16, 2024",
       time: "11:20 AM",
     },
@@ -144,6 +147,7 @@ const BookSales = () => {
         country: "United States",
       },
       payment: "Paid",
+      status: "Delivered",
       date: "Jan 15, 2024",
       time: "10:30 AM",
     },
@@ -169,6 +173,7 @@ const BookSales = () => {
         country: "United States",
       },
       payment: "Paid",
+      status: "Pending",
       date: "Dec 25, 2023",
       time: "4:00 PM",
     },
@@ -194,6 +199,7 @@ const BookSales = () => {
         country: "United States",
       },
       payment: "Paid",
+      status: "Delivered",
       date: "Oct 10, 2023",
       time: "9:00 AM",
     },
@@ -219,6 +225,7 @@ const BookSales = () => {
         country: "United States",
       },
       payment: "Paid",
+      status: "Pending",
       date: "Aug 15, 2023",
       time: "1:30 PM",
     },
@@ -234,6 +241,17 @@ const BookSales = () => {
         return "bg-teal-50 text-teal-700 outline-teal-300";
       default:
         return "bg-gray-50 text-gray-700 outline-gray-300";
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "Delivered":
+        return "bg-green-100 text-green-700";
+      case "Pending":
+        return "bg-amber-100 text-amber-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -345,35 +363,38 @@ const BookSales = () => {
           </p>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left min-w-[1200px]">
             <thead className="bg-[#F8FAFC] border-b border-black/10">
               <tr>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950">
                   Order ID
                 </th>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950">
                   Student
                 </th>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950">
                   Book
                 </th>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950">
                   Type
                 </th>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950">
                   Quantity
                 </th>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950">
                   Amount
                 </th>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950">
                   Shipping Address
                 </th>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950 text-center">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950 text-center">
                   Payment
                 </th>
-                <th className="px-6 py-4 text-sm font-medium text-neutral-950">
+                <th className="px-6 py-5 text-base font-bold text-neutral-950 text-center">
+                  Status
+                </th>
+                <th className="px-6 py-5 text-base font-bold text-neutral-950">
                   Date
                 </th>
               </tr>
@@ -385,86 +406,93 @@ const BookSales = () => {
                     key={index}
                     className="hover:bg-gray-50/50 transition-colors border-l-2 border-transparent hover:border-teal-500"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-5">
                       <div className="flex flex-col">
-                        <span className="text-teal-600 font-medium">
+                        <span className="text-teal-600 font-bold text-sm">
                           {order.id}
                         </span>
                         {order.trackId && (
-                          <span className="text-gray-500 text-xs">
+                          <span className="text-gray-500 text-sm">
                             Track: {order.trackId}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-neutral-950 font-medium">
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-neutral-950 font-bold text-base">
                           {order.student.name}
                         </span>
-                        <span className="text-gray-500 text-xs">
+                        <span className="text-gray-500 text-sm">
                           {order.student.email}
                         </span>
-                        <span className="text-gray-500 text-xs">
+                        <span className="text-gray-500 text-sm">
                           {order.student.phone}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-4">
                         <img
                           src={order.book.image}
                           alt={order.book.title}
-                          className="w-10 h-14 rounded object-cover shadow-sm"
+                          className="w-12 h-16 rounded-lg object-cover shadow-sm"
                         />
                         <div className="flex flex-col">
-                          <span className="text-neutral-950 font-medium line-clamp-1 w-40">
+                          <span className="text-neutral-950 font-bold text-base line-clamp-1 w-48">
                             {order.book.title}
                           </span>
-                          <span className="text-gray-500 text-xs">
+                          <span className="text-gray-500 text-sm">
                             {order.book.author}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-5">
                       <span
-                        className={`px-2 py-0.5 rounded-lg outline outline-1 outline-offset-[-1px] text-xs font-medium ${getTypeStyle(order.type)}`}
+                        className={`px-3 py-1 rounded-xl outline outline-1 outline-offset-[-1px] text-sm font-bold ${getTypeStyle(order.type)}`}
                       >
                         {order.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-neutral-950">
+                    <td className="px-6 py-5 text-neutral-950 font-medium text-lg">
                       &times;{order.quantity}
                     </td>
-                    <td className="px-6 py-4 text-green-600 font-bold">
+                    <td className="px-6 py-5 text-green-600 font-black text-xl arimo-font">
                       ${order.amount.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 max-w-[200px]">
-                      <div className="flex flex-col text-xs">
-                        <span className="text-neutral-950 truncate">
+                    <td className="px-6 py-5 max-w-[250px]">
+                      <div className="flex flex-col text-sm gap-0.5">
+                        <span className="text-neutral-950 font-medium truncate">
                           {order.address.line1}
                         </span>
                         <span className="text-gray-600 truncate">
                           {order.address.city}
                         </span>
-                        <span className="text-gray-500">
+                        <span className="text-gray-500 font-medium">
                           {order.address.country}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded-lg font-medium">
+                    <td className="px-6 py-5 text-center">
+                      <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-xl font-bold uppercase tracking-wide">
                         {order.payment}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col items-start">
-                        <div className="flex items-center gap-1 text-neutral-950">
-                          <Calendar className="w-3 h-3 text-gray-400" />
+                    <td className="px-6 py-5 text-center">
+                      <span
+                        className={`text-[11px] px-3 py-1 rounded-xl font-black inter-font uppercase tracking-widest ${getStatusStyle(order.status)}`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col items-start gap-1">
+                        <div className="flex items-center gap-2 text-neutral-950 font-bold">
+                          <Calendar className="w-4 h-4 text-teal-500" />
                           <span>{order.date}</span>
                         </div>
-                        <span className="text-gray-500 text-xs ml-4">
+                        <span className="text-gray-500 text-sm font-medium ml-6">
                           {order.time}
                         </span>
                       </div>
@@ -474,7 +502,7 @@ const BookSales = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="9"
+                    colSpan="10"
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     No orders found matching your search and filter criteria.

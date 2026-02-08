@@ -10,6 +10,7 @@ import {
   Plus,
   Package,
   DollarSign,
+  CircleAlert,
 } from "lucide-react";
 
 const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
@@ -304,12 +305,6 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
 
           {/* Bundle Section */}
           <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-600/20 space-y-6">
-            <div className="text-center">
-              <h4 className="text-lg font-bold text-stone-800 arimo-font">
-                Do you want to create a bundle?
-              </h4>
-            </div>
-
             <div className="flex flex-col gap-6 py-2">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-stone-700 inter-font">
@@ -329,7 +324,7 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-stone-700 inter-font">
-                    Original Bundle Price ($){" "}
+                    Original Rate Hourly ($){" "}
                     <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -372,8 +367,8 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
                   <Package className="w-6 h-6 text-amber-600" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider uppercase">
-                    Final Bundle Value
+                  <span className="text-[10px] font-bold text-amber-800 tracking-wider uppercase">
+                    Final Rate Hourly
                   </span>
                   <span className="text-lg font-black text-stone-800 arimo-font">
                     $
@@ -382,10 +377,17 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
                           formData.originalPrice -
                           (formData.originalPrice * formData.discount) / 100
                         ).toFixed(2)
-                      : "0.00"}
+                      : "0.00"}{" "}
+                    /hr
                   </span>
                 </div>
               </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-amber-600/60">
+              <CircleAlert className="w-4 h-4" />
+              <span className="text-[11px] font-bold inter-font uppercase tracking-wider">
+                This will be shown to the user
+              </span>
             </div>
           </div>
 
