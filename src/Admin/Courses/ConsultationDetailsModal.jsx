@@ -89,12 +89,6 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
                 <p className="text-xs text-stone-500 font-medium inter-font">
                   Clinical Psychologist
                 </p>
-                <div className="flex items-center gap-1 mt-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] text-green-600 font-bold uppercase tracking-wider">
-                    Available
-                  </span>
-                </div>
               </div>
               <div className="ml-auto text-stone-900 font-bold text-lg">
                 $50
