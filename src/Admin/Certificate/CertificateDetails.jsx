@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { ArrowLeft, Search, Filter, Award } from "lucide-react";
+import { ArrowLeft, Search, Filter, Award, RotateCcw } from "lucide-react";
 import toast from "react-hot-toast";
-import GenerateCertificateModal from "./GenerateCertificateModal";
+// import GenerateCertificateModal from "./GenerateCertificateModal";
 
 const CourseDetailsStatsCard = ({ value, label, color }) => {
   const colorStyles = {
@@ -61,14 +61,14 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
     <div
       className={`w-full px-4 py-3 rounded-[10px] border ${isSelected ? "border-blue-300 bg-blue-50/30" : "border-neutral-200 bg-white"} hover:border-blue-300 transition-all flex items-center gap-4`}
     >
-      {/* <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => onSelect(student.id)}
           className="w-5 h-5 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
         />
-      </div> */}
+      </div>
 
       <div className="w-10 h-10 bg-slate-400 rounded-full flex justify-center items-center text-white font-bold text-sm">
         {student.initials}
@@ -92,7 +92,7 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
         </span>
       </div>
 
-      {/* <div
+      <div
         className={`w-24 h-7 rounded-full flex items-center px-1.5 gap-2 outline outline-1 outline-offset-[-1px] ${style.bg} ${style.border}`}
       >
         <div className="w-3 h-3 relative flex items-center justify-center">
@@ -103,13 +103,14 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
         <span className={`text-xs font-bold arimo-font ${style.text}`}>
           {student.status}
         </span>
-      </div> */}
+      </div>
     </div>
   );
 };
 
 const CertificateDetails = ({ selectedCourse, onBack }) => {
   const [selectedStudents, setSelectedStudents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [students, setStudents] = useState([
     {
@@ -302,31 +303,51 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
               <input
                 type="text"
                 placeholder="Search students by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-[10px] border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-slate-300"
               />
             </div>
+
+            {selectedStudents.length > 0 && (
+              <button
+                onClick={handleDeselectAll}
+                className="flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-600 border border-neutral-200 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm active:scale-95"
+              >
+                <RotateCcw size={18} />
+                Deselect
+              </button>
+            )}
           </div>
         </div>
 
         {/* List */}
         <div className="flex flex-col gap-3">
-          {students.map((student) => (
-            <StudentRow
-              key={student.id}
-              student={student}
-              isSelected={selectedStudents.includes(student.id)}
-              onSelect={handleSelectStudent}
-            />
-          ))}
+          {students
+            .filter(
+              (student) =>
+                student.name
+                  .toLowerCase()
+                  .includes(searchQuery.toLowerCase()) ||
+                student.email.toLowerCase().includes(searchQuery.toLowerCase()),
+            )
+            .map((student) => (
+              <StudentRow
+                key={student.id}
+                student={student}
+                isSelected={selectedStudents.includes(student.id)}
+                onSelect={handleSelectStudent}
+              />
+            ))}
         </div>
       </div>
 
-      <GenerateCertificateModal
+      {/* <GenerateCertificateModal
         isOpen={isGenerateModalOpen}
         onClose={() => setIsGenerateModalOpen(false)}
         selectedStudents={selectedStudentObjects}
         onGenerate={handleGenerateConfirm}
-      />
+      /> */}
     </div>
   );
 };
