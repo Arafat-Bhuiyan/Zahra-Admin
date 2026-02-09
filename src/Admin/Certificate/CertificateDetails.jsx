@@ -1,6 +1,16 @@
 import React, { useState } from "react";
-import { ArrowLeft, Search, Filter, Award, RotateCcw } from "lucide-react";
+import {
+  ArrowLeft,
+  Search,
+  Filter,
+  Award,
+  RotateCcw,
+  Eye,
+  X,
+} from "lucide-react";
 import toast from "react-hot-toast";
+import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
+import CertificateTemplate1 from "./Templates/CertificateTemplate1";
 // import GenerateCertificateModal from "./GenerateCertificateModal";
 
 const CourseDetailsStatsCard = ({ value, label, color }) => {
@@ -111,6 +121,23 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
 const CertificateDetails = ({ selectedCourse, onBack }) => {
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [templates] = useState([
+    {
+      id: "template1",
+      name: "Sakeena Institute Default",
+      component: CertificateTemplate1,
+    },
+    {
+      id: "template2",
+      name: "Professional Landscape",
+      component: CertificateTemplate1,
+    }, // Placeholder for now
+  ]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("template1");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
 
   const [students, setStudents] = useState([
     {
@@ -241,10 +268,82 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
             Instructor: {selectedCourse.instructor}
           </p>
         </div>
+        <div className="flex flex-col gap-1 min-w-[280px]">
+          <label className="text-neutral-500 text-xs font-bold uppercase arimo-font">
+            Certificate Template
+          </label>
+          <div className="flex gap-2">
+            <select
+              value={selectedTemplateId}
+              onChange={(e) => setSelectedTemplateId(e.target.value)}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all cursor-pointer"
+            >
+              {templates.map((tpl) => (
+                <option key={tpl.id} value={tpl.id}>
+                  {tpl.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => setIsPreviewOpen(true)}
+              className="w-11 h-11 flex items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-600 hover:bg-slate-50 hover:text-greenTeal transition-all shadow-sm group active:scale-95"
+              title="Preview Template"
+            >
+              <Eye size={20} />
+            </button>
+          </div>
+        </div>
       </div>
 
+      {/* Template Preview Modal */}
+      {isPreviewOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-white sticky top-0 z-10">
+              <div className="flex flex-col">
+                <h3 className="text-neutral-800 text-lg font-bold arimo-font">
+                  Template Preview: {selectedTemplate.name}
+                </h3>
+                <p className="text-neutral-500 text-xs font-normal arimo-font">
+                  Previewing with placeholder data
+                </p>
+              </div>
+              <button
+                onClick={() => setIsPreviewOpen(false)}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-neutral-100 text-neutral-500 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex-1 bg-neutral-100 p-4">
+              <PDFViewer
+                width="100%"
+                height="100%"
+                className="rounded-lg shadow-lg border-none"
+              >
+                <selectedTemplate.component
+                  studentName="Sample Student Name"
+                  courseTitle={selectedCourse.title}
+                  instructorName={selectedCourse.instructor}
+                  directorName="Elzahraa Hossain"
+                  date={new Date().toLocaleDateString()}
+                />
+              </PDFViewer>
+            </div>
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end bg-slate-50">
+              <button
+                onClick={() => setIsPreviewOpen(false)}
+                className="bg-greenTeal text-white px-8 py-2.5 rounded-xl font-bold hover:bg-greenTeal/80 transition-all active:scale-95"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Detailed Stats */}
-      <div className="flex gap-4 w-full">
+      {/* <div className="flex gap-4 w-full">
         <CourseDetailsStatsCard
           value={selectedCourse.totalStudents}
           label="Total Enrolled"
@@ -265,7 +364,7 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
           label="Eligible for Certificate"
           color="yellow"
         />
-      </div>
+      </div> */}
 
       {/* Action Bar (Moved) */}
       {selectedStudents.length > 0 && (
@@ -276,13 +375,41 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
               {selectedStudents.length}
             </span>
           </div>
-          <button
-            onClick={handleGenerateClick}
-            className="bg-slate-400 hover:bg-slate-500 text-white px-6 py-2.5 rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2"
-          >
-            <Award size={18} />
-            Generate Certificates
-          </button>
+          {selectedStudentObjects.length > 0 ? (
+            <PDFDownloadLink
+              document={
+                <selectedTemplate.component
+                  studentName={selectedStudentObjects[0]?.name}
+                  courseTitle={selectedCourse.title}
+                  instructorName={selectedCourse.instructor}
+                  directorName="Dr. Abdul Rahman"
+                  date={new Date().toLocaleDateString()}
+                  // In a real app, these would be absolute URLs or imported assets
+                  // bgImage="/src/assets/certificates/certificate_template1.jpg"
+                  // logoImage="/src/assets/logo.png"
+                />
+              }
+              fileName={`Certificate_${selectedStudentObjects[0]?.name.replace(" ", "_")}.pdf`}
+            >
+              {({ blob, url, loading, error }) => (
+                <button
+                  disabled={loading}
+                  className={`${loading ? "bg-slate-300" : "bg-greenTeal hover:bg-greenTeal/80"} text-white px-6 py-2.5 rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2`}
+                >
+                  <Award size={18} />
+                  {loading ? "Preparing PDF..." : "Generate Certificate"}
+                </button>
+              )}
+            </PDFDownloadLink>
+          ) : (
+            <button
+              onClick={handleGenerateClick}
+              className="bg-slate-400 hover:bg-slate-500 text-white px-6 py-2.5 rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2"
+            >
+              <Award size={18} />
+              Generate Certificates
+            </button>
+          )}
         </div>
       )}
 
