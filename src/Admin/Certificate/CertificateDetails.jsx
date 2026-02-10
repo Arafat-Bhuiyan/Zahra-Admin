@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import ReactDOM from "react-dom/client";
 import {
   ArrowLeft,
   Search,
@@ -9,7 +10,9 @@ import {
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import CertificateTemplate2HTML from "./Templates/CertificateTemplate2HTML";
 import CertificateTemplate1 from "./Templates/CertificateTemplate1";
 // import GenerateCertificateModal from "./GenerateCertificateModal";
 
@@ -121,20 +124,21 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
 const CertificateDetails = ({ selectedCourse, onBack }) => {
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const certificateRef = useRef(null);
 
   const [templates] = useState([
     {
       id: "template1",
-      name: "Sakeena Institute Default",
+      name: "Certificate Template 1",
       component: CertificateTemplate1,
     },
     {
       id: "template2",
       name: "Professional Landscape",
-      component: CertificateTemplate1,
-    }, // Placeholder for now
+      component: CertificateTemplate2HTML,
+    },
   ]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState("template1");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("template2");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
@@ -219,30 +223,163 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
       toast.error("Please select at least one student.");
       return;
     }
-    setIsGenerateModalOpen(true);
+    generateCertificates();
   };
 
-  const handleGenerateConfirm = (data) => {
-    // Here you would typically make an API call with the data
-    console.log("Generating certificates:", {
-      students: selectedStudents,
-      ...data,
-    });
+  const generateCertificates = async () => {
+    try {
+      for (const student of selectedStudentObjects) {
+        // Create a temporary container
+        const tempContainer = document.createElement("div");
+        tempContainer.id = `cert-${student.id}`;
+        tempContainer.style.position = "fixed";
+        tempContainer.style.left = "-9999px";
+        tempContainer.style.top = "-9999px";
+        tempContainer.style.width = "297mm";
+        tempContainer.style.height = "210mm";
+        document.body.appendChild(tempContainer);
 
-    // Update status to Issued for selected students
-    setStudents((prevStudents) =>
-      prevStudents.map((student) =>
-        selectedStudents.includes(student.id)
-          ? { ...student, status: "Issued" }
-          : student,
-      ),
-    );
+        // Render the template
+        const SelectedTemplate = selectedTemplate.component;
+        const certificateElement = (
+          <SelectedTemplate
+            studentName={student.name}
+            courseTitle={selectedCourse.title}
+            instructorName={selectedCourse.instructor}
+            directorName="Dr. Abdul Rahman"
+            date={new Date().toLocaleDateString()}
+          />
+        );
 
-    toast.success(
-      `Certificates sent to ${selectedStudents.length} student emails successfully!`,
-    );
-    setSelectedStudents([]);
-    setIsGenerateModalOpen(false);
+        // Use ReactDOM to render temporarily
+        const root = ReactDOM.createRoot(tempContainer);
+        root.render(certificateElement);
+
+        // Wait for render
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Capture canvas
+        const canvas = await html2canvas(tempContainer, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+          allowTaint: true,
+        });
+
+        // Create PDF
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "mm",
+          format: "a4",
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+
+        // Save PDF
+        const fileName = `${student.name.replace(/\s+/g, "_")}_Certificate.pdf`;
+        pdf.save(fileName);
+
+        // Clean up
+        root.unmount();
+        document.body.removeChild(tempContainer);
+      }
+
+      // Update status to Issued for selected students
+      setStudents((prevStudents) =>
+        prevStudents.map((student) =>
+          selectedStudents.includes(student.id)
+            ? { ...student, status: "Issued" }
+            : student,
+        ),
+      );
+
+      toast.success(
+        `Certificates generated for ${selectedStudents.length} student(s)!`,
+      );
+      setSelectedStudents([]);
+    } catch (error) {
+      console.error("Error generating certificates:", error);
+      toast.error("Error generating certificates. Please try again.");
+    }
+  };
+
+  const generateSingleCertificate = async (student) => {
+    try {
+      // Create a temporary container
+      const tempContainer = document.createElement("div");
+      tempContainer.id = `cert-preview-${student.id}`;
+      tempContainer.style.position = "fixed";
+      tempContainer.style.left = "-9999px";
+      tempContainer.style.top = "-9999px";
+      tempContainer.style.width = "297mm";
+      tempContainer.style.height = "210mm";
+      document.body.appendChild(tempContainer);
+
+      // Render the template
+      const SelectedTemplate = selectedTemplate.component;
+      const certificateElement = (
+        <SelectedTemplate
+          studentName={student.name}
+          courseTitle={selectedCourse.title}
+          instructorName={selectedCourse.instructor}
+          directorName="Dr. Abdul Rahman"
+          date={new Date().toLocaleDateString()}
+        />
+      );
+
+      // Use ReactDOM to render temporarily
+      const root = ReactDOM.createRoot(tempContainer);
+      root.render(certificateElement);
+
+      // Wait for render
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Capture canvas
+      const canvas = await html2canvas(tempContainer, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        allowTaint: true,
+      });
+
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+
+      // Save PDF
+      const fileName = `${student.name.replace(/\s+/g, "_")}_Certificate.pdf`;
+      pdf.save(fileName);
+
+      // Clean up
+      root.unmount();
+      document.body.removeChild(tempContainer);
+
+      toast.success(`Certificate generated for ${student.name}!`);
+    } catch (error) {
+      console.error("Error generating certificate:", error);
+      toast.error("Error generating certificate. Please try again.");
+    }
   };
 
   return (
@@ -315,22 +452,79 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
                 <X size={24} />
               </button>
             </div>
-            <div className="flex-1 bg-neutral-100 p-4">
-              <PDFViewer
-                width="100%"
-                height="100%"
-                className="rounded-lg shadow-lg border-none"
-              >
-                <selectedTemplate.component
-                  studentName="Sample Student Name"
-                  courseTitle={selectedCourse.title}
-                  instructorName={selectedCourse.instructor}
-                  directorName="Elzahraa Hossain"
-                  date={new Date().toLocaleDateString()}
-                />
-              </PDFViewer>
+            <div className="flex-1 bg-neutral-100 p-4 overflow-auto">
+              <div className="flex justify-center">
+                <div
+                  className="bg-white rounded-lg shadow-lg border"
+                  style={{
+                    width: "297mm",
+                    height: "210mm",
+                    transform: "scale(0.5)",
+                    transformOrigin: "top center",
+                  }}
+                >
+                  <selectedTemplate.component
+                    studentName="Sample Student Name"
+                    courseTitle={selectedCourse.title}
+                    instructorName={selectedCourse.instructor}
+                    directorName="Elzahraa Hossain"
+                    date={new Date().toLocaleDateString()}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end bg-slate-50">
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-between bg-slate-50">
+              <button
+                onClick={async () => {
+                  const previewDiv = document.querySelector("[style*='297mm']");
+                  if (previewDiv) {
+                    try {
+                      const canvas = await html2canvas(previewDiv, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: "#ffffff",
+                        allowTaint: true,
+                      });
+
+                      const pdf = new jsPDF({
+                        orientation: "landscape",
+                        unit: "mm",
+                        format: "a4",
+                      });
+
+                      const imgData = canvas.toDataURL("image/png");
+                      const pageWidth = pdf.internal.pageSize.getWidth();
+                      const imgHeight =
+                        (canvas.height * pageWidth) / canvas.width;
+
+                      pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
+                      pdf.save("Certificate_Preview.pdf");
+
+                      toast.success("Certificate downloaded successfully!");
+                    } catch (error) {
+                      console.error("Error downloading certificate:", error);
+                      toast.error("Failed to download certificate");
+                    }
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                Download
+              </button>
               <button
                 onClick={() => setIsPreviewOpen(false)}
                 className="bg-greenTeal text-white px-8 py-2.5 rounded-xl font-bold hover:bg-greenTeal/80 transition-all active:scale-95"
@@ -375,41 +569,13 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
               {selectedStudents.length}
             </span>
           </div>
-          {selectedStudentObjects.length > 0 ? (
-            <PDFDownloadLink
-              document={
-                <selectedTemplate.component
-                  studentName={selectedStudentObjects[0]?.name}
-                  courseTitle={selectedCourse.title}
-                  instructorName={selectedCourse.instructor}
-                  directorName="Dr. Abdul Rahman"
-                  date={new Date().toLocaleDateString()}
-                  // In a real app, these would be absolute URLs or imported assets
-                  // bgImage="/src/assets/certificates/certificate_template1.jpg"
-                  // logoImage="/src/assets/logo.png"
-                />
-              }
-              fileName={`Certificate_${selectedStudentObjects[0]?.name.replace(" ", "_")}.pdf`}
-            >
-              {({ blob, url, loading, error }) => (
-                <button
-                  disabled={loading}
-                  className={`${loading ? "bg-slate-300" : "bg-greenTeal hover:bg-greenTeal/80"} text-white px-6 py-2.5 rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2`}
-                >
-                  <Award size={18} />
-                  {loading ? "Preparing PDF..." : "Generate Certificate"}
-                </button>
-              )}
-            </PDFDownloadLink>
-          ) : (
-            <button
-              onClick={handleGenerateClick}
-              className="bg-slate-400 hover:bg-slate-500 text-white px-6 py-2.5 rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2"
-            >
-              <Award size={18} />
-              Generate Certificates
-            </button>
-          )}
+          <button
+            onClick={handleGenerateClick}
+            className="bg-greenTeal hover:bg-greenTeal/80 text-white px-6 py-2.5 rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2"
+          >
+            <Award size={18} />
+            Generate Certificates
+          </button>
         </div>
       )}
 
