@@ -12,8 +12,12 @@ import {
 import toast from "react-hot-toast";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import CertificateTemplate1HTML from "./Templates/CertificateTemplate1HTML";
 import CertificateTemplate2HTML from "./Templates/CertificateTemplate2HTML";
-import CertificateTemplate1 from "./Templates/CertificateTemplate1";
+import CertificateTemplate3HTML from "./Templates/CertificateTemplate3HTML";
+import CertificateTemplate4HTML from "./Templates/CertificateTemplate4HTML";
+import CertificateTemplate5HTML from "./Templates/CertificateTemplate5HTML";
+import CertificateTemplate6HTML from "./Templates/CertificateTemplate6HTML";
 // import GenerateCertificateModal from "./GenerateCertificateModal";
 
 const CourseDetailsStatsCard = ({ value, label, color }) => {
@@ -130,15 +134,35 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
     {
       id: "template1",
       name: "Certificate Template 1",
-      component: CertificateTemplate1,
+      component: CertificateTemplate1HTML,
     },
     {
       id: "template2",
-      name: "Professional Landscape",
+      name: "Certificate Template 2",
       component: CertificateTemplate2HTML,
     },
+    {
+      id: "template3",
+      name: "Certificate Template 3",
+      component: CertificateTemplate3HTML,
+    },
+    {
+      id: "template4",
+      name: "Certificate Template 4",
+      component: CertificateTemplate4HTML,
+    },
+    {
+      id: "template5",
+      name: "Certificate Template 5",
+      component: CertificateTemplate5HTML,
+    },
+    {
+      id: "template6",
+      name: "Certificate Template 6",
+      component: CertificateTemplate6HTML,
+    },
   ]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState("template2");
+  const [selectedTemplateId, setSelectedTemplateId] = useState("template1");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
