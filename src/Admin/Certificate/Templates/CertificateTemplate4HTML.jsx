@@ -61,61 +61,67 @@ const CertificateTemplate4HTML = ({
           left: 0,
           right: 0,
           bottom: 0,
-          padding: "60px",
+          padding: "90px 120px", // top-bottom | left-right
+          justifyContent: "flex-start",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
           textAlign: "center",
           zIndex: 2,
         }}
       >
         <div
-          style={{ fontSize: "18px", marginBottom: "40px", color: "#1F4788" }}
+          style={{
+            fontSize: "16px",
+            marginTop: "10px",
+            marginBottom: "30px",
+            color: "#1F3D7A",
+            letterSpacing: "1px",
+          }}
         >
           CERTIFICATE OF COMPLETION
         </div>
 
         <h1
           style={{
-            fontSize: "42px",
-            fontWeight: "bold",
-            marginBottom: "20px",
-            color: "#1F4788",
+            fontSize: "44px",
+            fontWeight: "700",
+            marginBottom: "35px",
+            color: "#1F3D7A",
             textTransform: "uppercase",
           }}
         >
-          PROFESSIONAL INSTITUTE
+          SAKEENA INSTITUTE
         </h1>
 
         <div style={{ marginTop: "20px", marginBottom: "10px" }}>
-          <p style={{ fontSize: "18px", color: "#1F4788" }}>
+          <p style={{ fontSize: "18px", color: "#1F3D7A" }}>
             This certifies that
           </p>
         </div>
 
         <h2
           style={{
-            fontSize: "48px",
-            fontWeight: "bold",
-            marginBottom: "10px",
-            color: "#4472C4",
-            borderBottom: "3px solid #4472C4",
-            paddingBottom: "10px",
-            minWidth: "300px",
+            fontSize: "46px",
+            fontWeight: "700",
+            margin: "20px auto",
+            color: "#2F5597",
+            borderBottom: "2px solid #C9A24D",
+            paddingBottom: "8px",
+            width: "520px",
           }}
         >
-          {studentName || "Student Name"}
+          {studentName || "Sample Student Name"}
         </h2>
 
         <p
           style={{
             fontSize: "16px",
-            lineHeight: "1.5",
-            marginTop: "30px",
-            marginBottom: "30px",
-            color: "#444444",
-            maxWidth: "80%",
+            lineHeight: "1.6",
+            marginTop: "25px",
+            marginBottom: "40px",
+            color: "#333333",
+            maxWidth: "700px",
           }}
         >
           has completed the program{" "}
@@ -130,7 +136,7 @@ const CertificateTemplate4HTML = ({
             flexDirection: "row",
             justifyContent: "space-around",
             alignItems: "flex-end",
-            marginTop: "50px",
+            marginTop: "-20px",
             gap: "40px",
           }}
         >
@@ -162,14 +168,14 @@ const CertificateTemplate4HTML = ({
               }}
             />
             <div
-              style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}
+              style={{ fontSize: "14px", fontWeight: "bold", color: "#333333" }}
             >
               {instructorName || "Instructor Name"}
             </div>
             <div
               style={{
                 fontSize: "10px",
-                color: "#777",
+                color: "#666666",
                 textTransform: "uppercase",
               }}
             >
@@ -182,9 +188,9 @@ const CertificateTemplate4HTML = ({
               src={award}
               alt="award"
               style={{
-                width: "80px",
-                height: "80px",
-                objectFit: "contain",
+                width: "70px",
+                height: "70px",
+                marginBottom: "10px",
               }}
             />
           </div>
@@ -217,14 +223,14 @@ const CertificateTemplate4HTML = ({
               }}
             />
             <div
-              style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}
+              style={{ fontSize: "14px", fontWeight: "bold", color: "#333333" }}
             >
               {directorName || "Director Name"}
             </div>
             <div
               style={{
                 fontSize: "10px",
-                color: "#777",
+                color: "#666666",
                 textTransform: "uppercase",
               }}
             >
@@ -237,7 +243,7 @@ const CertificateTemplate4HTML = ({
           style={{
             paddingTop: "10px",
             fontSize: "12px",
-            color: "#888",
+            color: "#666666",
             marginTop: "30px",
           }}
         >
