@@ -1,5 +1,5 @@
 import React from "react";
-import bgImage from "../../../assets/certificates/certificate_template1.jpg";
+import bgImage from "../../../assets/certificates/certificate_template6.png";
 import logoImage from "../../../assets/img/logo.png";
 import award from "../../../assets/certificates/award.png";
 import director_signature from "../../../assets/certificates/director_signature.png";
@@ -21,7 +21,7 @@ const CertificateTemplate6HTML = ({
         position: "relative",
         backgroundColor: "#FFFFFF",
         overflow: "hidden",
-        fontFamily: "Arial, sans-serif",
+        fontFamily: "'Times New Roman', serif",
       }}
     >
       <img
@@ -48,7 +48,7 @@ const CertificateTemplate6HTML = ({
           width: "360px",
           height: "360px",
           transform: "translate(-50%, -50%)",
-          opacity: 0.15,
+          opacity: 0.08,
           objectFit: "contain",
           zIndex: 1,
         }}
@@ -61,7 +61,7 @@ const CertificateTemplate6HTML = ({
           left: 0,
           right: 0,
           bottom: 0,
-          padding: "60px",
+          padding: "70px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -70,37 +70,56 @@ const CertificateTemplate6HTML = ({
           zIndex: 2,
         }}
       >
-        <div
-          style={{ fontSize: "18px", marginBottom: "40px", color: "#2E7D32" }}
+        {/* <div
+          style={{
+            fontSize: "16px",
+            marginBottom: "35px",
+            color: "#1A3A5A",
+            fontWeight: "bold",
+            letterSpacing: "4px",
+            textTransform: "uppercase",
+            marginTop: "10px",
+          }}
         >
-          CERTIFICATE OF ACCOMPLISHMENT
-        </div>
+          Certificate of Accomplishment
+        </div> */}
 
         <h1
           style={{
-            fontSize: "42px",
+            fontSize: "48px",
             fontWeight: "bold",
-            marginBottom: "20px",
-            color: "#1B5E20",
+            marginTop: "60px",
+            color: "#1A3A5A",
             textTransform: "uppercase",
+            letterSpacing: "2px",
           }}
         >
-          LEARNING ACADEMY
+          SAKEENA INSTITUTE
         </h1>
 
-        <div style={{ marginTop: "20px", marginBottom: "10px" }}>
-          <p style={{ fontSize: "18px", color: "#2E7D32" }}>Recognizes</p>
+        <div style={{ marginTop: "15px", marginBottom: "10px" }}>
+          <p
+            style={{
+              fontSize: "20px",
+              color: "#5A6A82",
+              fontStyle: "italic",
+              fontFamily: "Arial, sans-serif",
+            }}
+          >
+            This certificate formally recognizes the successful completion of
+            the course by
+          </p>
         </div>
 
         <h2
           style={{
-            fontSize: "48px",
+            fontSize: "52px",
             fontWeight: "bold",
             marginBottom: "10px",
-            color: "#2E7D32",
-            borderBottom: "2px solid #2E7D32",
+            color: "#1A3A5A",
+            borderBottom: "2px solid #C5A021",
             paddingBottom: "10px",
-            minWidth: "300px",
+            minWidth: "450px",
           }}
         >
           {studentName || "Student Name"}
@@ -108,17 +127,20 @@ const CertificateTemplate6HTML = ({
 
         <p
           style={{
-            fontSize: "16px",
-            lineHeight: "1.5",
+            fontSize: "18px",
+            lineHeight: "1.6",
             marginTop: "30px",
             marginBottom: "30px",
-            color: "#444444",
-            maxWidth: "80%",
+            color: "#4A5568",
+            maxWidth: "75%",
+            fontFamily: "Arial, sans-serif",
           }}
         >
-          on the successful completion of{" "}
-          <strong>{courseTitle || "Course Title"}</strong> with remarkable
-          achievements and exemplary performance.
+          has successfully completed the requirements for the course{" "}
+          <strong style={{ color: "#1A3A5A", fontSize: "20px" }}>
+            {courseTitle || "Course Title"}
+          </strong>{" "}
+          with excellence and is hereby awarded this certificate.
         </p>
 
         <div
@@ -128,8 +150,8 @@ const CertificateTemplate6HTML = ({
             flexDirection: "row",
             justifyContent: "space-around",
             alignItems: "flex-end",
-            marginTop: "50px",
-            gap: "40px",
+            marginTop: "30px",
+            gap: "20px",
           }}
         >
           <div
@@ -137,16 +159,16 @@ const CertificateTemplate6HTML = ({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              width: "200px",
+              width: "220px",
             }}
           >
             <img
               src={instructor_signature}
               alt="instructor signature"
               style={{
-                width: "320px",
-                height: "80px",
-                marginBottom: "-20px",
+                width: "280px",
+                height: "70px",
+                marginBottom: "-15px",
                 objectFit: "contain",
               }}
             />
@@ -154,37 +176,26 @@ const CertificateTemplate6HTML = ({
               style={{
                 width: "100%",
                 height: "1px",
-                backgroundColor: "#999",
+                backgroundColor: "#1A3A5A",
                 marginTop: "5px",
                 marginBottom: "10px",
               }}
             />
             <div
-              style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}
+              style={{ fontSize: "16px", fontWeight: "bold", color: "#1A3A5A" }}
             >
               {instructorName || "Instructor Name"}
             </div>
             <div
               style={{
-                fontSize: "10px",
-                color: "#777",
+                fontSize: "11px",
+                color: "#5A6A82",
                 textTransform: "uppercase",
+                letterSpacing: "1px",
               }}
             >
-              Instructor
+              Lead Instructor
             </div>
-          </div>
-
-          <div>
-            <img
-              src={award}
-              alt="award"
-              style={{
-                width: "80px",
-                height: "80px",
-                objectFit: "contain",
-              }}
-            />
           </div>
 
           <div
@@ -192,16 +203,16 @@ const CertificateTemplate6HTML = ({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              width: "200px",
+              width: "220px",
             }}
           >
             <img
               src={director_signature}
               alt="director signature"
               style={{
-                width: "320px",
-                height: "80px",
-                marginBottom: "-20px",
+                width: "280px",
+                height: "70px",
+                marginBottom: "-15px",
                 objectFit: "contain",
               }}
             />
@@ -209,37 +220,40 @@ const CertificateTemplate6HTML = ({
               style={{
                 width: "100%",
                 height: "1px",
-                backgroundColor: "#999",
+                backgroundColor: "#1A3A5A",
                 marginTop: "5px",
                 marginBottom: "10px",
               }}
             />
             <div
-              style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}
+              style={{ fontSize: "16px", fontWeight: "bold", color: "#1A3A5A" }}
             >
               {directorName || "Director Name"}
             </div>
             <div
               style={{
-                fontSize: "10px",
-                color: "#777",
+                fontSize: "11px",
+                color: "#5A6A82",
                 textTransform: "uppercase",
+                letterSpacing: "1px",
               }}
             >
-              Director
+              Executive Director
             </div>
           </div>
         </div>
 
         <div
           style={{
-            paddingTop: "10px",
-            fontSize: "12px",
-            color: "#888",
+            paddingTop: "20px",
+            fontSize: "14px",
+            color: "#718096",
             marginTop: "30px",
+            borderTop: "1px solid rgba(26, 58, 90, 0.1)",
+            width: "40%",
           }}
         >
-          Date Issued: {date || new Date().toLocaleDateString()}
+          Date of Issue: {date || new Date().toLocaleDateString()}
         </div>
       </div>
     </div>
