@@ -1,7 +1,7 @@
 import React from "react";
-import bgImage from "../../../assets/certificates/certificate_template1.jpg";
+import bgImage from "../../../assets/certificates/certificate_template5.png";
 import logoImage from "../../../assets/img/logo.png";
-import award from "../../../assets/certificates/award.png";
+import award from "../../../assets/certificates/tealAward.png";
 import director_signature from "../../../assets/certificates/director_signature.png";
 import instructor_signature from "../../../assets/certificates/instructor_signature.png";
 
@@ -48,7 +48,7 @@ const CertificateTemplate5HTML = ({
           width: "360px",
           height: "360px",
           transform: "translate(-50%, -50%)",
-          opacity: 0.15,
+          opacity: 0.1,
           objectFit: "contain",
           zIndex: 1,
         }}
@@ -71,7 +71,13 @@ const CertificateTemplate5HTML = ({
         }}
       >
         <div
-          style={{ fontSize: "18px", marginBottom: "40px", color: "#D4A017" }}
+          style={{
+            fontSize: "18px",
+            marginBottom: "40px",
+            color: "#C5A021",
+            fontWeight: "bold",
+            letterSpacing: "2px",
+          }}
         >
           CERTIFICATE OF RECOGNITION
         </div>
@@ -80,16 +86,26 @@ const CertificateTemplate5HTML = ({
           style={{
             fontSize: "42px",
             fontWeight: "bold",
-            marginBottom: "20px",
-            color: "#8B4513",
+            marginBottom: "10px",
+            color: "#114246",
             textTransform: "uppercase",
+            letterSpacing: "1px",
           }}
         >
-          KNOWLEDGE HUB
+          SAKEENA INSTITUTE
         </h1>
 
-        <div style={{ marginTop: "20px", marginBottom: "10px" }}>
-          <p style={{ fontSize: "18px", color: "#8B4513" }}>Awarded to</p>
+        <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+          <p
+            style={{
+              fontSize: "18px",
+              color: "#3A6E73",
+              fontWeight: "500",
+              fontStyle: "italic",
+            }}
+          >
+            Awarded to
+          </p>
         </div>
 
         <h2
@@ -97,10 +113,10 @@ const CertificateTemplate5HTML = ({
             fontSize: "48px",
             fontWeight: "bold",
             marginBottom: "10px",
-            color: "#D4A017",
-            borderBottom: "2px solid #D4A017",
+            color: "#C5A021",
+            borderBottom: "2px solid #C5A021",
             paddingBottom: "10px",
-            minWidth: "300px",
+            minWidth: "400px",
           }}
         >
           {studentName || "Student Name"}
@@ -109,16 +125,18 @@ const CertificateTemplate5HTML = ({
         <p
           style={{
             fontSize: "16px",
-            lineHeight: "1.5",
+            lineHeight: "1.6",
             marginTop: "30px",
             marginBottom: "30px",
-            color: "#444444",
+            color: "#2C3E50",
             maxWidth: "80%",
           }}
         >
           for successfully completing the course{" "}
-          <strong>{courseTitle || "Course Title"}</strong> and achieving
-          excellence in all assessments.
+          <strong style={{ color: "#114246" }}>
+            {courseTitle || "Course Title"}
+          </strong>{" "}
+          and achieving excellence in all assessments.
         </p>
 
         <div
@@ -128,7 +146,7 @@ const CertificateTemplate5HTML = ({
             flexDirection: "row",
             justifyContent: "space-around",
             alignItems: "flex-end",
-            marginTop: "50px",
+            marginTop: "40px",
             gap: "40px",
           }}
         >
@@ -137,7 +155,7 @@ const CertificateTemplate5HTML = ({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              width: "200px",
+              width: "250px",
             }}
           >
             <img
@@ -154,34 +172,36 @@ const CertificateTemplate5HTML = ({
               style={{
                 width: "100%",
                 height: "1px",
-                backgroundColor: "#999",
+                backgroundColor: "#3A6E73",
                 marginTop: "5px",
                 marginBottom: "10px",
               }}
             />
             <div
-              style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}
+              style={{ fontSize: "16px", fontWeight: "bold", color: "#114246" }}
             >
               {instructorName || "Instructor Name"}
             </div>
             <div
               style={{
-                fontSize: "10px",
-                color: "#777",
+                fontSize: "11px",
+                color: "#3A6E73",
                 textTransform: "uppercase",
+                letterSpacing: "1px",
+                fontWeight: "600",
               }}
             >
               Instructor
             </div>
           </div>
 
-          <div>
+          <div style={{ marginBottom: "20px" }}>
             <img
               src={award}
               alt="award"
               style={{
-                width: "80px",
-                height: "80px",
+                width: "90px",
+                height: "90px",
                 objectFit: "contain",
               }}
             />
@@ -192,7 +212,7 @@ const CertificateTemplate5HTML = ({
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              width: "200px",
+              width: "250px",
             }}
           >
             <img
@@ -209,21 +229,23 @@ const CertificateTemplate5HTML = ({
               style={{
                 width: "100%",
                 height: "1px",
-                backgroundColor: "#999",
+                backgroundColor: "#3A6E73",
                 marginTop: "5px",
                 marginBottom: "10px",
               }}
             />
             <div
-              style={{ fontSize: "14px", fontWeight: "bold", color: "#333" }}
+              style={{ fontSize: "16px", fontWeight: "bold", color: "#114246" }}
             >
               {directorName || "Director Name"}
             </div>
             <div
               style={{
-                fontSize: "10px",
-                color: "#777",
+                fontSize: "11px",
+                color: "#3A6E73",
                 textTransform: "uppercase",
+                letterSpacing: "1px",
+                fontWeight: "600",
               }}
             >
               Director
@@ -233,10 +255,12 @@ const CertificateTemplate5HTML = ({
 
         <div
           style={{
-            paddingTop: "10px",
-            fontSize: "12px",
-            color: "#888",
+            paddingTop: "20px",
+            fontSize: "13px",
+            color: "#555",
             marginTop: "30px",
+            borderTop: "1px solid #eee",
+            width: "50%",
           }}
         >
           Date Issued: {date || new Date().toLocaleDateString()}
