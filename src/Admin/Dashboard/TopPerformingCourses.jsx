@@ -5,35 +5,30 @@ const TopPerformingCourses = () => {
     {
       title: "Advanced Mathematics",
       instructor: "Dr. John Smith",
-      rating: 4.8,
       students: 245,
       revenue: "$72,555",
     },
     {
       title: "Physics 101",
       instructor: "Prof. Emily Brown",
-      rating: 4.9,
       students: 320,
       revenue: "$111,680",
     },
     {
       title: "Chemistry Fundamentals",
       instructor: "Prof. Emily Brown",
-      rating: 4.8,
       students: 210,
       revenue: "$69,090",
     },
     {
       title: "World History",
       instructor: "Dr. Anna Martinez",
-      rating: 4.7,
       students: 180,
       revenue: "$44,820",
     },
     {
       title: "Digital Arts",
       instructor: "Prof. William Taylor",
-      rating: 4.5,
       students: 150,
       revenue: "$59,850",
     },
@@ -46,7 +41,7 @@ const TopPerformingCourses = () => {
           Top Performing Courses
         </h2>
         <p className="text-gray-500 text-base font-normal arimo-font leading-6">
-          Best-rated courses with highest revenue
+          Top courses with highest revenue
         </p>
       </div>
 
@@ -60,9 +55,7 @@ const TopPerformingCourses = () => {
               <th className="py-2.5 px-2 font-normal text-neutral-950 w-64">
                 Instructor
               </th>
-              <th className="py-2.5 px-2 font-normal text-neutral-950 w-28 text-center">
-                Rating
-              </th>
+
               <th className="py-2.5 px-2 font-normal text-neutral-950 w-36 text-center">
                 Students
               </th>
@@ -78,11 +71,7 @@ const TopPerformingCourses = () => {
                 <td className="py-3 px-2 text-neutral-950">
                   {course.instructor}
                 </td>
-                <td className="py-3 px-2 text-neutral-950 text-center">
-                  <span className="inline-flex items-center gap-1">
-                    <span className="text-yellow-400">⭐</span> {course.rating}
-                  </span>
-                </td>
+
                 <td className="py-3 px-2 text-gray-500 text-center">
                   {course.students}
                 </td>

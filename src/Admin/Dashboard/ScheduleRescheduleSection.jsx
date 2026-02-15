@@ -23,20 +23,20 @@ const ScheduleRescheduleSection = () => {
     },
   ];
 
-  const reschedules = [
-    {
-      name: "John Smith",
-      course1: "React Advanced",
-      course2: "Node.js Basics",
-      time: "2:00 PM",
-    },
-    {
-      name: "Sarah Johnson",
-      course1: "Python ML",
-      course2: "Data Analysis",
-      time: "4:00 PM",
-    },
-  ];
+  // const reschedules = [
+  //   {
+  //     name: "John Smith",
+  //     course1: "React Advanced",
+  //     course2: "Node.js Basics",
+  //     time: "2:00 PM",
+  //   },
+  //   {
+  //     name: "Sarah Johnson",
+  //     course1: "Python ML",
+  //     course2: "Data Analysis",
+  //     time: "4:00 PM",
+  //   },
+  // ];
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 w-full mb-10">
@@ -73,7 +73,7 @@ const ScheduleRescheduleSection = () => {
       </div>
 
       {/* Recent Reschedule */}
-      <div className="flex-1 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 flex flex-col gap-4">
+      {/* <div className="flex-1 bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 flex items-center justify-center">
@@ -119,7 +119,7 @@ const ScheduleRescheduleSection = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

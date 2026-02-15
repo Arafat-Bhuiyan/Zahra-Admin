@@ -74,7 +74,7 @@ const TeacherDetails = ({ teacher, onBack }) => {
             </div>
 
             <div className="flex flex-wrap justify-center md:justify-start gap-8 mt-2">
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <div className="w-5 h-5 flex items-center justify-center">
                   <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                 </div>
@@ -82,7 +82,7 @@ const TeacherDetails = ({ teacher, onBack }) => {
                 <span className="text-stone-500 text-sm font-normal">
                   Rating
                 </span>
-              </div>
+              </div> */}
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 flex items-center justify-center">
                   <BookOpen className="w-4 h-4 text-slate-600" />

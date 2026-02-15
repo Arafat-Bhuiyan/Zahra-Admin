@@ -65,11 +65,11 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
               label="Total Lessons"
               value={`${course.lessons} lessons`}
             />
-            <DetailItem
+            {/* <DetailItem
               label="Rating"
               value={`⭐ ${course.rating || "4.8"}/5.0`}
               isRich
-            />
+            /> */}
           </div>
 
           {/* Enrollment Stats */}

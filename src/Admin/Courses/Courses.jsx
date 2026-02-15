@@ -175,7 +175,7 @@ const Courses = () => {
   return (
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
       {/* Stats Quick View */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
         <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
             Total Courses
@@ -194,12 +194,12 @@ const Courses = () => {
           </p>
           <h4 className="text-2xl font-bold text-neutral-900">86%</h4>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
+        {/* <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
           <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
             Avg Rating
           </p>
           <h4 className="text-2xl font-bold text-neutral-900">4.8</h4>
-        </div>
+        </div> */}
       </div>
 
       {/* Header Actions */}
