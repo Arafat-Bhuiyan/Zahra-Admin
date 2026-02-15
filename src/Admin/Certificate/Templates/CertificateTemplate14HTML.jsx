@@ -1,11 +1,11 @@
 import React from "react";
-import bgImage from "../../../assets/certificates/certificate_template11.jpg";
+import bgImage from "../../../assets/certificates/certificate_template14.jpg";
 import logoImage from "../../../assets/img/logo.png";
-import award from "../../../assets/certificates/award.png";
+import award from "../../../assets/certificates/TealAward.png";
 import director_signature from "../../../assets/certificates/director_signature.png";
 import instructor_signature from "../../../assets/certificates/instructor_signature.png";
 
-const CertificateTemplate11HTML = ({
+const CertificateTemplate14HTML = ({
   studentName,
   courseTitle,
   date,
@@ -73,13 +73,13 @@ const CertificateTemplate11HTML = ({
         <div
           style={{
             fontSize: "14px",
-            color: "#A67C00",
+            color: "#008080",
             fontWeight: "700",
             letterSpacing: "6px",
             textTransform: "uppercase",
           }}
         >
-          Certificate of Achivement
+          CERTIFICATE OF RECOGNITION
         </div>
 
         <h1
@@ -104,7 +104,7 @@ const CertificateTemplate11HTML = ({
               fontStyle: "italic",
             }}
           >
-            This certificate is proudly presented to
+            Awarded to
           </p>
         </div>
 
@@ -113,8 +113,8 @@ const CertificateTemplate11HTML = ({
             fontSize: "58px",
             fontWeight: "bold",
             marginBottom: "20px",
-            color: "#A67C00",
-            borderBottom: "1px solid #A67C00",
+            color: "#008080",
+            borderBottom: "1px solid #008080",
             paddingBottom: "12px",
             minWidth: "500px",
             fontFamily: "'Playfair Display', serif",
@@ -127,8 +127,6 @@ const CertificateTemplate11HTML = ({
           style={{
             fontSize: "17px",
             lineHeight: "1.9",
-            marginTop: "20px",
-            marginBottom: "45px",
             color: "#555555",
             maxWidth: "70%",
           }}
@@ -257,7 +255,6 @@ const CertificateTemplate11HTML = ({
           style={{
             fontSize: "14px",
             color: "#888888",
-            borderTop: "1px solid rgba(0,0,0,0.06)",
             width: "30%",
             paddingTop: "15px",
           }}
@@ -269,4 +266,4 @@ const CertificateTemplate11HTML = ({
   );
 };
 
-export default CertificateTemplate11HTML;
+export default CertificateTemplate14HTML;

@@ -117,7 +117,7 @@ const CertificateTemplate6HTML = ({
             fontWeight: "bold",
             marginBottom: "10px",
             color: "#1A3A5A",
-            borderBottom: "2px solid #C5A021",
+            borderBottom: "2px solid #1A3A5A",
             paddingBottom: "10px",
             minWidth: "450px",
           }}
@@ -149,17 +149,18 @@ const CertificateTemplate6HTML = ({
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-around",
-            alignItems: "flex-end",
-            marginTop: "30px",
-            gap: "20px",
+            alignItems: "center",
+            paddingInline: "50px",
+            paddingBottom: "90px",
           }}
         >
+          {/* Instructor Column */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              width: "220px",
+              width: "250px",
             }}
           >
             <img
@@ -167,7 +168,7 @@ const CertificateTemplate6HTML = ({
               alt="instructor signature"
               style={{
                 width: "280px",
-                height: "70px",
+                height: "75px",
                 marginBottom: "-15px",
                 objectFit: "contain",
               }}
@@ -182,7 +183,11 @@ const CertificateTemplate6HTML = ({
               }}
             />
             <div
-              style={{ fontSize: "16px", fontWeight: "bold", color: "#1A3A5A" }}
+              style={{
+                fontSize: "17px",
+                fontWeight: "bold",
+                color: "#1A3A5A",
+              }}
             >
               {instructorName || "Instructor Name"}
             </div>
@@ -191,19 +196,55 @@ const CertificateTemplate6HTML = ({
                 fontSize: "11px",
                 color: "#5A6A82",
                 textTransform: "uppercase",
-                letterSpacing: "1px",
+                letterSpacing: "2px",
+                fontWeight: "600",
               }}
             >
               Lead Instructor
             </div>
           </div>
 
+          {/* Date Column - Positioned to look like a seal entry */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              width: "220px",
+              marginBottom: "5px",
+              minWidth: "150px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#1A3A5A",
+                textTransform: "uppercase",
+                letterSpacing: "1.5px",
+                fontWeight: "600",
+              }}
+            >
+              Date Issued
+            </div>
+            <div
+              style={{
+                fontSize: "16px",
+                color: "#1A3A5A",
+                fontWeight: "bold",
+                marginTop: "2px",
+                fontFamily: "Arial, sans-serif",
+              }}
+            >
+              {date || new Date().toLocaleDateString()}
+            </div>
+          </div>
+
+          {/* Director Column */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "250px",
             }}
           >
             <img
@@ -211,7 +252,7 @@ const CertificateTemplate6HTML = ({
               alt="director signature"
               style={{
                 width: "280px",
-                height: "70px",
+                height: "75px",
                 marginBottom: "-15px",
                 objectFit: "contain",
               }}
@@ -226,7 +267,11 @@ const CertificateTemplate6HTML = ({
               }}
             />
             <div
-              style={{ fontSize: "16px", fontWeight: "bold", color: "#1A3A5A" }}
+              style={{
+                fontSize: "17px",
+                fontWeight: "bold",
+                color: "#1A3A5A",
+              }}
             >
               {directorName || "Director Name"}
             </div>
@@ -235,25 +280,13 @@ const CertificateTemplate6HTML = ({
                 fontSize: "11px",
                 color: "#5A6A82",
                 textTransform: "uppercase",
-                letterSpacing: "1px",
+                letterSpacing: "2px",
+                fontWeight: "600",
               }}
             >
               Executive Director
             </div>
           </div>
-        </div>
-
-        <div
-          style={{
-            paddingTop: "20px",
-            fontSize: "14px",
-            color: "#718096",
-            marginTop: "30px",
-            borderTop: "1px solid rgba(26, 58, 90, 0.1)",
-            width: "40%",
-          }}
-        >
-          Date of Issue: {date || new Date().toLocaleDateString()}
         </div>
       </div>
     </div>

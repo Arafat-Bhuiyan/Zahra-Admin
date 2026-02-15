@@ -74,7 +74,7 @@ const CertificateTemplate1HTML = ({
         }}
       >
         <div
-          style={{ fontSize: "18px", marginBottom: "40px", color: "#2F6F5F" }}
+          style={{ fontSize: "18px", marginBottom: "40px", color: "#6699CC" }}
         >
           CERTIFICATE OF ACHIEVEMENT
         </div>
@@ -84,7 +84,7 @@ const CertificateTemplate1HTML = ({
             fontSize: "42px",
             fontWeight: "bold",
             marginBottom: "20px",
-            color: "#0F3D2E",
+            color: "#6699CC",
             textTransform: "uppercase",
           }}
         >
@@ -92,7 +92,7 @@ const CertificateTemplate1HTML = ({
         </h1>
 
         <div style={{ marginTop: "20px", marginBottom: "10px" }}>
-          <p style={{ fontSize: "18px", color: "#2F6F5F" }}>THIS CERTIFICATE IS PRESENTED TO</p>
+          <p style={{ fontSize: "18px", color: "#6699CC" }}>THIS CERTIFICATE IS PRESENTED TO</p>
         </div>
 
         <h2
