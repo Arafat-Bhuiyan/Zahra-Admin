@@ -1,11 +1,11 @@
 import React from "react";
-import bgImage from "../../../assets/certificates/certificate_template11.jpg";
+import bgImage from "../../../assets/certificates/certificate_template12.jpg";
 import logoImage from "../../../assets/img/logo.png";
 import award from "../../../assets/certificates/award.png";
 import director_signature from "../../../assets/certificates/director_signature.png";
 import instructor_signature from "../../../assets/certificates/instructor_signature.png";
 
-const CertificateTemplate11HTML = ({
+const CertificateTemplate12HTML = ({
   studentName,
   courseTitle,
   date,
@@ -200,8 +200,8 @@ const CertificateTemplate11HTML = ({
               src={award}
               alt="award"
               style={{
-                width: "75px",
-                height: "75px",
+                width: "70px",
+                height: "70px",
                 objectFit: "contain",
               }}
             />
@@ -269,4 +269,4 @@ const CertificateTemplate11HTML = ({
   );
 };
 
-export default CertificateTemplate11HTML;
+export default CertificateTemplate12HTML;

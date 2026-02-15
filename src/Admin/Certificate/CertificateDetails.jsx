@@ -22,6 +22,11 @@ import CertificateTemplate7HTML from "./Templates/CertificateTemplate7HTML";
 import CertificateTemplate8HTML from "./Templates/CertificateTemplate8HTML";
 import CertificateTemplate9HTML from "./Templates/CertificateTemplate9HTML";
 import CertificateTemplate10HTML from "./Templates/CertificateTemplate10HTML";
+import CertificateTemplate11HTML from "./Templates/CertificateTemplate11HTML";
+import CertificateTemplate12HTML from "./Templates/CertificateTemplate12HTML";
+import CertificateTemplate13HTML from "./Templates/CertificateTemplate13HTML";
+import CertificateTemplate14HTML from "./Templates/CertificateTemplate14HTML";
+import CertificateTemplate15HTML from "./Templates/CertificateTemplate15HTML";
 // import GenerateCertificateModal from "./GenerateCertificateModal";
 
 const CourseDetailsStatsCard = ({ value, label, color }) => {
@@ -184,6 +189,31 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
       id: "template10",
       name: "Certificate Template 10",
       component: CertificateTemplate10HTML,
+    },
+    {
+      id: "template11",
+      name: "Certificate Template 11",
+      component: CertificateTemplate11HTML,
+    },
+    {
+      id: "template12",
+      name: "Certificate Template 12",
+      component: CertificateTemplate12HTML,
+    },
+    {
+      id: "template13",
+      name: "Certificate Template 13",
+      component: CertificateTemplate13HTML,
+    },
+    {
+      id: "template14",
+      name: "Certificate Template 14",
+      component: CertificateTemplate14HTML,
+    },
+    {
+      id: "template15",
+      name: "Certificate Template 15",
+      component: CertificateTemplate15HTML,
     },
   ]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("template1");
