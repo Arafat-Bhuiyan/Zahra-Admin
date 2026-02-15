@@ -18,6 +18,8 @@ import CertificateTemplate3HTML from "./Templates/CertificateTemplate3HTML";
 import CertificateTemplate4HTML from "./Templates/CertificateTemplate4HTML";
 import CertificateTemplate5HTML from "./Templates/CertificateTemplate5HTML";
 import CertificateTemplate6HTML from "./Templates/CertificateTemplate6HTML";
+import CertificateTemplate7HTML from "./Templates/CertificateTemplate7HTML";
+import CertificateTemplate8HTML from "./Templates/CertificateTemplate8HTML";
 // import GenerateCertificateModal from "./GenerateCertificateModal";
 
 const CourseDetailsStatsCard = ({ value, label, color }) => {
@@ -160,6 +162,16 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
       id: "template6",
       name: "Certificate Template 6",
       component: CertificateTemplate6HTML,
+    },
+    {
+      id: "template7",
+      name: "Certificate Template 7",
+      component: CertificateTemplate7HTML,
+    },
+    {
+      id: "template8",
+      name: "Certificate Template 8",
+      component: CertificateTemplate8HTML,
     },
   ]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("template1");
