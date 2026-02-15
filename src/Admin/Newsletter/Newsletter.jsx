@@ -10,21 +10,21 @@ import {
   Search,
 } from "lucide-react";
 import CreateNewsletterModal from "./CreateNewsletterModal";
-import CreateTemplateModal from "./CreateTemplateModal";
-import EditTemplateModal from "./EditTemplateModal";
+// import CreateTemplateModal from "./CreateTemplateModal";
+// import EditTemplateModal from "./EditTemplateModal";
 import ViewNewsletterModal from "./ViewNewsletterModal";
-import TemplateCard from "./TemplateCard";
+// import TemplateCard from "./TemplateCard";
 import SubscribersList from "./SubscribersList";
 import toast from "react-hot-toast";
 
 const Newsletter = () => {
   const [activeTab, setActiveTab] = useState("Newsletters");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [isEditTemplateModalOpen, setIsEditTemplateModalOpen] = useState(false);
+  // const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  // const [isEditTemplateModalOpen, setIsEditTemplateModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedNewsletter, setSelectedNewsletter] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  // const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const [newsletters, setNewsletters] = useState([
     {
@@ -53,6 +53,7 @@ const Newsletter = () => {
     },
   ]);
 
+  /* 
   const [templates, setTemplates] = useState([
     {
       id: 1,
@@ -99,6 +100,7 @@ const Newsletter = () => {
       modified: "2026-01-12",
     },
   ]);
+  */
 
   const handleSendNow = (id) => {
     setNewsletters((prev) =>
@@ -120,6 +122,7 @@ const Newsletter = () => {
     toast.success("Saved as draft!");
   };
 
+  /* 
   const handleSaveTemplate = (newTemplate) => {
     setTemplates((prev) => [newTemplate, ...prev]);
     toast.success("Template created successfully!");
@@ -189,6 +192,7 @@ const Newsletter = () => {
       },
     );
   };
+  */
 
   const handlePreview = (newsletter) => {
     setSelectedNewsletter(newsletter);
@@ -196,16 +200,16 @@ const Newsletter = () => {
   };
 
   const handleMainButtonClick = () => {
-    if (activeTab === "Templates") {
-      setIsTemplateModalOpen(true);
-    } else {
-      setIsModalOpen(true);
-    }
+    // if (activeTab === "Templates") {
+    //   setIsTemplateModalOpen(true);
+    // } else {
+    setIsModalOpen(true);
+    // }
   };
 
   const tabs = [
     { id: "Newsletters", icon: Mail, label: "Newsletters" },
-    { id: "Templates", icon: FileText, label: "Email Templates" },
+    // { id: "Templates", icon: FileText, label: "Email Templates" },
     { id: "Subscribers", icon: Users, label: "Subscribers" },
   ];
 
@@ -232,6 +236,7 @@ const Newsletter = () => {
         onSave={handleSaveDraft}
       />
 
+      {/* 
       <CreateTemplateModal
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
@@ -247,6 +252,7 @@ const Newsletter = () => {
         onSave={handleUpdateTemplate}
         template={selectedTemplate}
       />
+      */}
 
       <ViewNewsletterModal
         isOpen={isPreviewModalOpen}
@@ -347,6 +353,7 @@ const Newsletter = () => {
           )}
 
           {/* Templates */}
+          {/* 
           {activeTab === "Templates" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {templates.map((template) => (
@@ -359,6 +366,7 @@ const Newsletter = () => {
               ))}
             </div>
           )}
+          */}
 
           {/* Subscribers */}
           {activeTab === "Subscribers" && <SubscribersList />}

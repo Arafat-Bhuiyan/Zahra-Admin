@@ -21,6 +21,7 @@ import {
   Upload,
   Video,
   MessageSquare,
+  Mail,
 } from "lucide-react";
 import logo from "../../assets/img/logo.png";
 
@@ -45,6 +46,7 @@ export const Sidebar = () => {
       { icon: ShoppingCart, label: "Book Sales", slug: "book-sales" },
       { icon: Megaphone, label: "Announcements", slug: "announcements" },
       { icon: Newspaper, label: "Newsletter", slug: "newsletter" },
+      { icon: Mail, label: "Email Templates", slug: "email-templates" },
       { icon: GraduationCap, label: "Scholarships", slug: "scholarships" },
       { icon: Award, label: "Certificates", slug: "certificates" },
       { icon: UserCheck, label: "Memberships", slug: "memberships" },

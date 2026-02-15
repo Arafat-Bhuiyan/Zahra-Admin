@@ -21,7 +21,9 @@ export default function AdminLayout() {
     : location.pathname.startsWith(`/admin/announcements`)
     ? "Announcements"
     : location.pathname.startsWith(`/admin/newsletter`)
-    ? "Email & Newsletter Management"
+    ? "Newsletter Management"
+    : location.pathname.startsWith(`/admin/email-templates`)
+    ? "Email Templates"
     : location.pathname.startsWith(`/admin/scholarships`)
     ? "Scholarship Applications"
     : location.pathname.startsWith(`/admin/certificates`)
@@ -69,7 +71,9 @@ export default function AdminLayout() {
     : location.pathname.startsWith(`/admin/announcements`)
     ? "Create and manage course & platform announcements"
     : location.pathname.startsWith(`/admin/newsletter`)
-    ? "Manage email templates, newsletters, and subscribers"
+    ? "Manage newsletters and subscribers with organized lists, segmentation, and automated delivery"
+    : location.pathname.startsWith(`/admin/email-templates`)
+    ? "Manage email templates with reusable layouts, dynamic content, and consistent branding"
     : location.pathname.startsWith(`/admin/scholarships`)
     ? "Review student applications and set custom discount percentages"
     : location.pathname.startsWith(`/admin/certificates`)
