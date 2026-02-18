@@ -22,6 +22,7 @@ import {
   Video,
   MessageSquare,
   Mail,
+  DoorOpenIcon,
 } from "lucide-react";
 import logo from "../../assets/img/logo.png";
 
@@ -42,6 +43,7 @@ export const Sidebar = () => {
       { icon: BookOpen, label: "Courses", slug: "courses-management" },
       { icon: ClipboardCheck, label: "Submissions", slug: "submissions" },
       { icon: FileText, label: "Content", slug: "contents" },
+      { icon: DoorOpenIcon, label: "Doors", slug: "doors" },
       { icon: Library, label: "Book Library", slug: "book-library" },
       { icon: ShoppingCart, label: "Book Sales", slug: "book-sales" },
       { icon: Megaphone, label: "Announcements", slug: "announcements" },

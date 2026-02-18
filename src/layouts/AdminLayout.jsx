@@ -14,6 +14,8 @@ export default function AdminLayout() {
     ? "Submissions Management"
     : location.pathname.startsWith(`/admin/contents`)
     ? "Contents Library"
+    : location.pathname.startsWith(`/admin/doors`)
+    ? "Doors"
     : location.pathname.startsWith(`/admin/book-library`)
     ? "Book Library Management"
     : location.pathname.startsWith(`/admin/book-sales`)
@@ -64,6 +66,8 @@ export default function AdminLayout() {
     ? "View and grade student quiz and assignment submissions"
     : location.pathname.startsWith(`/admin/contents`)
     ? "Browse and manage all uploaded content"
+    : location.pathname.startsWith(`/admin/doors`)
+    ? "Manage and organize your course doors"
     : location.pathname.startsWith(`/admin/book-library`)
     ? "Upload and manage digital books for students and teachers"
     : location.pathname.startsWith(`/admin/book-sales`)

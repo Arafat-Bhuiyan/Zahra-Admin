@@ -32,6 +32,7 @@ import EditProfile from "../components/EditProfile";
 import Newsletter from "../Admin/Newsletter/Newsletter";
 import Certificate from "../Admin/Certificate/Certificate";
 import EmailTemplates from "../Admin/EmailTemp/EmailTemp";
+import Doors from "../Admin/Doors/Doors";
 
 const RootRedirect = () => {
   const { role } = useSelector((state) => state.auth);
@@ -84,6 +85,7 @@ const router = createBrowserRouter([
       { path: "certificates", element: <Certificate /> },
       { path: "memberships", element: <Memberships /> },
       { path: "payments", element: <Payments /> },
+      { path: "doors", element: <Doors /> },
     ],
   },
   {
