@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 export default function ContentUpload() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('my-content');
-  const [selectedContent, setSelectedContent] = useState(null); // Declare selectedContent variable
 
   const [formData, setFormData] = useState({
     title: '',
