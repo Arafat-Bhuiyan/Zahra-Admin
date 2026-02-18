@@ -72,6 +72,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
         ],
       },
     ],
+    startDate: "",
   });
 
   const [newObjective, setNewObjective] = useState("");
@@ -89,6 +90,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
         learningObjectives: course.learningObjectives || [],
         requirements: course.requirements || [],
         curriculum: course.curriculum || [],
+        startDate: course.startDate || "",
       });
     }
   }, [course]);
@@ -320,13 +322,25 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                     name="status"
                     value={formData.status}
                     onChange={handleChange}
-                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer"
+                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer font-bold text-stone-800"
                   >
                     <option>Upcoming</option>
-                    <option>Live</option>
+                    <option>Running</option>
                     <option>Recorded</option>
                   </select>
                 </FormGroup>
+                {formData.status === "Upcoming" && (
+                  <FormGroup label="Start Date">
+                    <input
+                      type="text"
+                      name="startDate"
+                      value={formData.startDate}
+                      onChange={handleChange}
+                      placeholder="e.g. May 10, 2026"
+                      className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none font-bold text-stone-800"
+                    />
+                  </FormGroup>
+                )}
                 <FormGroup label="Assign Teacher">
                   <select
                     name="instructor"

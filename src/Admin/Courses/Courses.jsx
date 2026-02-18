@@ -14,7 +14,6 @@ import {
   ChevronDown,
   Filter,
 } from "lucide-react";
-import CourseDetailsModal from "./CourseDetailsModal";
 import AddEditCourse from "./AddEditCourse";
 import CourseBuilder from "./CourseBuilder";
 import LiveSessions from "./LiveSessions";
@@ -38,7 +37,7 @@ const Courses = () => {
     "Relationships",
     "Professional",
   ];
-  const statuses = ["All", "Live", "Recorded", "Upcoming"];
+  const statuses = ["All", "Running", "Recorded", "Upcoming"];
 
   const [courses, setCourses] = useState([
     {
@@ -67,6 +66,7 @@ const Courses = () => {
         "Basic understanding of Islam",
         "Stable internet connection",
       ],
+      startDate: "May 10, 2026",
       curriculum: [
         {
           id: 1,
@@ -95,7 +95,7 @@ const Courses = () => {
         "Learn how to combine Islamic principles with modern mindfulness techniques for emotional wellbeing.",
       instructor: "Dr. Ahmed Hassan",
       category: "Mental Health",
-      status: "Live",
+      status: "Running",
       lessons: 24,
       duration: "12 weeks",
       totalHours: 12,
@@ -452,12 +452,12 @@ const Courses = () => {
                     className={`px-4 py-1.5 rounded-[20px] text-xs font-semibold text-white flex items-center gap-2 ${
                       c.status === "Upcoming"
                         ? "bg-lime-600"
-                        : c.status === "Live"
+                        : c.status === "Running"
                           ? "bg-red-700"
                           : "bg-sky-500"
                     }`}
                   >
-                    {c.status === "Live" && (
+                    {c.status === "Running" && (
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
@@ -472,11 +472,20 @@ const Courses = () => {
                   <h4 className="text-stone-900 text-xl font-bold leading-tight line-clamp-2 min-h-[3.5rem] group-hover:text-teal-700 transition-colors">
                     {c.title}
                   </h4>
-                  <div className="flex items-center gap-2 text-stone-600">
-                    <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center">
-                      <Users className="w-4 h-4" />
+                  <div className="flex items-center justify-between gap-2 text-stone-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-medium">
+                        {c.instructor}
+                      </span>
                     </div>
-                    <span className="text-sm font-medium">{c.instructor}</span>
+                    {c.status === "Upcoming" && (
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest bg-stone-50 px-2 py-1 rounded-lg border border-stone-100">
+                        Starts {c.startDate || "TBD"}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -521,16 +530,10 @@ const Courses = () => {
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleViewCourse(c)}
-                      className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button
                       onClick={() => handleOpenBuilder(c)}
                       className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
                     >
-                      <BookOpen className="w-4 h-4" />
+                      <Eye className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -581,7 +584,7 @@ const Courses = () => {
                         className={`px-3 py-1 rounded-[20px] text-[10px] font-bold uppercase ${
                           c.status === "Upcoming"
                             ? "bg-lime-600 text-white"
-                            : c.status === "Live"
+                            : c.status === "Running"
                               ? "bg-red-700 text-white"
                               : "bg-sky-500 text-white"
                         }`}
@@ -599,16 +602,10 @@ const Courses = () => {
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleViewCourse(c)}
-                        className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
                         onClick={() => handleOpenBuilder(c)}
                         className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
                       >
-                        <BookOpen className="w-4 h-4" />
+                        <Eye className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -618,11 +615,6 @@ const Courses = () => {
           </table>
         </div>
       )}
-      <CourseDetailsModal
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
-        course={selectedCourse}
-      />
     </div>
   );
 };
