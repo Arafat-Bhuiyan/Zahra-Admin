@@ -1,5 +1,5 @@
 import React from "react";
-import { X, Plus, Star, Users, Mail, CheckCircle2, Clock } from "lucide-react";
+import { X, Plus, Star, Users, Mail, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 const CourseDetailsModal = ({ course, isOpen, onClose }) => {
   if (!isOpen || !course) return null;
@@ -55,7 +55,18 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
         <div className="p-6 space-y-8">
           {/* Details Grid */}
           <div className="grid grid-cols-2 gap-6">
-            <DetailItem label="Course Title" value={course.title} />
+            <div className="col-span-2">
+              <DetailItem label="Course Title" value={course.title} />
+            </div>
+            <div className="col-span-2">
+              <DetailItem
+                label="Course Subtitle"
+                value={course.subtitle || "N/A"}
+              />
+            </div>
+            <div className="col-span-2">
+              <DetailItem label="Level" value={course.level || "Beginner"} />
+            </div>
             <DetailItem label="Instructor" value={course.instructor} />
             <DetailItem label="Category" value={course.category} />
 
@@ -65,11 +76,48 @@ const CourseDetailsModal = ({ course, isOpen, onClose }) => {
               label="Total Lessons"
               value={`${course.lessons} lessons`}
             />
-            {/* <DetailItem
-              label="Rating"
-              value={`⭐ ${course.rating || "4.8"}/5.0`}
-              isRich
-            /> */}
+            <div className="col-span-2">
+              <label className="text-xs font-medium text-stone-500 font-['Arimo'] mb-2 block uppercase tracking-wider">
+                Description
+              </label>
+              <div className="p-4 bg-stone-50 rounded-xl border border-stone-100 text-sm text-stone-600 leading-relaxed font-['Arimo']">
+                {course.description || "No description provided."}
+              </div>
+            </div>
+          </div>
+
+          {/* Learning Objectives & Requirements */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <label className="text-xs font-bold text-teal-600 uppercase tracking-widest font-['Arimo']">
+                What You'll Learn
+              </label>
+              <div className="space-y-2">
+                {course.learningObjectives?.map((obj, i) => (
+                  <div key={i} className="flex gap-3 items-start">
+                    <CheckCircle2 className="w-4 h-4 text-teal-500 mt-0.5" />
+                    <span className="text-xs text-stone-600 font-medium">
+                      {obj}
+                    </span>
+                  </div>
+                )) || <span className="text-xs text-stone-400">N/A</span>}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <label className="text-xs font-bold text-amber-600 uppercase tracking-widest font-['Arimo']">
+                Requirements
+              </label>
+              <div className="space-y-2">
+                {course.requirements?.map((req, i) => (
+                  <div key={i} className="flex gap-3 items-start">
+                    <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5" />
+                    <span className="text-xs text-stone-600 font-medium">
+                      {req}
+                    </span>
+                  </div>
+                )) || <span className="text-xs text-stone-400">N/A</span>}
+              </div>
+            </div>
           </div>
 
           {/* Enrollment Stats */}

@@ -11,47 +11,7 @@ import {
 
 import AddContentModal from "./AddLesson";
 
-const CourseCurriculum = () => {
-  const [modules, setModules] = useState([
-    {
-      id: 1,
-      title: "Introduction to React Hooks",
-      lessons: [
-        {
-          id: 101,
-          title: "Understanding useState",
-          duration: "15:30",
-          type: "video",
-        },
-        {
-          id: 102,
-          title: "Working with useEffect",
-          duration: "22:45",
-          type: "video",
-        },
-        { id: 103, title: "Hooks Cheat Sheet", type: "document" },
-      ],
-    },
-    {
-      id: 2,
-      title: "Advanced Patterns",
-      lessons: [
-        {
-          id: 201,
-          title: "Custom Hooks Deep Dive",
-          duration: "28:15",
-          type: "video",
-        },
-        {
-          id: 202,
-          title: "Context API Best Practices",
-          duration: "19:30",
-          type: "video",
-        },
-      ],
-    },
-  ]);
-
+const CourseCurriculum = ({ modules = [], onModulesChange }) => {
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetModuleId, setTargetModuleId] = useState(null);
@@ -63,7 +23,8 @@ const CourseCurriculum = () => {
         title: newModuleTitle,
         lessons: [],
       };
-      setModules([...modules, newModule]);
+      const updatedModules = [...modules, newModule];
+      onModulesChange(updatedModules);
       setNewModuleTitle("");
     }
   };
@@ -74,31 +35,34 @@ const CourseCurriculum = () => {
   };
 
   const handleAddContent = (moduleId, newContent) => {
-    setModules(
-      modules.map((mod) => {
-        if (mod.id === moduleId) {
-          return {
-            ...mod,
-            lessons: [...mod.lessons, newContent],
-          };
-        }
-        return mod;
-      }),
-    );
+    const updatedModules = modules.map((mod) => {
+      if (mod.id === moduleId) {
+        return {
+          ...mod,
+          lessons: [...mod.lessons, newContent],
+        };
+      }
+      return mod;
+    });
+    onModulesChange(updatedModules);
   };
 
   const removeLesson = (moduleId, lessonId) => {
-    setModules(
-      modules.map((mod) => {
-        if (mod.id === moduleId) {
-          return {
-            ...mod,
-            lessons: mod.lessons.filter((lesson) => lesson.id !== lessonId),
-          };
-        }
-        return mod;
-      }),
-    );
+    const updatedModules = modules.map((mod) => {
+      if (mod.id === moduleId) {
+        return {
+          ...mod,
+          lessons: mod.lessons.filter((lesson) => lesson.id !== lessonId),
+        };
+      }
+      return mod;
+    });
+    onModulesChange(updatedModules);
+  };
+
+  const removeModule = (moduleId) => {
+    const updatedModules = modules.filter((mod) => mod.id !== moduleId);
+    onModulesChange(updatedModules);
   };
 
   return (
@@ -124,13 +88,22 @@ const CourseCurriculum = () => {
                   </span>
                 </div>
               </div>
-              <button
-                onClick={() => openAddContentModal(mod.id)}
-                className="flex items-center gap-2 bg-greenTeal hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Lesson</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => removeModule(mod.id)}
+                  className="p-2.5 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                  title="Delete Module"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => openAddContentModal(mod.id)}
+                  className="flex items-center gap-2 bg-greenTeal hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Lesson</span>
+                </button>
+              </div>
             </div>
 
             {/* Lessons List */}

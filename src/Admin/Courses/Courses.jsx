@@ -44,6 +44,9 @@ const Courses = () => {
     {
       id: 1,
       title: "Tafsir Al-Quran: Understanding Divine Messages",
+      subtitle: "A journey through the meanings of the Holy Quran",
+      description:
+        "This course provides a comprehensive understanding of the Quranic messages and their application in modern life.",
       instructor: "Dr. Ahmed Hassan",
       category: "Mental Health",
       status: "Upcoming",
@@ -52,11 +55,44 @@ const Courses = () => {
       totalHours: 12,
       sessionDuration: "2hr per session",
       price: "$99",
-      image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2787&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2787&auto=format&fit=crop",
+      level: "Intermediate",
+      learningObjectives: [
+        "Understand core Quranic themes",
+        "Learn historical context",
+        "Reflect on divine messages",
+      ],
+      requirements: [
+        "Basic understanding of Islam",
+        "Stable internet connection",
+      ],
+      curriculum: [
+        {
+          id: 1,
+          title: "Introduction to Tafsir",
+          lessons: [
+            {
+              id: 101,
+              title: "What is Tafsir?",
+              type: "video",
+              duration: "10:00",
+            },
+            {
+              id: 102,
+              title: "Principles of Interpretation",
+              type: "document",
+            },
+          ],
+        },
+      ],
     },
     {
       id: 2,
-      title: "Tafsir Al-Quran: Understanding Divine Messages",
+      title: "Mindfulness in Islam",
+      subtitle: "Faith-centered emotional healing journey",
+      description:
+        "Learn how to combine Islamic principles with modern mindfulness techniques for emotional wellbeing.",
       instructor: "Dr. Ahmed Hassan",
       category: "Mental Health",
       status: "Live",
@@ -65,11 +101,22 @@ const Courses = () => {
       totalHours: 12,
       sessionDuration: "2hr per session",
       price: "$99",
-      image: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2824&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2824&auto=format&fit=crop",
+      level: "Beginner",
+      learningObjectives: [
+        "Master Islamic meditation",
+        "Manage stress through faith",
+        "Build emotional resilience",
+      ],
+      requirements: ["None, open to all"],
     },
     {
       id: 3,
-      title: "Tafsir Al-Quran: Understanding Divine Messages",
+      title: "Spiritual Growth Mastery",
+      subtitle: "Elevate your soul through daily practices",
+      description:
+        "A deep dive into the spiritual dimensions of Islam and how to cultivate a closer relationship with Allah.",
       instructor: "Dr. Ahmed Hassan",
       category: "Mental Health",
       status: "Recorded",
@@ -78,11 +125,22 @@ const Courses = () => {
       totalHours: 12,
       sessionDuration: "2hr per session",
       price: "$99",
-      image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2800&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2800&auto=format&fit=crop",
+      level: "Advanced",
+      learningObjectives: [
+        "Develop consistent spiritual habits",
+        "Understand Tazkiyah-al-Nafs",
+        "Overcome spiritual plateaus",
+      ],
+      requirements: ["Completion of Foundation course"],
     },
     {
       id: 4,
       title: "Foundation of Islamic Ethics",
+      subtitle: "Building character based on prophetic tradition",
+      description:
+        "Explore the ethical framework of Islam and how it shapes personal and professional conduct.",
       instructor: "Dr. Yasir Qadhi",
       category: "Spiritual Growth",
       status: "Recorded",
@@ -91,7 +149,15 @@ const Courses = () => {
       totalHours: 15,
       sessionDuration: "1.5hr per session",
       price: "$79",
-      image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop",
+      level: "Beginner",
+      learningObjectives: [
+        "Identify core Islamic values",
+        "Apply ethics in daily life",
+        "Study prophetic character",
+      ],
+      requirements: ["Basic literacy"],
     },
   ]);
 
