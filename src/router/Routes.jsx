@@ -33,6 +33,7 @@ import Newsletter from "../Admin/Newsletter/Newsletter";
 import Certificate from "../Admin/Certificate/Certificate";
 import EmailTemplates from "../Admin/EmailTemp/EmailTemp";
 import Doors from "../Admin/Doors/Doors";
+import Consultants from "../Admin/Consultants/Consultants";
 
 const RootRedirect = () => {
   const { role } = useSelector((state) => state.auth);
@@ -71,6 +72,7 @@ const router = createBrowserRouter([
       { path: "users-management", element: <User /> },
       { path: "courses-management", element: <Courses /> },
       { path: "submissions", element: <Submission /> },
+      { path: "consultants", element: <Consultants /> },
       { path: "settings", element: <TermsAndPolicies /> },
       { path: "contents", element: <Contents /> },
       { path: "contents/:id", element: <ContentDetails /> },

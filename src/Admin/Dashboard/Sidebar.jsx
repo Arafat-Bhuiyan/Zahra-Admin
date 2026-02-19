@@ -42,6 +42,7 @@ export const Sidebar = () => {
       { icon: Users, label: "User", slug: "users-management" },
       { icon: BookOpen, label: "Courses", slug: "courses-management" },
       { icon: ClipboardCheck, label: "Submissions", slug: "submissions" },
+      { icon: Users, label: "Consultants", slug: "consultants" },
       { icon: FileText, label: "Content", slug: "contents" },
       { icon: DoorOpenIcon, label: "Doors", slug: "doors" },
       { icon: Library, label: "Book Library", slug: "book-library" },

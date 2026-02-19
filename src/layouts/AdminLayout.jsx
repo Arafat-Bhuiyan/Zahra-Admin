@@ -12,6 +12,8 @@ export default function AdminLayout() {
     ? "My Courses"
     : location.pathname.startsWith(`/admin/submissions`)
     ? "Submissions Management"
+    : location.pathname.startsWith(`/admin/consultants`)
+    ? "Consultants Management"
     : location.pathname.startsWith(`/admin/contents`)
     ? "Contents Library"
     : location.pathname.startsWith(`/admin/doors`)
@@ -64,6 +66,8 @@ export default function AdminLayout() {
     ? "Create and manage your course offerings"
     : location.pathname.startsWith(`/admin/submissions`)
     ? "View and grade student quiz and assignment submissions"
+    : location.pathname.startsWith(`/admin/consultants`)
+    ? "Manage consultant profiles and appointments"
     : location.pathname.startsWith(`/admin/contents`)
     ? "Browse and manage all uploaded content"
     : location.pathname.startsWith(`/admin/doors`)
