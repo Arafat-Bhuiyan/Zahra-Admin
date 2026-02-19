@@ -9,6 +9,7 @@ import {
   Clock,
   ArrowLeft,
   Trash2,
+  ExternalLink,
 } from "lucide-react";
 
 const UploadVideo = ({ onSave, onBack }) => {
@@ -21,6 +22,7 @@ const UploadVideo = ({ onSave, onBack }) => {
     publishDate: "",
     tags: ["Islamic Spirituality", "Mental Health", "Mindfulness"],
     coverImage: null,
+    externalLink: "",
   });
 
   const [tagInput, setTagInput] = useState("");
@@ -126,6 +128,34 @@ const UploadVideo = ({ onSave, onBack }) => {
                 accept="video/*"
                 onChange={handleFileChange}
               />
+            </div>
+
+            {/* External Link Option - Following AddLesson/UploadContent style */}
+            <div className="space-y-4 pt-2 border-t border-gray-100/50">
+              <div className="flex justify-between items-center ml-1">
+                <div className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4 text-[#7AA4A5]" />
+                  <label className="text-sm font-bold text-gray-700">
+                    Video Source Link
+                  </label>
+                </div>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-md">
+                  YouTube, Vimeo, S3, etc.
+                </span>
+              </div>
+              <input
+                type="text"
+                value={formData.externalLink}
+                onChange={(e) =>
+                  setFormData({ ...formData, externalLink: e.target.value })
+                }
+                placeholder="Paste your video link here (YouTube, Vimeo, etc.)"
+                className="w-full px-4 py-3 bg-zinc-100 rounded-xl text-sm text-blue-600 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 font-bold placeholder:font-normal placeholder:text-gray-400 transition-all border border-transparent"
+              />
+              <p className="text-[10px] font-medium text-gray-400 ml-1">
+                * All external streaming and storage providers are supported.
+                The link will be used if no file is uploaded.
+              </p>
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import {
   Clock,
   ArrowLeft,
   Trash2,
+  ExternalLink,
 } from "lucide-react";
 
 const UploadContent = ({ onSave, onBack }) => {
@@ -22,6 +23,7 @@ const UploadContent = ({ onSave, onBack }) => {
     tags: ["Islamic Spirituality", "Mental Health", "Mindfulness"],
     coverImage: null,
     additionalMedia: [],
+    externalLink: "",
   });
 
   const [tagInput, setTagInput] = useState("");
@@ -170,7 +172,9 @@ const UploadContent = ({ onSave, onBack }) => {
 
           {/* Excerpt */}
           <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-4">
-            <h3 className="text-neutral-950 text-lg font-medium">Description</h3>
+            <h3 className="text-neutral-950 text-lg font-medium">
+              Description
+            </h3>
             <div className="space-y-2">
               <textarea
                 placeholder="Write a brief summary (this will appear in Content previews)..."
@@ -247,6 +251,34 @@ const UploadContent = ({ onSave, onBack }) => {
                   onChange={(e) => handleFileChange(e, "video")}
                 />
               </div>
+            </div>
+
+            {/* External Link Option - Following AddLesson.jsx style */}
+            <div className="space-y-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-between items-center ml-1">
+                <div className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4 text-[#7AA4A5]" />
+                  <label className="text-sm font-bold text-gray-700">
+                    External Source Link
+                  </label>
+                </div>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-md">
+                  YouTube, Vimeo, S3, etc.
+                </span>
+              </div>
+              <input
+                type="text"
+                value={formData.externalLink}
+                onChange={(e) =>
+                  setFormData({ ...formData, externalLink: e.target.value })
+                }
+                placeholder="Paste your video or resource link here (e.g. YouTube, Google Drive)"
+                className="w-full px-4 py-3 bg-zinc-100 rounded-xl text-sm text-blue-600 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 font-bold placeholder:font-normal placeholder:text-gray-400 transition-all border border-transparent"
+              />
+              <p className="text-[10px] font-medium text-gray-400 ml-1">
+                * This link will be prioritized if no video is uploaded. All
+                external storage and streaming providers are supported.
+              </p>
             </div>
 
             {/* Media Preview */}

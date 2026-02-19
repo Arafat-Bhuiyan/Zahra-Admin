@@ -80,7 +80,7 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
       id: Date.now(),
       title,
       type: contentType,
-      link: contentType === "video" ? link : null,
+      link: contentType === "video" || contentType === "document" ? link : null,
       fileName: file ? file.name : null,
       duration: contentType === "video" ? "00:00" : null,
       assignment: contentType === "assignment" ? assignmentData : null,
@@ -182,18 +182,27 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
           </div>
 
           {/* Link */}
-          {contentType === "video" && (
+          {(contentType === "video" || contentType === "document") && (
             <div className="space-y-3">
-              <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
-                Link
-              </label>
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-sm font-bold text-stone-700 inter-font">
+                  External Link
+                </label>
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest bg-stone-100 px-2 py-0.5 rounded-md">
+                  Supports YouTube, Vimeo, S3, Drive, etc.
+                </span>
+              </div>
               <input
                 type="text"
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
-                placeholder="https://example.com/video"
-                className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-bold text-blue-600/70 inter-font"
+                placeholder="Paste any link here (YouTube, Vimeo, Amazon S3, Google Drive, etc.)"
+                className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-bold text-blue-600 inter-font"
               />
+              <p className="text-[10px] font-medium text-stone-400 ml-1">
+                * No restrictions on link sources. Direct video links, embed
+                links, or storage links are all supported.
+              </p>
             </div>
           )}
 

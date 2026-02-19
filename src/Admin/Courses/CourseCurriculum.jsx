@@ -10,11 +10,15 @@ import {
 } from "lucide-react";
 
 import AddContentModal from "./AddLesson";
+import LessonDetailsModal from "./LessonDetailsModal";
+import { HelpCircle, BookOpen } from "lucide-react";
 
 const CourseCurriculum = ({ modules = [], onModulesChange }) => {
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetModuleId, setTargetModuleId] = useState(null);
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const addModule = () => {
     if (newModuleTitle.trim()) {
@@ -63,6 +67,11 @@ const CourseCurriculum = ({ modules = [], onModulesChange }) => {
   const removeModule = (moduleId) => {
     const updatedModules = modules.filter((mod) => mod.id !== moduleId);
     onModulesChange(updatedModules);
+  };
+
+  const openLessonDetails = (lesson) => {
+    setSelectedLesson(lesson);
+    setIsDetailsOpen(true);
   };
 
   return (
@@ -115,14 +124,24 @@ const CourseCurriculum = ({ modules = [], onModulesChange }) => {
                     className="flex items-center gap-4 p-4 bg-white border border-stone-100 rounded-2xl hover:border-teal-200 hover:shadow-md transition-all group"
                   >
                     <GripVertical className="w-4 h-4 text-stone-300 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
-                    <div className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center text-stone-400">
+                    <div
+                      onClick={() => openLessonDetails(lesson)}
+                      className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center text-stone-400 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors cursor-pointer"
+                    >
                       {lesson.type === "video" ? (
                         <Video className="w-5 h-5" />
-                      ) : (
+                      ) : lesson.type === "document" ? (
                         <FileText className="w-5 h-5" />
+                      ) : lesson.type === "quiz" ? (
+                        <HelpCircle className="w-5 h-5" />
+                      ) : (
+                        <BookOpen className="w-5 h-5" />
                       )}
                     </div>
-                    <div className="flex-1">
+                    <div
+                      className="flex-1 cursor-pointer"
+                      onClick={() => openLessonDetails(lesson)}
+                    >
                       <h4 className="text-sm font-bold text-stone-800 arimo-font">
                         {lesson.title}
                       </h4>
@@ -174,12 +193,21 @@ const CourseCurriculum = ({ modules = [], onModulesChange }) => {
         </div>
       </div>
 
-      {/* Add Content Modal */}
       <AddContentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         moduleId={targetModuleId}
         onAdd={handleAddContent}
+      />
+
+      {/* Lesson Details Viewer Modal */}
+      <LessonDetailsModal
+        isOpen={isDetailsOpen}
+        lesson={selectedLesson}
+        onClose={() => {
+          setIsDetailsOpen(false);
+          setSelectedLesson(null);
+        }}
       />
     </div>
   );
