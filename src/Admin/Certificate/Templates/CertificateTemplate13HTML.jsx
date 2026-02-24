@@ -1,7 +1,7 @@
 import React from "react";
 import bgImage from "../../../assets/certificates/certificate_template13.jpg";
 import logoImage from "../../../assets/img/logo.png";
-import award from "../../../assets/certificates/TealAward.png";
+import award from "../../../assets/certificates/tealAward.png";
 import director_signature from "../../../assets/certificates/director_signature.png";
 import instructor_signature from "../../../assets/certificates/instructor_signature.png";
 

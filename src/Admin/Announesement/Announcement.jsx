@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import CreateAnnouncementModal from "./CreateAnnouncementModal";
 import EditAnnouncementModal from "./EditAnnouncementModal";
+import CreatePopupAnnouncementModal from "./CreatePopupAnnouncementModal";
+import PopupAnnouncement from "./PopupAnnouncement";
 import toast from "react-hot-toast";
 
 import {
@@ -114,6 +116,9 @@ const Announcement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
+  const [activeTab, setActiveTab] = useState("announcements");
+  const [popups, setPopups] = useState([]);
+  const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
   const [announcements, setAnnouncements] = useState([
     {
       id: 1,
@@ -184,6 +189,10 @@ const Announcement = () => {
 
   const handleAddAnnouncement = (newAnnouncement) => {
     setAnnouncements((prev) => [newAnnouncement, ...prev]);
+  };
+
+  const handleCreatePopup = (popup) => {
+    setPopups((prev) => [popup, ...prev]);
   };
 
   const handleRemoveAnnouncement = (id) => {
@@ -290,14 +299,43 @@ const Announcement = () => {
   return (
     <div className="p-8 space-y-8 min-h-screen arimo-font">
       {/* Header */}
-      <div className="flex justify-end items-center">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-[#7BA0A0] hover:bg-[#6A8F8F] text-white px-6 py-3 rounded-xl shadow-md transition-all active:scale-95"
-        >
-          <Plus size={20} />
-          <span className="font-semibold">New Announcement</span>
-        </button>
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActiveTab("announcements")}
+            className={`px-4 py-2 rounded-md font-semibold ${activeTab === "announcements" ? "bg-slate-100" : "bg-white"}`}
+          >
+            Announcements
+          </button>
+          <button
+            onClick={() => setActiveTab("popups")}
+            className={`px-4 py-2 rounded-md font-semibold ${activeTab === "popups" ? "bg-slate-100" : "bg-white"}`}
+          >
+            Popup Announcements
+          </button>
+        </div>
+
+        <div className="flex items-center">
+          {activeTab === "announcements" ? (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-[#7BA0A0] hover:bg-[#6A8F8F] text-white px-6 py-3 rounded-xl shadow-md transition-all active:scale-95"
+            >
+              <Plus size={20} />
+              <span className="font-semibold">New Announcement</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setIsCreatePopupOpen(true)}
+                className="flex items-center gap-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white px-4 py-2 rounded-xl shadow-md transition-all active:scale-95 mr-3"
+              >
+                <Plus size={16} />
+                <span className="font-semibold">New Popup</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <CreateAnnouncementModal
@@ -316,6 +354,12 @@ const Announcement = () => {
         onUpdate={handleUpdateAnnouncement}
       />
 
+      <CreatePopupAnnouncementModal
+        isOpen={isCreatePopupOpen}
+        onClose={() => setIsCreatePopupOpen(false)}
+        onCreate={handleCreatePopup}
+      />
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {getStats().map((stat, index) => (
@@ -323,17 +367,47 @@ const Announcement = () => {
         ))}
       </div>
 
-      {/* Announcements List */}
-      <div className="space-y-6">
-        {announcements.map((announcement) => (
-          <AnnouncementCard
-            key={announcement.id}
-            announcement={announcement}
-            onEdit={handleEditTrigger}
-            onDelete={handleRemoveAnnouncement}
-          />
-        ))}
-      </div>
+      {/* Content: announcements OR popups */}
+      {activeTab === "announcements" && (
+        <div className="space-y-6">
+          {announcements.map((announcement) => (
+            <AnnouncementCard
+              key={announcement.id}
+              announcement={announcement}
+              onEdit={handleEditTrigger}
+              onDelete={handleRemoveAnnouncement}
+            />
+          ))}
+        </div>
+      )}
+
+      {activeTab === "popups" && (
+        <div className="space-y-6">
+          {popups.length === 0 ? (
+            <div className="p-6 bg-white rounded-2xl border border-neutral-200 text-neutral-600">
+              No popup announcements yet. Click <strong>New Popup</strong> to
+              create one.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {popups.map((p) => (
+                <div
+                  key={p.id}
+                  className="p-4 bg-white rounded-2xl border border-neutral-200"
+                >
+                  <PopupAnnouncement
+                    {...p}
+                    onClose={() =>
+                      setPopups((prev) => prev.filter((x) => x.id !== p.id))
+                    }
+                    showClose={false}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
