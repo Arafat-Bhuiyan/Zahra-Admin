@@ -29,6 +29,8 @@ const Courses = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [activeView, setActiveView] = useState("listing"); // listing, add-edit, builder, live-sessions
   const [courseToEdit, setCourseToEdit] = useState(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const categories = [
     "All",
@@ -66,7 +68,7 @@ const Courses = () => {
         "Basic understanding of Islam",
         "Stable internet connection",
       ],
-      startDate: "May 10, 2026",
+      startDate: "2026-05-10",
       curriculum: [
         {
           id: 1,
@@ -110,6 +112,7 @@ const Courses = () => {
         "Build emotional resilience",
       ],
       requirements: ["None, open to all"],
+      startDate: "2026-04-15",
     },
     {
       id: 3,
@@ -134,6 +137,7 @@ const Courses = () => {
         "Overcome spiritual plateaus",
       ],
       requirements: ["Completion of Foundation course"],
+      startDate: "2026-03-20",
     },
     {
       id: 4,
@@ -158,6 +162,7 @@ const Courses = () => {
         "Study prophetic character",
       ],
       requirements: ["Basic literacy"],
+      startDate: "2026-02-28",
     },
   ]);
 
@@ -169,7 +174,12 @@ const Courses = () => {
       selectedCategory === "All" || c.category === selectedCategory;
     const matchesStatus =
       selectedStatus === "All" || c.status === selectedStatus;
-    return matchesSearch && matchesCategory && matchesStatus;
+
+    const matchesDate =
+      (!dateFrom || new Date(c.startDate) >= new Date(dateFrom)) &&
+      (!dateTo || new Date(c.startDate) <= new Date(dateTo));
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesDate;
   });
 
   const handleViewCourse = (course) => {
@@ -408,7 +418,37 @@ const Courses = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2 bg-zinc-50 border border-black/5 rounded-xl px-3 h-10 w-full md:w-auto">
+            <Calendar className="w-4 h-4 text-gray-400" />
+            <input
+              type="date"
+              className="bg-transparent border-none focus:outline-none text-xs text-gray-600 arimo-font w-full md:w-[110px]"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              placeholder="From"
+            />
+            <span className="text-gray-300">-</span>
+            <input
+              type="date"
+              className="bg-transparent border-none focus:outline-none text-xs text-gray-600 arimo-font w-full md:w-[110px]"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              placeholder="To"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => {
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+                className="text-[10px] bg-red-50 text-red-500 px-1.5 py-0.5 rounded hover:bg-red-100 transition-colors ml-1"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
           <div className="flex bg-zinc-100 p-1 rounded-xl">
             <button
               onClick={() => setViewMode("grid")}
@@ -483,7 +523,14 @@ const Courses = () => {
                     </div>
                     {c.status === "Upcoming" && (
                       <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest bg-stone-50 px-2 py-1 rounded-lg border border-stone-100">
-                        Starts {c.startDate || "TBD"}
+                        Starts{" "}
+                        {c.startDate
+                          ? new Date(c.startDate).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "TBD"}
                       </span>
                     )}
                   </div>

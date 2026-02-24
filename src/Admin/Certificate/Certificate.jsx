@@ -346,7 +346,7 @@ const Certificate = () => {
 
         <div className="flex-1 z-10">
           <h2 className="text-neutral-800 text-3xl font-bold arimo-font mb-6">
-            Generate Certificates in 3 Steps
+            Generate Certificates in 4 Steps
           </h2>
           <div className="space-y-3 max-w-lg">
             <StepItem
@@ -356,7 +356,7 @@ const Certificate = () => {
             />
             <StepItem
               number="2"
-              title="Create Template"
+              title="Choose Template"
               subtitle="for certificates"
             />
             <StepItem
