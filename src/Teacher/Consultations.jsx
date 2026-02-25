@@ -185,7 +185,7 @@ export default function Consultations() {
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-gray-900">
-                          {slot.date}, {slot.day}
+                          {slot.day}
                         </h4>
                         <p className="text-sm text-gray-600">{slot.time}</p>
                       </div>
