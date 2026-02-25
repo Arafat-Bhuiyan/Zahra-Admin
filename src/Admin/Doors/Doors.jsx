@@ -8,7 +8,6 @@ import toast from "react-hot-toast";
 const Doors = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDoor, setSelectedDoor] = useState(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [doors, setDoors] = useState([
     {
@@ -16,8 +15,7 @@ const Doors = () => {
       title: "Advanced React Mastery",
       description:
         "Master React Hooks, Context API, and Performance Optimization.",
-      modules: 12,
-      price: 99.99,
+      icon: "https://cdn-icons-png.flaticon.com/512/1126/1126012.png",
       courseLink: "https://example.com/react-mastery",
     },
     {
@@ -25,8 +23,7 @@ const Doors = () => {
       title: "Fullstack Web Development",
       description:
         "Comprehensive guide to MERN stack with real-world projects.",
-      modules: 24,
-      price: 149.99,
+      icon: "https://cdn-icons-png.flaticon.com/512/5968/5968292.png",
       courseLink: "https://example.com/fullstack",
     },
     {
@@ -34,8 +31,7 @@ const Doors = () => {
       title: "UI/UX Design Fundamentals",
       description:
         "Learn the principles of design and how to create stunning interfaces.",
-      modules: 8,
-      price: 79.99,
+      icon: "https://cdn-icons-png.flaticon.com/512/1312/1312489.png",
       courseLink: "https://example.com/ui-ux",
     },
   ]);
@@ -47,17 +43,27 @@ const Doors = () => {
   );
 
   const handleAddDoor = () => {
+    setSelectedDoor(null);
     setIsAddModalOpen(true);
   };
 
-  const handleSaveDoor = (newDoor) => {
-    setDoors((prev) => [newDoor, ...prev]);
-    toast.success(`${newDoor.title} added successfully!`);
+  const handleEditDoor = (door) => {
+    setSelectedDoor(door);
+    setIsAddModalOpen(true);
   };
 
-  const handleViewDoor = (door) => {
-    setSelectedDoor(door);
-    setIsDetailModalOpen(true);
+  const handleSaveDoor = (doorData) => {
+    if (selectedDoor) {
+      // Edit existing door
+      setDoors((prev) =>
+        prev.map((d) => (d.id === selectedDoor.id ? doorData : d)),
+      );
+      toast.success(`${doorData.title} updated successfully!`);
+    } else {
+      // Add new door
+      setDoors((prev) => [doorData, ...prev]);
+      toast.success(`${doorData.title} added successfully!`);
+    }
   };
 
   const confirmDelete = (doorId, title) => {
@@ -122,7 +128,7 @@ const Doors = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <div className="relative w-[256px]">
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
               <input
@@ -136,13 +142,13 @@ const Doors = () => {
             <button className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-black/10 hover:bg-gray-50 transition-colors">
               <Filter className="w-4 h-4 text-neutral-950" />
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Table Content */}
         <DoorsTable
           data={filteredDoors}
-          onView={handleViewDoor}
+          onEdit={handleEditDoor}
           onDelete={confirmDelete}
         />
 
@@ -153,16 +159,14 @@ const Doors = () => {
         )}
       </div>
 
-      <DoorDetailsModal
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        door={selectedDoor}
-      />
-
       <AddDoorModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleSaveDoor}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setSelectedDoor(null);
+        }}
+        onSave={handleSaveDoor}
+        door={selectedDoor}
       />
     </div>
   );
