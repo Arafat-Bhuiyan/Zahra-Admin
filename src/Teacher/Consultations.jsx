@@ -44,11 +44,7 @@ export default function Consultations() {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Consultation Management</h1>
-        <p className="text-gray-600 mt-2">Manage your consultation availability and bookings</p>
-      </div>
+     
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-6 mb-8">
