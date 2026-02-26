@@ -14,9 +14,10 @@ import {
   Trash2,
   Calendar,
   User,
-  Globe,
-  Mail,
-  MapPin,
+  ExternalLink,
+  CheckCircle2,
+  Tag,
+  Image as ImageIcon,
 } from "lucide-react";
 
 const StatCard = ({ icon: Icon, title, count, bgColor, iconColor }) => (
@@ -34,78 +35,111 @@ const StatCard = ({ icon: Icon, title, count, bgColor, iconColor }) => (
 );
 
 const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
-  const isUrgent = announcement.isUrgent;
-
   return (
     <div
-      className={`w-full p-6 bg-white rounded-2xl shadow-sm border-2 ${isUrgent ? "border-red-200 bg-red-50/10" : "border-neutral-200"} flex flex-col gap-4 transition-all hover:shadow-md`}
+      className={`w-full bg-white rounded-[2.5rem] shadow-sm border border-black/5 flex flex-col md:flex-row overflow-hidden transition-all hover:shadow-xl group relative ${!announcement.isActive ? "opacity-75 grayscale-[0.5]" : ""}`}
     >
-      <div className="flex justify-between items-start">
-        <div className="flex flex-wrap gap-2 items-center">
-          {isUrgent && (
-            <div className="px-3 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center gap-1 uppercase tracking-wider">
-              <AlertCircle size={12} />
-              Urgent
+      {/* Badge Overlay */}
+      <div className="absolute top-6 left-4 z-10 flex flex-wrap gap-2">
+        {announcement.badges?.map((badge, idx) => (
+          <span
+            key={idx}
+            className="px-3 py-1 bg-white/90 backdrop-blur-md text-[#7AA4A5] text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm border border-black/5"
+          >
+            {badge}
+          </span>
+        ))}
+      </div>
+
+      {/* Image Section */}
+      <div className="w-full md:w-72 h-48 md:h-auto relative overflow-hidden shrink-0">
+        {announcement.imagePath ? (
+          <img
+            src={announcement.imagePath}
+            alt={announcement.titleScript}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+            <ImageIcon className="w-12 h-12 text-gray-300" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent md:bg-gradient-to-t" />
+      </div>
+
+      {/* Content Section */}
+      <div className="flex-1 p-8 flex flex-col justify-between gap-6">
+        <div className="space-y-4">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <p className="text-[#7AA4A5] text-xs font-bold uppercase tracking-[0.2em]">
+                {announcement.titlePrefix}
+              </p>
+              <h2 className="text-3xl font-black text-neutral-900 leading-tight arimo-font">
+                {announcement.titleScript}
+              </h2>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onEdit(announcement)}
+                className="p-2.5 text-neutral-400 hover:text-[#7AA4A5] hover:bg-[#7AA4A5]/5 rounded-xl transition-all"
+              >
+                <Edit2 size={18} />
+              </button>
+              <button
+                onClick={() => onDelete(announcement.id)}
+                className="p-2.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
+
+          <p className="text-neutral-500 text-sm leading-relaxed max-w-2xl font-medium">
+            {announcement.message}
+          </p>
+
+          {/* Checklist */}
+          {announcement.checklist?.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 py-2">
+              {announcement.checklist.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 text-neutral-600 text-xs font-bold"
+                >
+                  <CheckCircle2 size={14} className="text-[#7AA4A5]" />
+                  <span>{item}</span>
+                </div>
+              ))}
             </div>
           )}
-          {announcement.tags.map((tag, index) => (
-            <span
-              key={index}
-              className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${tag.color}`}
-            >
-              {tag.label}
-            </span>
-          ))}
-          <div className="flex gap-2 ml-2">
-            {announcement.deliveryMethods.includes("On-Site") && (
-              <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-[10px] font-medium rounded">
-                <MapPin size={10} /> On-Site
-              </span>
-            )}
-            {announcement.deliveryMethods.includes("Email") && (
-              <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-medium rounded">
-                <Mail size={10} /> Email
+        </div>
+
+        {/* Footer */}
+        <div className="flex flex-wrap items-center justify-between gap-6 pt-4 border-t border-black/5">
+          <div className="flex items-center gap-6 text-neutral-400 text-[10px] font-bold uppercase tracking-widest">
+            <div className="flex items-center gap-2">
+              <Calendar size={14} className="text-[#7AA4A5]" />
+              <span>{announcement.publishedDate}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <User size={14} className="text-[#7AA4A5]" />
+              <span>{announcement.author}</span>
+            </div>
+            {!announcement.isActive && (
+              <span className="px-3 py-1 bg-gray-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm">
+                Inactive
               </span>
             )}
           </div>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onEdit(announcement)}
-            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+
+          <a
+            href={announcement.ctaLink}
+            className="px-6 py-2.5 bg-[#7AA4A5] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#7AA4A5]/20 hover:bg-[#6A9495] transition-all active:scale-95 flex items-center gap-2"
           >
-            <Edit2 size={18} />
-          </button>
-          <button
-            onClick={() => onDelete(announcement.id)}
-            className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <Trash2 size={18} />
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <h2 className="text-neutral-800 text-xl font-bold font-['Arimo']">
-          {announcement.title}
-        </h2>
-        <p className="text-neutral-600 text-sm font-medium">
-          {announcement.subtitle}
-        </p>
-      </div>
-
-      <p className="text-neutral-500 text-sm leading-relaxed max-w-4xl">
-        {announcement.description}
-      </p>
-
-      <div className="flex flex-wrap items-center gap-6 pt-2 text-neutral-400 text-sm">
-        <div className="flex items-center gap-2">
-          <Calendar size={16} />
-          <span>Published: {announcement.publishedDate}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <User size={16} />
-          <span>By {announcement.author}</span>
+            {announcement.ctaText}
+            <ExternalLink size={12} />
+          </a>
         </div>
       </div>
     </div>
@@ -119,71 +153,27 @@ const Announcement = () => {
   const [activeTab, setActiveTab] = useState("announcements");
   const [popups, setPopups] = useState([]);
   const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
+
   const [announcements, setAnnouncements] = useState([
     {
       id: 1,
-      title: "New Course Module Released",
-      subtitle: "Module 5 on Advanced Hooks is now available",
-      description:
-        "We're excited to announce that Module 5 covering Advanced React Hooks is now live! This module includes useState, useEffect, useContext, and custom hooks.",
-      publishedDate: "2026-01-15",
-      author: "Admin User",
-      isUrgent: false,
-      tags: [
-        {
-          label: "Advanced React Patterns",
-          color: "bg-blue-100 text-blue-700",
-        },
+      titlePrefix: "Discover our new",
+      titleScript: "Islamic Psychology",
+      message:
+        "Master the intersection of faith and science in our latest certified course module.",
+      checklist: [
+        "Certified Curriculum",
+        "Lifetime Access",
+        "Expert Instructors",
       ],
-      deliveryMethods: ["On-Site", "Email"],
-    },
-    {
-      id: 2,
-      title: "Platform Maintenance Scheduled",
-      subtitle: "System will be down for maintenance on Jan 20",
-      description:
-        "Our platform will undergo scheduled maintenance on January 20, 2026 from 2:00 AM to 4:00 AM EST. All courses will be temporarily unavailable during this time.",
-      publishedDate: "2026-01-14",
+      badges: ["Certified", "New", "Educational"],
+      ctaText: "Explore Course",
+      ctaLink: "/admin/courses-management",
+      imagePath:
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop",
+      isActive: true,
+      publishedDate: "2026-02-20",
       author: "Admin User",
-      isUrgent: true,
-      tags: [
-        { label: "Platform-Wide", color: "bg-purple-100 text-purple-700" },
-      ],
-      deliveryMethods: ["On-Site", "Email"],
-    },
-    {
-      id: 3,
-      title: "Assignment Deadline Extension",
-      subtitle: "Week 3 assignment deadline extended by 48 hours",
-      description:
-        "Due to popular request, we've extended the Week 3 assignment deadline by 48 hours. The new deadline is January 18, 2026 at 11:59 PM.",
-      publishedDate: "2026-01-13",
-      author: "Admin User",
-      isUrgent: false,
-      tags: [
-        {
-          label: "Data Science Fundamentals",
-          color: "bg-blue-100 text-blue-700",
-        },
-      ],
-      deliveryMethods: ["On-Site"],
-    },
-    {
-      id: 4,
-      title: "Live Q&A Session Tomorrow",
-      subtitle: "Join us for a live Q&A with the instructor",
-      description:
-        "Don't miss our live Q&A session tomorrow at 3:00 PM EST! The instructor will answer your questions about Figma workflows and best practices.",
-      publishedDate: "2026-01-12",
-      author: "Admin User",
-      isUrgent: true,
-      tags: [
-        {
-          label: "UI/UX Design Masterclass",
-          color: "bg-blue-100 text-blue-700",
-        },
-      ],
-      deliveryMethods: ["On-Site", "Email"],
     },
   ]);
 
@@ -204,7 +194,7 @@ const Announcement = () => {
               Confirm Delete
             </p>
             <p className="text-xs text-neutral-500 mt-0.5">
-              Are you sure you want to remove this announcement?
+              Are you sure you want to remove this campaign?
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -218,14 +208,7 @@ const Announcement = () => {
               onClick={() => {
                 setAnnouncements((prev) => prev.filter((ann) => ann.id !== id));
                 toast.dismiss(t.id);
-                toast.success("Announcement removed successfully", {
-                  icon: "🗑️",
-                  style: {
-                    borderRadius: "12px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                toast.success("Campaign removed successfully");
               }}
               className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
             >
@@ -241,8 +224,6 @@ const Announcement = () => {
           minWidth: "400px",
           borderRadius: "16px",
           border: "1px solid rgba(0,0,0,0.05)",
-          boxShadow:
-            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
         },
       },
     );
@@ -264,78 +245,67 @@ const Announcement = () => {
   const getStats = () => [
     {
       icon: Bell,
-      title: "Total Announcements",
+      title: "Total Campaigns",
       count: announcements.length,
-      bgColor: "bg-blue-50",
-      iconColor: "text-blue-600",
+      bgColor: "bg-[#7AA4A5]/10",
+      iconColor: "text-[#7AA4A5]",
     },
     {
-      icon: AlertCircle,
-      title: "Urgent",
-      count: announcements.filter((a) => a.isUrgent).length,
-      bgColor: "bg-red-50",
-      iconColor: "text-red-600",
+      icon: CheckCircle2,
+      title: "Active Now",
+      count: announcements.filter((a) => a.isActive).length,
+      bgColor: "bg-emerald-50",
+      iconColor: "text-emerald-600",
     },
     {
       icon: BookOpen,
-      title: "Course Specific",
-      count: announcements.filter((a) =>
-        a.tags.some((t) => t.label !== "Platform-Wide"),
-      ).length,
-      bgColor: "bg-green-50",
-      iconColor: "text-green-600",
+      title: "Course Promos",
+      count: announcements.length,
+      bgColor: "bg-amber-50",
+      iconColor: "text-amber-600",
     },
     {
-      icon: Globe,
-      title: "Platform Wide",
-      count: announcements.filter((a) =>
-        a.tags.some((t) => t.label === "Platform-Wide"),
-      ).length,
+      icon: Tag,
+      title: "Total Badges",
+      count: announcements.reduce(
+        (acc, curr) => acc + (curr.badges?.length || 0),
+        0,
+      ),
       bgColor: "bg-purple-50",
       iconColor: "text-purple-600",
     },
   ];
 
   return (
-    <div className="p-8 space-y-8 min-h-screen arimo-font">
+    <div className="p-8 space-y-8 min-h-screen arimo-font bg-gray-50/30">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border border-black/5 shadow-sm">
           <button
             onClick={() => setActiveTab("announcements")}
-            className={`px-4 py-2 rounded-md font-semibold ${activeTab === "announcements" ? "bg-slate-100" : "bg-white"}`}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === "announcements" ? "bg-[#7AA4A5] text-white shadow-lg" : "text-neutral-400 hover:text-neutral-600"}`}
           >
-            Announcements
+            Campaigns
           </button>
           <button
             onClick={() => setActiveTab("popups")}
-            className={`px-4 py-2 rounded-md font-semibold ${activeTab === "popups" ? "bg-slate-100" : "bg-white"}`}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === "popups" ? "bg-[#7AA4A5] text-white shadow-lg" : "text-neutral-400 hover:text-neutral-600"}`}
           >
-            Popup Announcements
+            Popups
           </button>
         </div>
 
-        <div className="flex items-center">
-          {activeTab === "announcements" ? (
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-[#7BA0A0] hover:bg-[#6A8F8F] text-white px-6 py-3 rounded-xl shadow-md transition-all active:scale-95"
-            >
-              <Plus size={20} />
-              <span className="font-semibold">New Announcement</span>
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={() => setIsCreatePopupOpen(true)}
-                className="flex items-center gap-2 bg-[#4F46E5] hover:bg-[#4338CA] text-white px-4 py-2 rounded-xl shadow-md transition-all active:scale-95 mr-3"
-              >
-                <Plus size={16} />
-                <span className="font-semibold">New Popup</span>
-              </button>
-            </>
-          )}
-        </div>
+        <button
+          onClick={() =>
+            activeTab === "announcements"
+              ? setIsModalOpen(true)
+              : setIsCreatePopupOpen(true)
+          }
+          className="flex items-center gap-2 bg-[#7AA4A5] hover:bg-[#6A8F8F] text-white px-8 py-3.5 rounded-2xl shadow-xl shadow-[#7AA4A5]/20 transition-all active:scale-95 text-xs font-black uppercase tracking-widest"
+        >
+          <Plus size={18} />
+          {activeTab === "announcements" ? "New Campaign" : "New Popup"}
+        </button>
       </div>
 
       <CreateAnnouncementModal
@@ -367,9 +337,9 @@ const Announcement = () => {
         ))}
       </div>
 
-      {/* Content: announcements OR popups */}
+      {/* Content */}
       {activeTab === "announcements" && (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-8 animate-in fade-in duration-700">
           {announcements.map((announcement) => (
             <AnnouncementCard
               key={announcement.id}
@@ -384,16 +354,18 @@ const Announcement = () => {
       {activeTab === "popups" && (
         <div className="space-y-6">
           {popups.length === 0 ? (
-            <div className="p-6 bg-white rounded-2xl border border-neutral-200 text-neutral-600">
-              No popup announcements yet. Click <strong>New Popup</strong> to
-              create one.
+            <div className="py-24 flex flex-col items-center justify-center text-center bg-white rounded-[2.5rem] border border-black/5">
+              <Bell className="w-16 h-16 text-gray-200 mb-4" />
+              <p className="text-neutral-400 font-bold">
+                No active popup campaigns found.
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {popups.map((p) => (
                 <div
                   key={p.id}
-                  className="p-4 bg-white rounded-2xl border border-neutral-200"
+                  className="p-6 bg-white rounded-[2.5rem] border border-black/5 shadow-sm"
                 >
                   <PopupAnnouncement
                     {...p}

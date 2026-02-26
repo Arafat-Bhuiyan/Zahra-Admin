@@ -1,30 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { X, Search, Bell, Mail, AlertCircle, Save } from "lucide-react";
+import {
+  X,
+  Plus,
+  Trash2,
+  Save,
+  Image as ImageIcon,
+  CheckCircle2,
+  Tag,
+  Link as LinkIcon,
+  Type,
+  AlignLeft,
+} from "lucide-react";
 
 const EditAnnouncementModal = ({ isOpen, onClose, onUpdate, announcement }) => {
   const [formData, setFormData] = useState({
-    title: "",
-    summary: "",
-    course: "",
+    titlePrefix: "Discover our new",
+    titleScript: "",
     message: "",
-    onSite: true,
-    email: false,
-    isUrgent: false,
+    checklist: [],
+    badges: [],
+    ctaText: "Explore Course",
+    ctaLink: "/courses",
+    imagePath: "",
+    isActive: true,
   });
+
+  const [newChecklistItem, setNewChecklistItem] = useState("");
+  const [newBadge, setNewBadge] = useState("");
 
   useEffect(() => {
     if (announcement && isOpen) {
       setFormData({
-        title: announcement.title || "",
-        summary: announcement.subtitle || "",
-        course:
-          announcement.tags[0]?.label === "Platform-Wide"
-            ? ""
-            : announcement.tags[0]?.label,
-        message: announcement.description || "",
-        onSite: announcement.deliveryMethods.includes("On-Site"),
-        email: announcement.deliveryMethods.includes("Email"),
-        isUrgent: announcement.isUrgent || false,
+        titlePrefix: announcement.titlePrefix || "Discover our new",
+        titleScript: announcement.titleScript || "",
+        message: announcement.message || "",
+        checklist: announcement.checklist || [],
+        badges: announcement.badges || [],
+        ctaText: announcement.ctaText || "Explore Course",
+        ctaLink: announcement.ctaLink || "/courses",
+        imagePath: announcement.imagePath || "",
+        isActive: announcement.isActive ?? true,
       });
     }
   }, [announcement, isOpen]);
@@ -34,29 +49,14 @@ const EditAnnouncementModal = ({ isOpen, onClose, onUpdate, announcement }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.summary || !formData.message) {
-      alert("Please fill in all required fields.");
+    if (!formData.titleScript || !formData.message) {
+      alert("Please fill in the title and message.");
       return;
     }
 
     const updatedAnnouncement = {
       ...announcement,
-      title: formData.title,
-      subtitle: formData.summary,
-      description: formData.message,
-      isUrgent: formData.isUrgent,
-      tags: [
-        {
-          label: formData.course || "Platform-Wide",
-          color: formData.course
-            ? "bg-blue-100 text-blue-700"
-            : "bg-purple-100 text-purple-700",
-        },
-      ],
-      deliveryMethods: [
-        ...(formData.onSite ? ["On-Site"] : []),
-        ...(formData.email ? ["Email"] : []),
-      ],
+      ...formData,
     };
 
     onUpdate(updatedAnnouncement);
@@ -71,18 +71,33 @@ const EditAnnouncementModal = ({ isOpen, onClose, onUpdate, announcement }) => {
     }));
   };
 
+  const addItem = (field, value, setValue) => {
+    if (value.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: [...prev[field], value.trim()],
+      }));
+      setValue("");
+    }
+  };
+
+  const removeItem = (field, index) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index),
+    }));
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 arimo-font">
-      <div className="w-full max-w-[750px] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 arimo-font">
+      <div className="w-full max-w-[850px] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200 border border-black/5">
         {/* Header */}
-        <div className="px-8 py-6 bg-gradient-to-r from-blue-500 to-blue-600 relative">
+        <div className="px-8 py-6 bg-gradient-to-r from-teal-500 to-teal-700 relative">
           <div className="flex justify-between items-center text-white">
             <div>
-              <h2 className="text-2xl font-bold inter-font">
-                Edit Announcement
-              </h2>
+              <h2 className="text-2xl font-bold inter-font">Edit Campaign</h2>
               <p className="text-white/80 text-sm mt-1">
-                Modify announcement details
+                Update your campaign announcement details
               </p>
             </div>
             <button
@@ -94,183 +109,253 @@ const EditAnnouncementModal = ({ isOpen, onClose, onUpdate, announcement }) => {
           </div>
         </div>
 
-        {/* Scrollable Content */}
+        {/* Form Content */}
         <form
           onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto flex flex-col"
+          className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar"
         >
-          <div className="p-8 space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-neutral-700 flex items-center gap-1">
-                Announcement Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-neutral-700 flex items-center gap-1">
-                Summary <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="summary"
-                value={formData.summary}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex flex-col">
-                <label className="text-sm font-bold text-neutral-700">
-                  Course (Optional)
-                </label>
-                <p className="text-xs text-neutral-500">
-                  Leave empty for platform-wide announcement
-                </p>
-              </div>
-              <div className="relative group">
-                <select
-                  name="course"
-                  value={formData.course}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all bg-white text-neutral-600"
-                >
-                  <option value="">Platform-Wide Announcement</option>
-                  <option value="Advanced React Patterns">
-                    Advanced React Patterns
-                  </option>
-                  <option value="Data Science Fundamentals">
-                    Data Science Fundamentals
-                  </option>
-                  <option value="UI/UX Design Masterclass">
-                    UI/UX Design Masterclass
-                  </option>
-                  <option value="JavaScript ES6+">JavaScript ES6+</option>
-                  <option value="Python for Beginners">
-                    Python for Beginners
-                  </option>
-                </select>
-                <Search
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none group-focus-within:text-blue-500"
-                  size={18}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-neutral-700 flex items-center gap-1">
-                Full Message <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all resize-none"
-                required
-              />
-            </div>
-
-            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
-              <div className="flex items-center gap-2 text-slate-700">
-                <Bell size={18} className="text-slate-400" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">
-                  Notification Options
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-teal-600 uppercase tracking-wider flex items-center gap-2">
+                  <Type size={16} /> Content
                 </h3>
-              </div>
-              <div className="space-y-3">
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <div className="mt-1">
-                    <input
-                      type="checkbox"
-                      name="onSite"
-                      checked={formData.onSite}
-                      onChange={handleChange}
-                      className="w-5 h-5 rounded border-neutral-300 text-blue-500 focus:ring-blue-400 transition-all"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-neutral-800">
-                      On-Site Notification
-                    </p>
-                    <p className="text-xs text-neutral-600">
-                      Show in student dashboard notification bell
-                    </p>
-                  </div>
-                </label>
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <div className="mt-1">
-                    <input
-                      type="checkbox"
-                      name="email"
-                      checked={formData.email}
-                      onChange={handleChange}
-                      className="w-5 h-5 rounded border-neutral-300 text-blue-500 focus:ring-blue-400 transition-all"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-neutral-800">
-                      Email Notification
-                    </p>
-                    <p className="text-xs text-neutral-600">
-                      Send email to all platform users
-                    </p>
-                  </div>
-                </label>
-              </div>
-            </div>
 
-            <div className="p-5 bg-red-50/50 rounded-2xl border border-red-100">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <div className="mt-1">
+                <div className="space-y-1.5 font-['Arimo']">
+                  <label className="text-xs font-bold text-neutral-500 ml-1">
+                    Title Prefix
+                  </label>
                   <input
-                    type="checkbox"
-                    name="isUrgent"
-                    checked={formData.isUrgent}
+                    type="text"
+                    name="titlePrefix"
+                    value={formData.titlePrefix}
                     onChange={handleChange}
-                    className="w-5 h-5 rounded border-red-200 text-red-600 focus:ring-red-500 transition-all"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-black/5 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all text-sm font-medium"
                   />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1.5 text-red-800">
-                    <AlertCircle size={16} />
-                    <span className="text-sm font-bold">Mark as Urgent</span>
+
+                <div className="space-y-1.5 font-['Arimo']">
+                  <label className="text-xs font-bold text-neutral-500 ml-1">
+                    Main Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="titleScript"
+                    value={formData.titleScript}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-black/5 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all text-sm font-bold"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1.5 font-['Arimo']">
+                  <label className="text-xs font-bold text-neutral-500 ml-1">
+                    Message <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full px-4 py-3 bg-gray-50 border border-black/5 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all text-sm font-medium resize-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Badges */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-teal-600 uppercase tracking-wider flex items-center gap-2">
+                  <Tag size={16} /> Badges
+                </h3>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {formData.badges.map((badge, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1 bg-teal-50 text-teal-700 text-[10px] font-bold rounded-full flex items-center gap-1 border border-teal-100 uppercase tracking-widest"
+                    >
+                      {badge}
+                      <button
+                        type="button"
+                        onClick={() => removeItem("badges", idx)}
+                      >
+                        <X size={10} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newBadge}
+                    onChange={(e) => setNewBadge(e.target.value)}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" &&
+                      (e.preventDefault(),
+                      addItem("badges", newBadge, setNewBadge))
+                    }
+                    className="flex-1 px-4 py-2 bg-gray-50 border border-black/5 rounded-xl text-xs outline-none focus:ring-2 focus:ring-teal-500/20"
+                    placeholder="Add Badge..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addItem("badges", newBadge, setNewBadge)}
+                    className="p-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700"
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              <div className="space-y-4 font-['Arimo']">
+                <h3 className="text-sm font-bold text-teal-600 uppercase tracking-wider flex items-center gap-2">
+                  <ImageIcon size={16} /> Visuals
+                </h3>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-500 ml-1">
+                    Image URL
+                  </label>
+                  <input
+                    type="text"
+                    name="imagePath"
+                    value={formData.imagePath}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-black/5 rounded-xl focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-neutral-500 ml-1">
+                      CTA Text
+                    </label>
+                    <input
+                      type="text"
+                      name="ctaText"
+                      value={formData.ctaText}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-black/5 rounded-xl text-xs font-bold"
+                    />
                   </div>
-                  <p className="text-xs text-red-700/80 leading-relaxed">
-                    Urgent announcements are highlighted and appear at the top
-                    of the feed
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-neutral-500 ml-1">
+                      CTA Link
+                    </label>
+                    <input
+                      type="text"
+                      name="ctaLink"
+                      value={formData.ctaLink}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-black/5 rounded-xl text-xs font-bold text-neutral-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Checklist */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-teal-600 uppercase tracking-wider flex items-center gap-2">
+                  <CheckCircle2 size={16} /> Highlights
+                </h3>
+                <div className="space-y-2 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar">
+                  {formData.checklist.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between items-center p-2 bg-neutral-50 rounded-lg border border-black/5 group"
+                    >
+                      <span className="text-xs font-medium text-neutral-600">
+                        {item}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeItem("checklist", idx)}
+                        className="text-red-400 opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newChecklistItem}
+                    onChange={(e) => setNewChecklistItem(e.target.value)}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" &&
+                      (e.preventDefault(),
+                      addItem(
+                        "checklist",
+                        newChecklistItem,
+                        setNewChecklistItem,
+                      ))
+                    }
+                    className="flex-1 px-4 py-2 bg-gray-50 border border-black/5 rounded-xl text-xs outline-none focus:ring-2 focus:ring-teal-500/20"
+                    placeholder="Add Highlight..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addItem(
+                        "checklist",
+                        newChecklistItem,
+                        setNewChecklistItem,
+                      )
+                    }
+                    className="p-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700"
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Toggle */}
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-emerald-800">
+                    Active Status
+                  </h4>
+                  <p className="text-[10px] text-emerald-600">
+                    Toggle visibility on student dashboard
                   </p>
                 </div>
-              </label>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="isActive"
+                    checked={formData.isActive}
+                    onChange={handleChange}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-emerald-200 rounded-full peer peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                </label>
+              </div>
             </div>
           </div>
-
-          <div className="px-8 py-5 bg-neutral-50 border-t border-neutral-200 flex justify-end items-center gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2.5 rounded-xl border border-neutral-300 text-neutral-700 font-bold hover:bg-neutral-100 transition-all active:scale-95"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-md active:scale-95"
-            >
-              <Save size={18} />
-              Save Changes
-            </button>
-          </div>
         </form>
+
+        {/* Footer */}
+        <div className="px-8 py-5 bg-neutral-50 border-t border-neutral-200 flex justify-end items-center gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2.5 rounded-xl border border-neutral-300 text-neutral-700 font-bold hover:bg-neutral-100 transition-all text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="px-8 py-2.5 rounded-xl bg-teal-600 text-white font-black uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-teal-700 transition-all shadow-lg shadow-teal-900/10"
+          >
+            <Save size={16} />
+            Update Campaign
+          </button>
+        </div>
       </div>
     </div>
   );
