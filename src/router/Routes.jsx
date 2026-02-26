@@ -35,9 +35,10 @@ import EmailTemplates from "../Admin/EmailTemp/EmailTemp";
 import Doors from "../Admin/Doors/Doors";
 import Consultants from "../Admin/Consultants/Consultants";
 
+const permissions = false; // This should be replaced with actual permission logic
+
 const RootRedirect = () => {
   const { role } = useSelector((state) => state.auth);
-
   if (role === "admin") {
     return <Navigate to="/admin" replace />;
   } else if (role === "teacher") {
@@ -104,7 +105,10 @@ const router = createBrowserRouter([
       },
       { path: "public-profile", element: <PublicProfile /> },
       { path: "edit-profile", element: <EditProfile /> },
-      { path: "my-courses", element: <MyCourses /> },
+      {
+        path: "my-courses",
+        element: permissions ? <Courses /> : <MyCourses />,
+      },
       { path: "course/:courseId", element: <CourseDetailsPage /> },
       { path: "submissions", element: <Submissions /> },
       { path: "consultations", element: <Consultations /> },

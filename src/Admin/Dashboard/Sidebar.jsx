@@ -27,7 +27,6 @@ import {
 import logo from "../../assets/img/logo.png";
 
 export const Sidebar = () => {
-  const navigate = useNavigate();
   const role = useSelector((state) => state.auth.role);
   let menuItems = [];
 
@@ -68,7 +67,7 @@ export const Sidebar = () => {
       },
       {
         icon: GraduationCap,
-        label: "My Courses",
+        label: "Courses",
         active: false,
         slug: "teacher/my-courses",
       },
