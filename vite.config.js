@@ -16,7 +16,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: true, // Listen on all local addresses
-    port: 5177, // default Vite dev server port
+    host: true,
+    port: 5174,
   },
 });

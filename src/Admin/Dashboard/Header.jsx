@@ -3,7 +3,7 @@ import profile from "../../../src/assets/images/profile.jpg";
 import { Bell, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { clearRole } from "@/Redux/features/auth/authSlice";
+import { clearAuth } from "@/Redux/features/auth/authSlice";
 
 const Header = ({ title, subtitle }) => {
   const [hasNotification, setHasNotification] = useState(true);
@@ -13,7 +13,7 @@ const Header = ({ title, subtitle }) => {
   const role = useSelector((state) => state.auth.role);
 
   const handleLogout = () => {
-    dispatch(clearRole());
+    dispatch(clearAuth());
     navigate("/login");
   };
 
