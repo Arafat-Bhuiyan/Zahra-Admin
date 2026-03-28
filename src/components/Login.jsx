@@ -5,43 +5,47 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setRole } from "@/Redux/features/auth/authSlice";
+import { setAuth } from "@/Redux/features/auth/authSlice";
+import { useLoginMutation } from "../Api/api";
 import { useEffect } from "react";
 
 export default function Login() {
-  const { role } = useSelector((state) => state.auth);
+  const { role, accessToken } = useSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const dispatch = useDispatch();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [login, { isLoading }] = useLoginMutation();
 
   useEffect(() => {
-    if (role === "admin") {
-      navigate("/admin");
-    } else if (role === "teacher") {
-      navigate("/teacher");
+    if (accessToken && role) {
+      if (role === "admin") {
+        navigate("/admin");
+      } else if (role === "teacher") {
+        navigate("/teacher");
+      }
     }
-  }, [role, navigate]);
+  }, [accessToken, role, navigate]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
-    // Simple role assignment for demo purposes
-    if (email === "admin@gmail.com") {
-      dispatch(setRole("admin"));
-      navigate("/admin");
-      return;
+    try {
+      const result = await login({ email, password }).unwrap();
+      // Determine role based on email
+      let role = "user"; // default
+      if (email.includes("admin")) {
+        role = "admin";
+      } else if (email.includes("teacher")) {
+        role = "teacher";
+      }
+      dispatch(
+        setAuth({ access: result.access, refresh: result.refresh, role }),
+      );
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert("Invalid credentials");
     }
-
-    if (email === "teacher@gmail.com") {
-      dispatch(setRole("teacher"));
-      navigate("/teacher");
-      return;
-    }
-
-    // fallback for invalid credentials (adjust as needed)
-    alert("Invalid credentials");
   };
 
   return (
@@ -121,9 +125,10 @@ export default function Login() {
           {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-b from-[#205A60] to-[#3B8F97] text-white font-semibold py-3 rounded-full transition duration-200 mt-8"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-b from-[#205A60] to-[#3B8F97] text-white font-semibold py-3 rounded-full transition duration-200 mt-8 disabled:opacity-50"
           >
-            Login
+            {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>

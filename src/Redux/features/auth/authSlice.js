@@ -1,30 +1,53 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Read persisted role from localStorage (safe for SSR)
-const persistedRole =
-  typeof window !== "undefined" ? localStorage.getItem("role") : null;
-const initialState = {
-  role: persistedRole ? persistedRole : null,
+// Read persisted auth from localStorage (safe for SSR)
+const persistedAuth =
+  typeof window !== "undefined" ? localStorage.getItem("auth") : null;
+let initialState = {
+  role: null,
+  accessToken: null,
+  refreshToken: null,
 };
+
+if (persistedAuth) {
+  try {
+    const authData = JSON.parse(persistedAuth);
+    initialState = {
+      role: authData.role || null,
+      accessToken: authData.access || null,
+      refreshToken: authData.refresh || null,
+    };
+  } catch (error) {
+    console.warn("Failed to parse auth data from localStorage:", error);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth");
+    }
+  }
+}
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setRole(state, action) {
-      state.role = action.payload;
+    setAuth(state, action) {
+      const { access, refresh, role } = action.payload;
+      state.accessToken = access;
+      state.refreshToken = refresh;
+      state.role = role;
       if (typeof window !== "undefined") {
-        localStorage.setItem("role", action.payload);
+        localStorage.setItem("auth", JSON.stringify({ access, refresh, role }));
       }
     },
-    clearRole(state) {
+    clearAuth(state) {
       state.role = null;
+      state.accessToken = null;
+      state.refreshToken = null;
       if (typeof window !== "undefined") {
-        localStorage.removeItem("role");
+        localStorage.removeItem("auth");
       }
     },
   },
 });
 
-export const { setRole, clearRole } = authSlice.actions;
+export const { setAuth, clearAuth } = authSlice.actions;
 export default authSlice.reducer;
