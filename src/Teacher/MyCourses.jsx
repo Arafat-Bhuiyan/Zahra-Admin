@@ -5,29 +5,32 @@ import featuredCourse1 from "../assets/img/featuredCourse1.png";
 import featuredCourse2 from "../assets/img/featuredCourse2.png";
 import featuredCourse3 from "../assets/img/featuredCourse3.png";
 import { FaUserDoctor } from "react-icons/fa6";
+import { useGetCategoriesQuery, useGetCoursesQuery } from "../Api/api";
 
 export default function MyCourses() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [searchText, setSearchText] = useState("");
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const categories = [
-    "All",
-    "Mental Health",
-    "Spiritual Growth",
-    "Relationships",
-    "Professional",
-  ];
+  const { data: categoriesData = [], isLoading: categoriesLoading, error: categoriesError } = useGetCategoriesQuery();
+  const categories = [{ id: "All", name: "All" }, ...categoriesData];
 
-  const statuses = ["All", "Live", "Recorded", "Upcoming"];
+  const statuses = ["All", "upcoming", "recorded", "running"];
 
-  const courses = [
+  const { data: coursesData = [], isLoading: coursesLoading, error: coursesError } = useGetCoursesQuery({
+    category: selectedCategory === "All" ? undefined : selectedCategory,
+    status: selectedStatus === "All" ? undefined : selectedStatus,
+    search: searchText || undefined,
+  });
+
+  const localSampleCourses = [
     {
       id: 1,
       title: "Tafair Al-Quran: Understanding D...",
       instructor: "Dr. Ahmed Hassan",
-      status: "Upcoming",
+      status: "upcoming",
       category: "Mental Health",
       statusColor: "bg-[#5BB814] text-white",
       lessons: 24,
@@ -46,7 +49,7 @@ export default function MyCourses() {
       title: "Tafair Al-Quran: Understanding D...",
       instructor: "Dr. Ahmed Hassan",
       category: "Spiritual Growth",
-      status: "Live",
+      status: "running",
       statusColor: "bg-[#D3130C] text-white",
       lessons: 24,
       weeks: 12,
@@ -64,7 +67,7 @@ export default function MyCourses() {
       title: "Tafair Al-Quran: Understanding D...",
       instructor: "Dr. Ahmed Hassan",
       category: "Spiritual Growth",
-      status: "Recorded",
+      status: "recorded",
       statusColor: "bg-[#2E9BDF] text-white",
       lessons: 24,
       weeks: 12,
@@ -79,17 +82,35 @@ export default function MyCourses() {
     },
   ];
 
-  const filteredCourses = courses.filter((course) => {
-    const categoryMatch =
-      selectedCategory === "All" || course.category === selectedCategory;
-    const statusMatch =
-      selectedStatus === "All" || course.status === selectedStatus;
-    return categoryMatch && statusMatch;
-  });
+  const courses = coursesData?.length ? coursesData : localSampleCourses;
 
   const handleCardClick = (course) => {
     navigate(`/teacher/course/${course.id}`, { state: { course } });
   };
+
+  const normalisedCourses = courses.map((course) => {
+    const categoryName =
+      course.category?.name ||
+      (typeof course.category === "string" ? course.category : "Uncategorized");
+
+    const status = course.status?.toLowerCase() || "upcoming";
+    const statusColor =
+      course.statusColor ||
+      (status === "upcoming"
+        ? "bg-[#5BB814] text-white"
+        : status === "running"
+        ? "bg-[#D3130C] text-white"
+        : status === "recorded"
+        ? "bg-[#2E9BDF] text-white"
+        : "bg-gray-400 text-white");
+
+    return {
+      ...course,
+      category: categoryName,
+      status,
+      statusColor,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -113,21 +134,53 @@ export default function MyCourses() {
         </h1>
 
         {/* Filters */}
+        {categoriesLoading && (
+          <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+            Loading categories...
+          </div>
+        )}
+        {categoriesError && (
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            Failed to load categories
+          </div>
+        )}
+        {coursesLoading && (
+          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+            Loading courses...
+          </div>
+        )}
+        {coursesError && (
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            Failed to load courses
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row gap-6 mb-8">
+          {/* Search */}
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-gray-700 mb-3">Search</p>
+            <input
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search course title..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+
           {/* Category Filter */}
           <div>
             <p className="text-sm font-semibold text-gray-700 mb-3">Category</p>
             <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat.id
                     ? "bg-teal-600 text-white"
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                     }`}
                 >
-                  {cat}
+                  {cat.name}
                 </button>
               ))}
             </div>
@@ -155,7 +208,7 @@ export default function MyCourses() {
 
         {/* Course Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
+          {normalisedCourses.map((course) => (
             <div
               key={course.id}
               onClick={() => handleCardClick(course)}
@@ -195,14 +248,14 @@ export default function MyCourses() {
                 {/* Instructor */}
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                   <FaUserDoctor className="text-lg" />
-                  {course.instructor}
+                  {course.teacher.user.first_name} {course.teacher.user.last_name}
                 </div>
 
                 {/* Course Details */}
                 <div className="grid grid-cols-2 gap-3 mb-4 text-xs text-gray-600">
                   <div className="flex items-center gap-1">
                     <BookOpen size={18} />
-                    {course.lessons} Lessons
+                    {course.num_lessons} Lessons
                   </div>
                   <div className="flex items-center gap-1">
                     <CalendarDays size={18} />
@@ -215,7 +268,7 @@ export default function MyCourses() {
                   <div className="flex items-center gap-1">
                     <Clock size={18} />
 
-                    {course.perSession} per session
+                    {course.hours_per_session} per session
                   </div>
                 </div>
 
@@ -240,7 +293,7 @@ export default function MyCourses() {
           ))}
         </div>
 
-        {filteredCourses.length === 0 && (
+        {coursesData.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
               No courses found matching your filters.
@@ -304,7 +357,7 @@ export default function MyCourses() {
                     Status
                   </p>
                   <p
-                    className={`bg-[#F9FAFB] p-4 rounded-lg text-sm font-medium rounded`}
+                    className="bg-[#F9FAFB] p-4 rounded-lg text-sm font-medium"
                   >
                     <span className={`w-2 h-2 px-2 py-1 rounded-full ${selectedCourse.statusColor}`}> {selectedCourse.status}</span>
                   </p>

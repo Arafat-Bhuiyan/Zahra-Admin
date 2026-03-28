@@ -42,7 +42,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQuery,
-  tagTypes: ["uni_users", "user_profile"],
+  tagTypes: ["uni_users", "user_profile", "categories", "courses"],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
@@ -51,7 +51,41 @@ export const api = createApi({
         body: credentials,
       }),
     }),
+    getCategories: builder.query({
+      query: () => ({
+        url: "categories/",
+        method: "GET",
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: "categories", id })),
+              { type: "categories", id: "LIST" },
+            ]
+          : [{ type: "categories", id: "LIST" }],
+    }),
+    getCourses: builder.query({
+      query: ({ category, status, search } = {}) => {
+        const params = new URLSearchParams();
+        if (category && category !== "All") params.append("category", category);
+        if (status && status !== "All") params.append("status", status);
+        if (search) params.append("search", search);
+
+        return {
+          url: `courses/${params.toString() ? `?${params.toString()}` : ""}`,
+          method: "GET",
+        };
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: "courses", id })),
+              { type: "courses", id: "LIST" },
+            ]
+          : [{ type: "courses", id: "LIST" }],
+    }),
   }),
 });
 
-export const { useLoginMutation } = api;
+export const { useLoginMutation, useGetCategoriesQuery, useGetCoursesQuery } =
+  api;

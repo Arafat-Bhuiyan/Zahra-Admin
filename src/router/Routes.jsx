@@ -35,7 +35,7 @@ import EmailTemplates from "../Admin/EmailTemp/EmailTemp";
 import Doors from "../Admin/Doors/Doors";
 import Consultants from "../Admin/Consultants/Consultants";
 
-const permissions = true; // This should be replaced with actual permission logic
+const permissions = false; // This should be replaced with actual permission logic
 
 const RootRedirect = () => {
   const { role } = useSelector((state) => state.auth);
