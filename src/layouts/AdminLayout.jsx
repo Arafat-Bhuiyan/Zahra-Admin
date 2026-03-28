@@ -57,7 +57,7 @@ export default function AdminLayout() {
     : location.pathname.startsWith(`/teacher/edit-profile`)
     ? "Edit Profile"
     : location.pathname.startsWith(`/teacher`)
-    ? "Teacher Dashboard"
+    ? "Faculty Dashboard"
     : "Dashboard Overview";
 
   const subtitle = location.pathname.startsWith(`/admin/users-management`)
