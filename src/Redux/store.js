@@ -1,13 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import counterReducer from "./features/counter/counterSlice";
 import authReducer from "./features/auth/authSlice";
 import { api } from "../Api/api";
 import { setupListeners } from "@reduxjs/toolkit/query";
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
     auth: authReducer,
-    // Add the generated reducer as a specific top-level slice
     [api.reducerPath]: api.reducer,
   },
   // Adding the api middleware enables caching, invalidation, polling,

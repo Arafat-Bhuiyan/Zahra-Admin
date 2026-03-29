@@ -354,7 +354,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                     <option>Fatima Rahman</option>
                   </select>
                 </FormGroup>
-                <FormGroup label="Lessons">
+                {/* <FormGroup label="Lessons">
                   <input
                     type="number"
                     name="lessons"
@@ -363,7 +363,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                     placeholder="24"
                     className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
                   />
-                </FormGroup>
+                </FormGroup> */}
               </div>
             </div>
           </section>

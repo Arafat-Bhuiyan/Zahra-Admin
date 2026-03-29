@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://10.10.13.19:8000/",
+  baseUrl: "http://10.10.13.8:8000/",
   prepareHeaders: (headers, { getState, endpoint }) => {
     // Skip auth token for public endpoints
     const publicEndpoints = [
