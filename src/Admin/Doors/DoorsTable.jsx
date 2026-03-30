@@ -1,5 +1,5 @@
 import React from "react";
-import { Pencil, Trash2, ExternalLink } from "lucide-react";
+import { Pencil, Trash2, ExternalLink, Check, X } from "lucide-react";
 
 const DoorsTable = ({ data, onDelete, onEdit }) => {
   return (
@@ -10,6 +10,7 @@ const DoorsTable = ({ data, onDelete, onEdit }) => {
             <th className="py-3 px-2 font-normal w-16">Icon</th>
             <th className="py-3 px-2 font-normal text-left">Title</th>
             <th className="py-3 px-2 font-normal text-left">Description</th>
+            <th className="py-3 px-2 font-normal w-24">Visible</th>
             <th className="py-3 px-2 font-normal w-32">Course Page</th>
             <th className="py-3 px-2 font-normal w-48">Actions</th>
           </tr>
@@ -39,11 +40,24 @@ const DoorsTable = ({ data, onDelete, onEdit }) => {
                 {door.title}
               </td>
               <td className="py-4 px-2 text-neutral-500 text-left max-w-[300px] truncate">
-                {door.description}
+                {door.content}
+              </td>
+              <td className="py-4 px-2">
+                <div className="flex justify-center">
+                  {door.is_visible ? (
+                    <div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                      <Check className="w-4 h-4" />
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center">
+                      <X className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
               </td>
               <td className="py-4 px-2">
                 <a
-                  href={door.courseLink}
+                  href={door.redirect_link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-[#89A6A7] hover:text-[#729394] transition-colors font-medium"

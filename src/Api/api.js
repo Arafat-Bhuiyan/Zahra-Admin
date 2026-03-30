@@ -20,14 +20,14 @@ const baseQuery = fetchBaseQuery({
     const token = getState().auth?.accessToken || null;
     // If token not in state, retrieve from local storage
     if (token) {
-      headers.set("authorization", `Bearer ${token}`);
+      headers.set("authorization", `JWT ${token}`);
     } else {
       const storedAuth = localStorage.getItem("auth");
       if (storedAuth) {
         try {
           const authData = JSON.parse(storedAuth);
           if (authData?.access) {
-            headers.set("authorization", `Bearer ${authData.access}`);
+            headers.set("authorization", `JWT ${authData.access}`);
           }
         } catch (error) {
           console.warn("Failed to parse auth token from local storage:", error);

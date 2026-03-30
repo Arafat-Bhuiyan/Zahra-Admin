@@ -2,34 +2,48 @@ import { api } from "./api";
 
 export const adminApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    // Dashboard and data summary
-    // getAdminDashboardData: builder.query({
-    //   query: () => "admin/dashboard/",
-    //   providesTags: ["admin_dashboard"],
-    // }),
+    // Get Doors Data
+    getDoorsData: builder.query({
+      query: () => "/doors/",
+      providesTags: ["doors"],
+    }),
 
-    // General Settings
-    // getGeneralSettings: builder.query({
-    //   query: () => "super-admin/settings/general/",
-    //   providesTags: ["admin_settings"],
-    // }),
+    // Add Door
+    addDoor: builder.mutation({
+      query: (data) => ({
+        url: "/doors/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["doors"],
+    }),
 
-    // updateGeneralSettings: builder.mutation({
-    //   query: (data) => ({
-    //     url: "super-admin/settings/general/",
-    //     method: "PATCH",
-    //     body: data,
-    //   }),
-    //   invalidatesTags: ["admin_settings"],
-    // }),
+    // Update Door
+    updateDoor: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/doors/${id}/`,
+        method: "PATCH",
+        body: body,
+      }),
+      invalidatesTags: ["doors"],
+    }),
 
+    // Delete Door
+    deleteDoor: builder.mutation({
+      query: (id) => ({
+        url: `/doors/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["doors"],
+    }),
     // Add more admin-specific endpoints here as needed...
   }),
   overrideExisting: false,
 });
 
 export const {
-  // useGetAdminDashboardDataQuery,
-  // useGetGeneralSettingsQuery,
-  // useUpdateGeneralSettingsMutation,
+  useGetDoorsDataQuery,
+  useAddDoorMutation,
+  useUpdateDoorMutation,
+  useDeleteDoorMutation,
 } = adminApi;

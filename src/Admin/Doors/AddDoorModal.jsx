@@ -8,50 +8,87 @@ import {
   AlignLeft,
   Pencil,
   Upload,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+import { useAddDoorMutation, useUpdateDoorMutation } from "../../Api/adminApi";
+import toast from "react-hot-toast";
 
-const AddDoorModal = ({ isOpen, onClose, onSave, door }) => {
+const AddDoorModal = ({ isOpen, onClose, door }) => {
   const fileInputRef = useRef(null);
+  const [addDoor, { isLoading: isAdding }] = useAddDoorMutation();
+  const [updateDoor, { isLoading: isUpdating }] = useUpdateDoorMutation();
   const [formData, setFormData] = useState({
     title: "",
-    description: "",
-    icon: "",
-    courseLink: "",
+    content: "",
+    icon: null,
+    redirect_link: "",
+    is_visible: true,
   });
+  const [preview, setPreview] = useState("");
 
   useEffect(() => {
     if (door) {
       setFormData({
         title: door.title || "",
-        description: door.description || "",
-        icon: door.icon || "",
-        courseLink: door.courseLink || "",
+        content: door.content || "",
+        icon: null,
+        redirect_link: door.redirect_link || "",
+        is_visible: door.is_visible ?? true,
       });
+      setPreview(door.icon || "");
     } else {
       setFormData({
         title: "",
-        description: "",
-        icon: "",
-        courseLink: "",
+        content: "",
+        icon: null,
+        redirect_link: "",
+        is_visible: true,
       });
+      setPreview("");
     }
   }, [door, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      id: door?.id || Date.now(),
-    });
-    setFormData({
-      title: "",
-      description: "",
-      icon: "",
-      courseLink: "",
-    });
-    onClose();
+
+    const data = new FormData();
+    data.append("title", formData.title);
+    data.append("content", formData.content);
+    data.append("redirect_link", formData.redirect_link);
+
+    data.append("is_visible", formData.is_visible);
+
+    // Only append icon if it's a new file (File object)
+    if (formData.icon instanceof File) {
+      data.append("icon", formData.icon);
+    }
+
+    try {
+      if (!door) {
+        // Create new door
+        await addDoor(data).unwrap();
+        toast.success("Door created successfully!");
+      } else {
+        // Update existing door
+        await updateDoor({ id: door.id, body: data }).unwrap();
+        toast.success("Door updated successfully!");
+      }
+
+      setFormData({
+        title: "",
+        content: "",
+        icon: null,
+        redirect_link: "",
+        is_visible: true,
+      });
+      setPreview("");
+      onClose();
+    } catch (error) {
+      toast.error(error?.data?.message || "Something went wrong! Please try again later.");
+    }
   };
 
   const handleChange = (e) => {
@@ -66,11 +103,8 @@ const AddDoorModal = ({ isOpen, onClose, onSave, door }) => {
         alert("File size should be less than 2MB");
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, icon: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      setFormData((prev) => ({ ...prev, icon: file }));
+      setPreview(URL.createObjectURL(file));
     }
   };
 
@@ -128,10 +162,10 @@ const AddDoorModal = ({ isOpen, onClose, onSave, door }) => {
             <div className="relative">
               <AlignLeft className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               <textarea
-                name="description"
+                name="content"
                 placeholder="Enter course description..."
                 className="w-full min-h-[100px] pl-10 pr-4 py-3 bg-gray-50 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#89A6A7]/20 focus:border-[#89A6A7] transition-all text-sm resize-none"
-                value={formData.description}
+                value={formData.content}
                 onChange={handleChange}
                 required
               />
@@ -145,9 +179,9 @@ const AddDoorModal = ({ isOpen, onClose, onSave, door }) => {
             </label>
             <div className="flex items-center gap-4 p-4 bg-gray-50 border border-black/10 rounded-2xl">
               <div className="w-16 h-16 bg-white border border-black/5 rounded-xl flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                {formData.icon ? (
+                {preview ? (
                   <img
-                    src={formData.icon}
+                    src={preview}
                     alt="Preview"
                     className="w-full h-full object-cover"
                   />
@@ -175,10 +209,14 @@ const AddDoorModal = ({ isOpen, onClose, onSave, door }) => {
                   * JPG, PNG or SVG. Max 2MB.
                 </p>
               </div>
-              {formData.icon && (
+              {preview && (
                 <button
                   type="button"
-                  onClick={() => setFormData((prev) => ({ ...prev, icon: "" }))}
+                  onClick={() => {
+                    setFormData((prev) => ({ ...prev, icon: null }));
+                    setPreview("");
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
                   className="text-xs text-red-500 hover:text-red-700 font-medium"
                 >
                   Remove
@@ -196,13 +234,63 @@ const AddDoorModal = ({ isOpen, onClose, onSave, door }) => {
               <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="url"
-                name="courseLink"
+                name="redirect_link"
                 placeholder="https://example.com/course"
                 className="w-full h-11 pl-10 pr-4 bg-gray-50 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#89A6A7]/20 focus:border-[#89A6A7] transition-all text-sm"
-                value={formData.courseLink}
+                value={formData.redirect_link}
                 onChange={handleChange}
                 required
               />
+            </div>
+          </div>
+
+          {/* Visible Toggle */}
+          <div className="flex flex-col gap-1.5 pt-2">
+            <div className="flex items-center justify-between p-4 bg-gray-50 border border-black/10 rounded-2xl transition-all hover:bg-gray-100/50">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`p-2 rounded-lg transition-colors ${
+                    formData.is_visible
+                      ? "bg-emerald-100 text-emerald-600"
+                      : "bg-rose-100 text-rose-600"
+                  }`}
+                >
+                  {formData.is_visible ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-neutral-900 arimo-font">
+                    Visibility Status
+                  </p>
+                  <p className="text-[11px] text-gray-500">
+                    {formData.is_visible
+                      ? "This door will be visible on the course page"
+                      : "This door will be hidden from users"}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    is_visible: !prev.is_visible,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ring-2 ring-transparent ring-offset-2 ${
+                  formData.is_visible ? "bg-[#89A6A7]" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formData.is_visible ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
             </div>
           </div>
 
@@ -217,9 +305,14 @@ const AddDoorModal = ({ isOpen, onClose, onSave, door }) => {
             </button>
             <button
               type="submit"
-              className="flex-[2] h-11 bg-[#89A6A7] hover:bg-[#729394] text-white rounded-xl text-sm font-medium shadow-md transition-all active:scale-[0.98]"
+              disabled={isAdding || isUpdating}
+              className="flex-[2] h-11 bg-[#89A6A7] hover:bg-[#729394] text-white rounded-xl text-sm font-medium shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {door ? "Update Door" : "Create Door"}
+              {isAdding || isUpdating
+                ? "Saving..."
+                : door
+                  ? "Update Door"
+                  : "Create Door"}
             </button>
           </div>
         </form>

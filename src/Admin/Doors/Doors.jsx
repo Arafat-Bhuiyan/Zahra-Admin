@@ -4,42 +4,21 @@ import DoorsTable from "./DoorsTable";
 import DoorDetailsModal from "./DoorDetailsModal";
 import AddDoorModal from "./AddDoorModal";
 import toast from "react-hot-toast";
+import { useGetDoorsDataQuery, useDeleteDoorMutation } from "../../Api/adminApi";
 
 const Doors = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDoor, setSelectedDoor] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [doors, setDoors] = useState([
-    {
-      id: 1,
-      title: "Advanced React Mastery",
-      description:
-        "Master React Hooks, Context API, and Performance Optimization.",
-      icon: "https://cdn-icons-png.flaticon.com/512/1126/1126012.png",
-      courseLink: "https://example.com/react-mastery",
-    },
-    {
-      id: 2,
-      title: "Fullstack Web Development",
-      description:
-        "Comprehensive guide to MERN stack with real-world projects.",
-      icon: "https://cdn-icons-png.flaticon.com/512/5968/5968292.png",
-      courseLink: "https://example.com/fullstack",
-    },
-    {
-      id: 3,
-      title: "UI/UX Design Fundamentals",
-      description:
-        "Learn the principles of design and how to create stunning interfaces.",
-      icon: "https://cdn-icons-png.flaticon.com/512/1312/1312489.png",
-      courseLink: "https://example.com/ui-ux",
-    },
-  ]);
+
+  const { data: doorsData, isLoading, isError } = useGetDoorsDataQuery();
+  const [deleteDoor] = useDeleteDoorMutation();
+  const doors = doorsData || [];
 
   const filteredDoors = doors.filter(
     (door) =>
-      door.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      door.description.toLowerCase().includes(searchQuery.toLowerCase()),
+      door.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      door.content?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleAddDoor = () => {
@@ -52,19 +31,6 @@ const Doors = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleSaveDoor = (doorData) => {
-    if (selectedDoor) {
-      // Edit existing door
-      setDoors((prev) =>
-        prev.map((d) => (d.id === selectedDoor.id ? doorData : d)),
-      );
-      toast.success(`${doorData.title} updated successfully!`);
-    } else {
-      // Add new door
-      setDoors((prev) => [doorData, ...prev]);
-      toast.success(`${doorData.title} added successfully!`);
-    }
-  };
 
   const confirmDelete = (doorId, title) => {
     toast(
@@ -81,10 +47,14 @@ const Doors = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
-                setDoors(doors.filter((d) => d.id !== doorId));
-                toast.dismiss(t.id);
-                toast.success("Door removed successfully");
+              onClick={async () => {
+                try {
+                  await deleteDoor(doorId).unwrap();
+                  toast.success("Door removed successfully");
+                  toast.dismiss(t.id);
+                } catch (error) {
+                  toast.error(error?.data?.message || "Failed to delete door");
+                }
               }}
               className="px-3 py-1 text-xs bg-rose-600 text-white rounded-md hover:bg-rose-700 font-medium transition-colors"
             >
@@ -146,16 +116,28 @@ const Doors = () => {
         </div>
 
         {/* Table Content */}
-        <DoorsTable
-          data={filteredDoors}
-          onEdit={handleEditDoor}
-          onDelete={confirmDelete}
-        />
-
-        {filteredDoors.length === 0 && (
-          <div className="py-20 text-center text-gray-500 arimo-font w-full">
-            No doors found matching your search.
+        {isLoading ? (
+          <div className="py-20 text-center text-gray-400 arimo-font w-full">
+            Loading doors...
           </div>
+        ) : isError ? (
+          <div className="py-20 text-center text-rose-500 arimo-font w-full">
+            Failed to load doors data.
+          </div>
+        ) : (
+          <>
+            <DoorsTable
+              data={filteredDoors}
+              onEdit={handleEditDoor}
+              onDelete={confirmDelete}
+            />
+
+            {filteredDoors.length === 0 && (
+              <div className="py-20 text-center text-gray-500 arimo-font w-full">
+                No doors found matching your search.
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -165,7 +147,6 @@ const Doors = () => {
           setIsAddModalOpen(false);
           setSelectedDoor(null);
         }}
-        onSave={handleSaveDoor}
         door={selectedDoor}
       />
     </div>
