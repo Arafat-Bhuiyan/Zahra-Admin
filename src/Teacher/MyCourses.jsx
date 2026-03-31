@@ -14,12 +14,20 @@ export default function MyCourses() {
   const [searchText, setSearchText] = useState("");
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const { data: categoriesData = [], isLoading: categoriesLoading, error: categoriesError } = useGetCategoriesQuery();
+  const {
+    data: categoriesData = [],
+    isLoading: categoriesLoading,
+    error: categoriesError,
+  } = useGetCategoriesQuery();
   const categories = [{ id: "All", name: "All" }, ...categoriesData];
 
   const statuses = ["All", "upcoming", "recorded", "running"];
 
-  const { data: coursesData = [], isLoading: coursesLoading, error: coursesError } = useGetCoursesQuery({
+  const {
+    data: coursesData = [],
+    isLoading: coursesLoading,
+    error: coursesError,
+  } = useGetCoursesQuery({
     category: selectedCategory === "All" ? undefined : selectedCategory,
     status: selectedStatus === "All" ? undefined : selectedStatus,
     search: searchText || undefined,
@@ -99,16 +107,25 @@ export default function MyCourses() {
       (status === "upcoming"
         ? "bg-[#5BB814] text-white"
         : status === "running"
-        ? "bg-[#D3130C] text-white"
-        : status === "recorded"
-        ? "bg-[#2E9BDF] text-white"
-        : "bg-gray-400 text-white");
+          ? "bg-[#D3130C] text-white"
+          : status === "recorded"
+            ? "bg-[#2E9BDF] text-white"
+            : "bg-gray-400 text-white");
+
+    const instructorName =
+      course.teacher?.user?.first_name && course.teacher?.user?.last_name
+        ? `${course.teacher.user.first_name} ${course.teacher.user.last_name}`
+        : course.instructor || "Instructor";
 
     return {
       ...course,
       category: categoryName,
       status,
       statusColor,
+      instructor: instructorName,
+      lessons: course.num_lessons || 0,
+      weeks: course.duration || 0,
+      totalHours: course.hours_per_session || 0,
     };
   });
 
@@ -175,10 +192,11 @@ export default function MyCourses() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat.id
-                    ? "bg-teal-600 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                    }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    selectedCategory === cat.id
+                      ? "bg-teal-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
                 >
                   {cat.name}
                 </button>
@@ -194,10 +212,11 @@ export default function MyCourses() {
                 <button
                   key={status}
                   onClick={() => setSelectedStatus(status)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedStatus === status
-                    ? "bg-teal-600 text-white"
-                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                    }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    selectedStatus === status
+                      ? "bg-teal-600 text-white"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
                 >
                   {status}
                 </button>
@@ -234,7 +253,6 @@ export default function MyCourses() {
               {/* Course Info */}
               <div className="p-4">
                 <div className="flex justify-between items-center mb-2">
-
                   <div
                     className={`px-3 py-1 rounded-full text-xs font-medium mb-2 ${course.statusColor}`}
                   >
@@ -248,14 +266,14 @@ export default function MyCourses() {
                 {/* Instructor */}
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                   <FaUserDoctor className="text-lg" />
-                  {course.teacher.user.first_name} {course.teacher.user.last_name}
+                  {course.instructor}
                 </div>
 
                 {/* Course Details */}
                 <div className="grid grid-cols-2 gap-3 mb-4 text-xs text-gray-600">
                   <div className="flex items-center gap-1">
                     <BookOpen size={18} />
-                    {course.num_lessons} Lessons
+                    {course.lessons} Lessons
                   </div>
                   <div className="flex items-center gap-1">
                     <CalendarDays size={18} />
@@ -267,8 +285,7 @@ export default function MyCourses() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock size={18} />
-
-                    {course.hours_per_session} per session
+                    {course.hours_per_session || course.totalHours} per session
                   </div>
                 </div>
 
@@ -328,7 +345,6 @@ export default function MyCourses() {
               {/* Two Column Layout */}
               <div className="grid grid-cols-2 gap-4">
                 {/* Left Column */}
-
                 <div>
                   <p className="font-semibold text-gray-500 mb-1">
                     Course Title
@@ -338,51 +354,50 @@ export default function MyCourses() {
                   </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-500 mb-1">
-                    Instructor
-                  </p>
+                  <p className="font-semibold text-gray-500 mb-1">Instructor</p>
                   <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
                     {selectedCourse.instructor}
                   </p>
-                </div>    <div>
-                  <p className="font-semibold text-gray-500 mb-1">
-                    Category
-                  </p>
+                </div>{" "}
+                <div>
+                  <p className="font-semibold text-gray-500 mb-1">Category</p>
                   <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
                     {selectedCourse.category}
                   </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-500 mb-1">
-                    Status
+                  <p className="font-semibold text-gray-500 mb-1">Status</p>
+                  <p className="bg-[#F9FAFB] p-4 rounded-lg text-sm font-medium">
+                    <span
+                      className={`w-2 h-2 px-2 py-1 rounded-full ${selectedCourse.statusColor}`}
+                    >
+                      {" "}
+                      {selectedCourse.status}
+                    </span>
                   </p>
-                  <p
-                    className="bg-[#F9FAFB] p-4 rounded-lg text-sm font-medium"
-                  >
-                    <span className={`w-2 h-2 px-2 py-1 rounded-full ${selectedCourse.statusColor}`}> {selectedCourse.status}</span>
-                  </p>
-                </div> <div>
-                  <p className="font-semibold text-gray-500 mb-1">
-                    Price
-                  </p>
+                </div>{" "}
+                <div>
+                  <p className="font-semibold text-gray-500 mb-1">Price</p>
                   <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-teal-600">
                     {selectedCourse.price}
                   </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-500 mb-1">
-                    Duration
-                  </p>
+                  <p className="font-semibold text-gray-500 mb-1">Duration</p>
                   <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
-                    {selectedCourse.weeks} weeks
+                    {selectedCourse.weeks || selectedCourse.duration || "N/A"}{" "}
+                    weeks
                   </p>
                 </div>
                 <div>
                   <p className="font-semibold text-gray-500 mb-1">
-                    Total Lessions
+                    Total Lessons
                   </p>
                   <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
-                    {selectedCourse.lessons} lessons
+                    {selectedCourse.lessons ||
+                      selectedCourse.num_lessons ||
+                      "N/A"}{" "}
+                    lessons
                   </p>
                 </div>
               </div>

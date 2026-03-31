@@ -53,7 +53,7 @@ export const api = createApi({
     }),
     getCategories: builder.query({
       query: () => ({
-        url: "categories/",
+        url: "course-categories/",
         method: "GET",
       }),
       providesTags: (result) =>
