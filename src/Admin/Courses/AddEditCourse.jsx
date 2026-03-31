@@ -17,6 +17,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import CourseCurriculum from "./CourseCurriculum";
+import QuillEditor from "../../components/QuillEditor";
 
 const AddEditCourse = ({ course, onBack, onSave }) => {
   const [activeTab, setActiveTab] = useState("Course Overview");
@@ -258,13 +259,12 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
               </FormGroup>
 
               <FormGroup label="Course Description">
-                <textarea
-                  name="description"
-                  rows={4}
+                <QuillEditor
                   value={formData.description}
-                  onChange={handleChange}
+                  onChange={(html) =>
+                    setFormData((prev) => ({ ...prev, description: html }))
+                  }
                   placeholder="Detailed description of what students will learn..."
-                  className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300 transition-all font-medium text-stone-800 resize-none"
                 />
               </FormGroup>
 

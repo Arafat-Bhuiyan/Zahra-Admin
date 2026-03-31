@@ -11,6 +11,7 @@ import {
   Trash2,
   ExternalLink,
 } from "lucide-react";
+import QuillEditor from "../../components/QuillEditor";
 
 const UploadVideo = ({ onSave, onBack }) => {
   const [formData, setFormData] = useState({
@@ -28,8 +29,14 @@ const UploadVideo = ({ onSave, onBack }) => {
   const [tagInput, setTagInput] = useState("");
   const fileInputRef = useRef(null);
 
-  const wordCount = formData.content.trim()
-    ? formData.content.trim().split(/\s+/).length
+  const stripHtml = (html) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
+  const wordCount = stripHtml(formData.content).trim()
+    ? stripHtml(formData.content).trim().split(/\s+/).length
     : 0;
 
   const handleAddTag = () => {
@@ -207,16 +214,13 @@ const UploadVideo = ({ onSave, onBack }) => {
               About this Video
             </h3>
             <div className="space-y-2">
-              <div className="w-full min-h-[300px] p-4 bg-zinc-100 rounded-lg text-stone-700 text-base font-normal arimo-font leading-relaxed focus-within:ring-2 focus-within:ring-[#7AA4A5]/20">
-                <textarea
-                  className="w-full h-full bg-transparent border-none focus:outline-none resize-none"
-                  value={formData.content}
-                  onChange={(e) =>
-                    setFormData({ ...formData, content: e.target.value })
-                  }
-                  rows={10}
-                />
-              </div>
+              <QuillEditor
+                value={formData.content}
+                onChange={(html) =>
+                  setFormData({ ...formData, content: html })
+                }
+                placeholder="Write about this video..."
+              />
               <p className="text-gray-500 text-sm font-normal">
                 {wordCount} words
               </p>
