@@ -398,7 +398,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
           </section>
 
           {/* What You'll Learn */}
-          <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
+          {/* <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
             <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs inter-font">
               <CheckCircle2 className="w-4 h-4 text-teal-500" />
               What You'll Learn
@@ -441,10 +441,10 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                 </button>
               </div>
             </div>
-          </section>
+          </section> */}
 
           {/* Requirements */}
-          <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
+          {/* <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
             <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs inter-font">
               <AlertCircle className="w-4 h-4 text-blue-500" />
               Requirements
@@ -487,7 +487,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                 </button>
               </div>
             </div>
-          </section>
+          </section> */}
         </div>
       )}
 

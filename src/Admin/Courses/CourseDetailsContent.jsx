@@ -119,7 +119,7 @@ const CourseDetailsContent = ({ course }) => {
       </div>
 
       {/* Learning Objectives & Requirements */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-6">
           <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs">
             <CheckCircle2 className="w-4 h-4 text-teal-600" />
@@ -159,7 +159,7 @@ const CourseDetailsContent = ({ course }) => {
             )) || <span className="text-sm text-stone-400">N/A</span>}
           </div>
         </section>
-      </div>
+      </div> */}
 
       {/* Enrollment Stats */}
       <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">

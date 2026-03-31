@@ -16,8 +16,8 @@ import {
 import BookDetailsModal from "./BookDetailsModal";
 import EditBookModal from "./EditBookModal";
 import UploadBookModal from "./UploadBookModal";
+import { useGetBooksDataQuery } from "../../Api/adminApi";
 import toast from "react-hot-toast";
-import { X } from "lucide-react";
 
 const BookLibrary = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,108 +25,29 @@ const BookLibrary = () => {
   const [editingBook, setEditingBook] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  const [booksList, setBooksList] = useState([
-    {
-      id: 1,
-      title: "Healing the Anxious Heart",
-      author: "Dr. Sarah Ahmed",
-      description:
-        "A comprehensive guide to understanding Islamic psychology and its application in modern mental health practices.",
-      downloads: "1243",
-      date: "01/10/26",
-      price: "99",
-      category: "Psychology",
-      type: "Both",
-      status: "Active",
-      image:
-        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2787&auto=format&fit=crop",
-    },
-    {
-      id: 2,
-      title: "The Modern Muslimah",
-      author: "Ayesha Khan",
-      description:
-        "Navigating identity, career, and spirituality in the 21st century with practical Islamic wisdom.",
-      downloads: "2850",
-      date: "12/09/25",
-      price: "85",
-      category: "Lifestyle",
-      type: "Digital",
-      status: "Active",
-      image:
-        "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2824&auto=format&fit=crop",
-    },
-    {
-      id: 3,
-      title: "Mindful Parenting",
-      author: "Zaynab Ali",
-      description:
-        "Islamic perspectives on raising resilient and spiritually aware children in a digital age.",
-      downloads: "1920",
-      date: "15/11/25",
-      price: "70",
-      category: "Parenting",
-      type: "Both",
-      status: "Active",
-      image:
-        "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2800&auto=format&fit=crop",
-    },
-    {
-      id: 4,
-      title: "Islamic History Revisited",
-      author: "Prof. Omar Farooq",
-      description:
-        "Deep dive into the untold stories of Islamic civilizations and their global impact.",
-      downloads: "3410",
-      date: "20/08/25",
-      price: "120",
-      category: "History",
-      type: "Physical",
-      status: "Active",
-      image:
-        "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop",
-    },
-    {
-      id: 5,
-      title: "Path to Serenity",
-      author: "Imam Yusuf",
-      description:
-        "Practical steps to achieving inner peace through prayer, reflection, and gratitude.",
-      downloads: "4560",
-      date: "05/01/26",
-      price: "60",
-      category: "Spirituality",
-      type: "Both",
-      status: "Active",
-      image:
-        "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2899&auto=format&fit=crop",
-    },
-    {
-      id: 6,
-      title: "The Silent Wisdom",
-      author: "Mariam Rahman",
-      description:
-        "Exploring the power of silence and meditation in Islamic mystical traditions.",
-      downloads: "1150",
-      date: "30/12/25",
-      price: "110",
-      category: "Philosophy",
-      type: "Digital",
-      status: "Active",
-      image:
-        "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2824&auto=format&fit=crop",
-    },
-  ]);
+  const { data: apiData, isLoading, isError } = useGetBooksDataQuery();
+  const books = apiData?.results || [];
+
+  // Local helper to format book type
+  const getBookType = (book) => {
+    if (book.has_physical && book.has_digital) return "Both";
+    if (book.has_physical) return "Physical";
+    if (book.has_digital) return "Digital";
+    return "N/A";
+  };
+
+  // Helper to strip HTML tags for preview
+  const stripHtml = (html) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
 
   const handleUpdateBook = (updatedBook) => {
-    setBooksList((prev) =>
-      prev.map((b) => (b.id === updatedBook.id ? updatedBook : b)),
-    );
     setEditingBook(null);
   };
 
   const handleAddBook = (newBook) => {
-    setBooksList((prev) => [newBook, ...prev]);
     setShowUploadModal(false);
   };
 
@@ -151,7 +72,6 @@ const BookLibrary = () => {
             </button>
             <button
               onClick={() => {
-                setBooksList((prev) => prev.filter((book) => book.id !== id));
                 toast.dismiss(t.id);
                 toast.success("Book removed successfully", {
                   icon: "🗑️",
@@ -184,15 +104,25 @@ const BookLibrary = () => {
   };
 
   const stats = [
-    { label: "Total Books", value: "6", icon: BookOpen, color: "bg-teal-600" },
+    {
+      label: "Total Books",
+      value: apiData?.count || "0",
+      icon: BookOpen,
+      color: "bg-teal-600",
+    },
     {
       label: "Total Downloads",
-      value: "7,475",
+      value: "0",
       icon: Download,
       color: "bg-blue-600",
     },
-    { label: "Total Views", value: "18,595", icon: Eye, color: "bg-green-600" },
-    { label: "Categories", value: "8", icon: Layers, color: "bg-purple-600" },
+    { label: "Total Views", value: "0", icon: Eye, color: "bg-green-600" },
+    {
+      label: "Categories",
+      value: "N/A",
+      icon: Layers,
+      color: "bg-purple-600",
+    },
   ];
 
   return (
@@ -264,85 +194,100 @@ const BookLibrary = () => {
       </div>
 
       {/* Books Grid */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {booksList.map((book) => (
-          <div
-            key={book.id}
-            className="bg-white rounded-2xl border border-black/10 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group"
-          >
-            {/* Image Container */}
-            <div className="relative h-64 w-full bg-gray-100 overflow-hidden">
-              <img
-                src={book.image}
-                alt={book.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute top-3 right-3 px-3 py-1 bg-teal-600 rounded-lg text-white text-xs font-normal">
-                {book.category}
-              </div>
-            </div>
-
-            {/* Content Container */}
-            <div className="p-5 flex-1 flex flex-col gap-3">
-              <div className="space-y-1">
-                <h3 className="text-neutral-950 text-lg font-bold leading-7 line-clamp-1">
-                  {book.title}
-                </h3>
-                <p className="text-gray-600 text-sm font-normal">
-                  {book.author}
-                </p>
-              </div>
-
-              <p className="text-gray-500 text-sm font-normal leading-5 line-clamp-3">
-                {book.description}
-              </p>
-
-              <div className="flex justify-between items-center mt-2">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-                    <Download className="w-3.5 h-3.5" />
-                    {book.downloads}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {book.date}
-                  </div>
-                </div>
-                <div className="text-teal-600 text-lg font-bold leading-7">
-                  ${book.price}
-                </div>
-              </div>
-
-              <div className="w-fit px-2 py-0.5 bg-teal-50 rounded-lg border border-teal-300 text-teal-700 text-xs font-bold">
-                {book.type}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 mt-auto pt-4 border-t border-black/5">
-                <button
-                  onClick={() => setSelectedBook(book)}
-                  className="flex-1 h-9 bg-[#7AA4A5] hover:bg-[#6b9192] text-white rounded-lg flex items-center justify-center gap-2 text-sm font-normal transition-colors"
-                >
-                  <Eye className="w-4 h-4" />
-                  View
-                </button>
-                <button
-                  onClick={() => setEditingBook(book)}
-                  className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-neutral-950 hover:bg-gray-50 transition-colors"
-                >
-                  <Edit3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleRemoveBook(book.id)}
-                  className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 text-sm animate-pulse">Loading amazing books...</p>
+        </div>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+            <X className="w-8 h-8 text-red-500" />
           </div>
-        ))}
-      </div>
+          <p className="text-gray-800 font-bold">Failed to load library</p>
+          <p className="text-gray-500 text-sm mt-1">Please check your connection or try again later.</p>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {books.map((book) => (
+            <div
+              key={book.id}
+              className="bg-white rounded-2xl border border-black/10 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group"
+            >
+              {/* Image Container */}
+              <div className="relative h-64 w-full bg-gray-100 overflow-hidden">
+                <img
+                  src={book.cover_image}
+                  alt={book.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute top-3 right-3 px-3 py-1 bg-teal-600 rounded-lg text-white text-xs font-normal">
+                  {book.category?.name}
+                </div>
+              </div>
+
+              {/* Content Container */}
+              <div className="p-5 flex-1 flex flex-col gap-3">
+                <div className="space-y-1">
+                  <h3 className="text-neutral-950 text-lg font-bold leading-7 line-clamp-1">
+                    {book.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm font-normal">
+                    {book.author}
+                  </p>
+                </div>
+
+                <p className="text-gray-500 text-sm font-normal leading-5 line-clamp-3">
+                  {stripHtml(book.description)}
+                </p>
+
+                <div className="flex justify-between items-center mt-2">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                      <Download className="w-3.5 h-3.5" />
+                      0
+                    </div>
+                    <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {new Date(book.published_date).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="text-teal-600 text-lg font-bold leading-7">
+                    ${parseFloat(book.digital_price) > 0 ? book.digital_price : book.physical_price}
+                  </div>
+                </div>
+
+                <div className="w-fit px-2 py-0.5 bg-teal-50 rounded-lg border border-teal-300 text-teal-700 text-xs font-bold">
+                  {getBookType(book)}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2 mt-auto pt-4 border-t border-black/5">
+                  <button
+                    onClick={() => setSelectedBook(book)}
+                    className="flex-1 h-9 bg-[#7AA4A5] hover:bg-[#6b9192] text-white rounded-lg flex items-center justify-center gap-2 text-sm font-normal transition-colors"
+                  >
+                    <Eye className="w-4 h-4" />
+                    View
+                  </button>
+                  <button
+                    onClick={() => setEditingBook(book)}
+                    className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-neutral-950 hover:bg-gray-50 transition-colors"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleRemoveBook(book.id)}
+                    className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Book Details Modal */}
       {selectedBook && (
