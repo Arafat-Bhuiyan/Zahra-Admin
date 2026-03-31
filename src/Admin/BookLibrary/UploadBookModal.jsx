@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   X,
   Upload,
@@ -6,7 +6,109 @@ import {
   Image as ImageIcon,
   FileText,
   Plus,
+  Heading1,
+  Type,
+  Link2,
 } from "lucide-react";
+
+const RichTextEditor = ({ value, onChange }) => {
+  const editorRef = useRef(null);
+  const isFirstRender = useRef(true);
+
+  // Set initial content only on first render to avoid cursor jumping
+  useEffect(() => {
+    if (isFirstRender.current && editorRef.current) {
+      editorRef.current.innerHTML = value || "<div><br></div>";
+      isFirstRender.current = false;
+    }
+  }, [value]);
+
+  const execCommand = (command, val = null) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+    document.execCommand(command, false, val);
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
+  };
+
+  const handleInput = (e) => {
+    onChange(e.target.innerHTML);
+  };
+
+  const addLink = () => {
+    const url = prompt("Enter the URL:");
+    if (url) {
+      execCommand("createLink", url);
+    }
+  };
+
+  // Prevent buttons from taking focus
+  const handleButtonMouseDown = (e) => {
+    e.preventDefault();
+  };
+
+  return (
+    <div className="w-full border border-zinc-200 rounded-lg overflow-hidden bg-zinc-50 transition-all focus-within:ring-2 focus-within:ring-teal-500/20 focus-within:border-teal-500">
+      {/* Toolbar */}
+      <div className="flex items-center gap-1 p-1 bg-white border-b border-zinc-200 sticky top-0 z-10">
+        <button
+          type="button"
+          onMouseDown={handleButtonMouseDown}
+          onClick={() => execCommand("formatBlock", "h1")}
+          className="p-2 hover:bg-zinc-100 rounded-md transition-colors text-zinc-600 flex items-center gap-1.5"
+          title="Heading"
+        >
+          <Heading1 className="w-4 h-4" />
+          <span className="text-[10px] font-medium uppercase tracking-wider">H1</span>
+        </button>
+        <div className="w-px h-4 bg-zinc-200 mx-1" />
+        <button
+          type="button"
+          onMouseDown={handleButtonMouseDown}
+          onClick={() => execCommand("formatBlock", "p")}
+          className="p-2 hover:bg-zinc-100 rounded-md transition-colors text-zinc-600 flex items-center gap-1.5"
+          title="Paragraph"
+        >
+          <Type className="w-4 h-4" />
+          <span className="text-[10px] font-medium uppercase tracking-wider">P</span>
+        </button>
+        <div className="w-px h-4 bg-zinc-200 mx-1" />
+        <button
+          type="button"
+          onMouseDown={handleButtonMouseDown}
+          onClick={addLink}
+          className="p-2 hover:bg-zinc-100 rounded-md transition-colors text-zinc-600 flex items-center gap-1.5"
+          title="Link"
+        >
+          <Link2 className="w-4 h-4" />
+          <span className="text-[10px] font-medium uppercase tracking-wider">Link</span>
+        </button>
+      </div>
+
+      {/* Editable Area */}
+      <style>{`
+        .rich-editor h1 { font-size: 1.25rem; font-weight: 700; margin-top: 0.5rem; margin-bottom: 0.5rem; color: #09090b; }
+        .rich-editor p { font-size: 0.875rem; margin-bottom: 0.5rem; color: #27272a; line-height: 1.5; }
+        .rich-editor a { color: #0d9488; text-decoration: underline; font-weight: 500; }
+        .rich-editor:focus { outline: none; }
+        [contenteditable]:empty:before {
+          content: attr(placeholder);
+          color: #a1a1aa;
+          cursor: text;
+        }
+      `}</style>
+      <div
+        ref={editorRef}
+        contentEditable
+        onInput={handleInput}
+        className="rich-editor w-full min-h-[120px] px-4 py-3 bg-zinc-100/30 text-sm font-['Arimo'] overflow-y-auto"
+        placeholder="Enter book description..."
+      />
+    </div>
+  );
+};
 
 const UploadBookModal = ({ onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState("Basic");
@@ -154,13 +256,11 @@ const UploadBookModal = ({ onClose, onSave }) => {
                   <label className="text-neutral-950 text-sm font-normal">
                     Description *
                   </label>
-                  <textarea
-                    name="description"
-                    placeholder="Enter book description"
+                  <RichTextEditor
                     value={formData.description}
-                    onChange={handleChange}
-                    className="w-full h-24 px-3 py-2 bg-zinc-100 rounded-lg outline-none text-sm placeholder:text-gray-400 resize-none font-['Arimo']"
-                    required
+                    onChange={(html) =>
+                      setFormData((prev) => ({ ...prev, description: html }))
+                    }
                   />
                 </div>
 
