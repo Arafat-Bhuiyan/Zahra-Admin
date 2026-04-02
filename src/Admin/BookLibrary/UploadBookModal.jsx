@@ -9,7 +9,11 @@ import {
   Heading1,
   Type,
   Link2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+import { useAddBookMutation } from "../../Api/adminApi";
+import toast from "react-hot-toast";
 
 import QuillEditor from "../../components/QuillEditor";
 const UploadBookModal = ({ onClose, onSave }) => {
@@ -19,7 +23,7 @@ const UploadBookModal = ({ onClose, onSave }) => {
     author: "",
     authorDesignation: "",
     description: "",
-    category: "Health",
+    category: "1",
     language: "English",
     price: "99",
     type: "Both (Physical & Digital)",
@@ -28,10 +32,15 @@ const UploadBookModal = ({ onClose, onSave }) => {
     publishDate: "",
     pages: "0",
     tags: "Psychology, Islamic Studies, Mental Health",
+    stock_count: "0",
+    video_url: "",
     coverImage: null,
     otherImages: [null, null, null],
     bookFile: null,
+    is_visible: true,
   });
+
+  const [addBook, { isLoading }] = useAddBookMutation();
 
   const fileInputRef = useRef(null);
   const coverInputRef = useRef(null);
@@ -57,24 +66,49 @@ const UploadBookModal = ({ onClose, onSave }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, we would handle file uploads here
-    const newBook = {
-      id: Date.now(),
-      title: formData.title,
-      author: formData.author,
-      description: formData.description,
-      category: formData.category,
-      price: formData.price,
-      type: formData.type.includes("Both") ? "Both" : formData.type,
-      downloads: "0",
-      date: new Date().toLocaleDateString(),
-      image: formData.coverImage
-        ? URL.createObjectURL(formData.coverImage)
-        : "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2787&auto=format&fit=crop",
-    };
-    onSave(newBook);
+
+    const data = new FormData();
+    const has_physical = formData.type.includes("Physical") || formData.type.includes("Both");
+    const has_digital = formData.type.includes("Digital") || formData.type.includes("Both");
+
+    data.append("category", formData.category);
+    data.append("title", formData.title);
+    data.append("author", formData.author);
+    data.append("author_designation", formData.authorDesignation);
+    data.append("description", formData.description);
+    if (formData.coverImage) data.append("cover_image", formData.coverImage);
+    data.append("isbn", formData.isbn);
+    data.append("language", formData.language);
+    data.append("publisher", formData.publisher);
+    data.append("published_date", formData.publishDate || new Date().toISOString().split("T")[0]);
+    data.append("number_of_pages", formData.pages);
+    if (formData.bookFile) data.append("sample_file", formData.bookFile);
+    data.append("video_url", formData.video_url || "");
+    data.append("has_physical", has_physical);
+    data.append("physical_price", has_physical ? formData.price : "0");
+    data.append("stock_count", formData.stock_count || "0");
+    data.append("has_digital", has_digital);
+    data.append("digital_price", has_digital ? formData.price : "0");
+    data.append("tags", formData.tags);
+    data.append("is_visible", formData.is_visible);
+
+    // Other images (gallery images) - assuming multiple files in gallery_images key if needed
+    formData.otherImages.forEach((img) => {
+      if (img instanceof File) {
+        data.append("gallery_images", img);
+      }
+    });
+
+    try {
+      await addBook(data).unwrap();
+      toast.success("Book uploaded successfully!");
+      onClose();
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to upload book. Please try again.");
+      console.error("Upload error:", error);
+    }
   };
 
   return (
@@ -154,6 +188,57 @@ const UploadBookModal = ({ onClose, onSave }) => {
                       required
                     />
                   </div>
+                  {/* Visible Toggle */}
+                  <div className="flex flex-col gap-1.5 pt-2">
+                    <div className="flex items-center justify-between p-3 bg-zinc-100 border border-black/5 rounded-xl transition-all hover:bg-zinc-200/50">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`p-2 rounded-lg transition-colors ${
+                            formData.is_visible
+                              ? "bg-emerald-100 text-emerald-600"
+                              : "bg-rose-100 text-rose-600"
+                          }`}
+                        >
+                          {formData.is_visible ? (
+                            <Eye className="w-4 h-4" />
+                          ) : (
+                            <EyeOff className="w-4 h-4" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-neutral-900 arimo-font">
+                            Visibility Status
+                          </p>
+                          <p className="text-[10px] text-gray-500">
+                            {formData.is_visible
+                              ? "Visible on library"
+                              : "Hidden from library"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            is_visible: !prev.is_visible,
+                          }))
+                        }
+                        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none ring-2 ring-transparent ring-offset-2 ${
+                          formData.is_visible ? "bg-teal-600" : "bg-gray-300"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                            formData.is_visible
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -210,9 +295,9 @@ const UploadBookModal = ({ onClose, onSave }) => {
                         onChange={handleChange}
                         className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-sm text-neutral-950"
                       >
-                        <option value="Health">Health</option>
-                        <option value="Psychology">Psychology</option>
-                        <option value="Lifestyle">Lifestyle</option>
+                        <option value="1">Health</option>
+                        <option value="2">Psychology</option>
+                        <option value="3">Lifestyle</option>
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
@@ -270,6 +355,35 @@ const UploadBookModal = ({ onClose, onSave }) => {
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-neutral-950 text-sm font-normal">
+                      Stock Count
+                    </label>
+                    <input
+                      type="number"
+                      name="stock_count"
+                      placeholder="0"
+                      value={formData.stock_count}
+                      onChange={handleChange}
+                      className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-neutral-950 text-sm font-normal">
+                      Video URL (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="video_url"
+                      placeholder="https://youtube.com/..."
+                      value={formData.video_url}
+                      onChange={handleChange}
+                      className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none text-sm placeholder:text-gray-400"
+                    />
                   </div>
                 </div>
               </div>
@@ -499,10 +613,11 @@ const UploadBookModal = ({ onClose, onSave }) => {
               </button>
               <button
                 type="submit"
-                className="px-6 h-10 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center gap-2 text-sm font-medium"
+                disabled={isLoading}
+                className="px-6 h-10 bg-teal-600 hover:bg-teal-700 text-white rounded-lg flex items-center gap-2 text-sm font-medium disabled:opacity-50"
               >
                 <Upload className="w-4 h-4" />
-                Upload Book
+                {isLoading ? "Uploading..." : "Upload Book"}
               </button>
             </div>
           </form>

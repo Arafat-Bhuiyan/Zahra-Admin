@@ -42,6 +42,16 @@ export const adminApi = api.injectEndpoints({
       query: () => "/books/",
       providesTags: ["books"],
     }),
+
+    // Add Book
+    addBook: builder.mutation({
+      query: (data) => ({
+        url: "/books/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["books"],
+    }),
     // Add more admin-specific endpoints here as needed...
   }),
   overrideExisting: false,
@@ -53,4 +63,5 @@ export const {
   useUpdateDoorMutation,
   useDeleteDoorMutation,
   useGetBooksDataQuery,
+  useAddBookMutation,
 } = adminApi;

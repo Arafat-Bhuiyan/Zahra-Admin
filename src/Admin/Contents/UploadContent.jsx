@@ -332,7 +332,7 @@ const UploadContent = ({ onSave, onBack }) => {
         <div className="w-full lg:w-96 flex flex-col justify-between">
           <div className="space-y-6">
             {/* Publishing Options */}
-            <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">
+            {/* <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">
               <h3 className="text-neutral-950 text-lg font-medium">
                 Publishing Options
               </h3>
@@ -373,7 +373,7 @@ const UploadContent = ({ onSave, onBack }) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Tags */}
             <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">

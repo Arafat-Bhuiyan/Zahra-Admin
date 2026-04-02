@@ -8,7 +8,7 @@ const QuillEditor = ({ value, onChange, placeholder = "Write something amazing..
       [{ header: [1, 2, 3, false] }],
       ["bold", "italic", "underline", "strike"],
       [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image", "clean"],
+      ["link", "clean"],
     ],
   };
 
@@ -21,7 +21,6 @@ const QuillEditor = ({ value, onChange, placeholder = "Write something amazing..
     "list",
     "bullet",
     "link",
-    "image",
   ];
 
   return (

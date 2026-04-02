@@ -12,6 +12,7 @@ import {
   Edit3,
   Trash2,
   Filter,
+  X,
 } from "lucide-react";
 import BookDetailsModal from "./BookDetailsModal";
 import EditBookModal from "./EditBookModal";

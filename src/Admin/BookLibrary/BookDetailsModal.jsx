@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  X,
-  Download,
-  Eye,
-  User,
-  Calendar,
-  Tag,
-} from "lucide-react";
+import { X, Download, Eye, User, Calendar, Tag } from "lucide-react";
 
 const BookDetailsModal = ({ book, onClose }) => {
   if (!book) return null;
@@ -67,9 +60,10 @@ const BookDetailsModal = ({ book, onClose }) => {
                   <User className="w-4 h-4" />
                   <span className="text-base font-normal">{book.author}</span>
                 </div>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {book.description}
-                </p>
+                <div
+                  className="text-gray-700 text-sm leading-relaxed break-words prose prose-sm max-w-sm"
+                  dangerouslySetInnerHTML={{ __html: book.description }}
+                />
               </div>
 
               {/* Details Grid */}
