@@ -228,9 +228,6 @@ const BookLibrary = () => {
                   alt={book.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute top-3 right-3 px-3 py-1 bg-teal-600 rounded-lg text-white text-xs font-normal">
-                  {book.category?.name}
-                </div>
               </div>
 
               {/* Content Container */}
@@ -241,6 +238,9 @@ const BookLibrary = () => {
                   </h3>
                   <p className="text-gray-600 text-sm font-normal">
                     {book.author}
+                  </p>
+                  <p className="text-gray-600 text-xs font-normal">
+                    {book.author_designation}
                   </p>
                 </div>
 

@@ -236,13 +236,18 @@ const BookDetailsPage = () => {
                         Keywords & Tags
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {currentBook.tags.split(",").map((tag) => (
+                        {(Array.isArray(currentBook.tags)
+                          ? currentBook.tags
+                          : typeof currentBook.tags === "string"
+                          ? currentBook.tags.split(",")
+                          : []
+                        ).map((tag, idx) => (
                           <div
-                            key={tag}
+                            key={idx}
                             className="px-4 py-2 bg-zinc-50 border border-black/5 rounded-2xl text-neutral-700 text-xs font-bold flex items-center gap-2 hover:bg-zinc-100 transition-colors shadow-sm"
                           >
                             <Tag className="w-3.5 h-3.5 text-teal-600" />
-                            {tag.trim()}
+                            {typeof tag === "string" ? tag.trim() : JSON.stringify(tag)}
                           </div>
                         ))}
                       </div>

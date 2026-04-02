@@ -49,7 +49,7 @@ const EditBookModal = ({ book, onClose, onSave }) => {
         publisher: book.publisher || "",
         published_date: book.published_date || "",
         number_of_pages: book.number_of_pages?.toString() || "0",
-        tags: book.tags || "",
+        tags: Array.isArray(book.tags) ? book.tags.join(", ") : book.tags || "",
         stock_count: book.stock_count?.toString() || "0",
         video_url: book.video_url || "",
         is_visible: book.is_visible ?? true,
@@ -85,7 +85,9 @@ const EditBookModal = ({ book, onClose, onSave }) => {
       stock_count: parseInt(formData.stock_count),
       has_digital,
       digital_price: has_digital ? formData.price : "0",
-      tags: formData.tags,
+      tags: formData.tags
+        ? formData.tags.split(",").map((t) => t.trim()).filter((t) => t !== "")
+        : [],
       is_visible: formData.is_visible,
     };
 

@@ -94,7 +94,10 @@ const UploadBookModal = ({ onClose, onSave }) => {
     data.append("stock_count", formData.stock_count || "0");
     data.append("has_digital", has_digital);
     data.append("digital_price", has_digital ? formData.price : "0");
-    data.append("tags", formData.tags);
+    const tagsArray = formData.tags
+      ? formData.tags.split(",").map((t) => t.trim()).filter((t) => t !== "")
+      : [];
+    data.append("tags", JSON.stringify(tagsArray));
     data.append("is_visible", formData.is_visible);
 
     try {
