@@ -12,7 +12,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { useAddBookMutation } from "../../Api/adminApi";
+import { useAddBookMutation, useAddBookGalleryImageMutation } from "../../Api/adminApi";
 import toast from "react-hot-toast";
 
 import QuillEditor from "../../components/QuillEditor";
@@ -40,7 +40,10 @@ const UploadBookModal = ({ onClose, onSave }) => {
     is_visible: true,
   });
 
-  const [addBook, { isLoading }] = useAddBookMutation();
+  const [addBook, { isLoading: isCreating }] = useAddBookMutation();
+  const [addGalleryImage, { isLoading: isUploadingGallery }] = useAddBookGalleryImageMutation();
+
+  const isLoading = isCreating || isUploadingGallery;
 
   const fileInputRef = useRef(null);
   const coverInputRef = useRef(null);
@@ -94,18 +97,34 @@ const UploadBookModal = ({ onClose, onSave }) => {
     data.append("tags", formData.tags);
     data.append("is_visible", formData.is_visible);
 
-    // Other images (gallery images) - assuming multiple files in gallery_images key if needed
-    formData.otherImages.forEach((img) => {
-      if (img instanceof File) {
-        data.append("gallery_images", img);
-      }
-    });
-
     try {
-      await addBook(data).unwrap();
-      toast.success("Book uploaded successfully!");
+      const bookResponse = await addBook(data).unwrap();
+      const slug = bookResponse.slug;
+
+      // Handle other images (gallery images) as separate POST requests
+      const imageFiles = formData.otherImages
+        .map((image, index) => ({ image, index }))
+        .filter((item) => item.image instanceof File);
+
+      if (imageFiles.length > 0) {
+        toast.loading("Uploading gallery images...");
+
+        const galleryPromises = imageFiles.map((item) =>
+          addGalleryImage({
+            slug,
+            image: item.image,
+            order: item.index,
+          }).unwrap(),
+        );
+
+        await Promise.all(galleryPromises);
+        toast.dismiss();
+      }
+
+      toast.success("Book and images uploaded successfully!");
       onClose();
     } catch (error) {
+      toast.dismiss();
       toast.error(error?.data?.message || "Failed to upload book. Please try again.");
       console.error("Upload error:", error);
     }

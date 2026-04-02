@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   BookOpen,
@@ -14,19 +15,19 @@ import {
   Filter,
   X,
 } from "lucide-react";
-import BookDetailsModal from "./BookDetailsModal";
 import EditBookModal from "./EditBookModal";
 import UploadBookModal from "./UploadBookModal";
-import { useGetBooksDataQuery } from "../../Api/adminApi";
+import { useGetBooksDataQuery, useDeleteBookMutation } from "../../Api/adminApi";
 import toast from "react-hot-toast";
 
 const BookLibrary = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBook, setSelectedBook] = useState(null);
   const [editingBook, setEditingBook] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const { data: apiData, isLoading, isError } = useGetBooksDataQuery();
+  const [deleteBook] = useDeleteBookMutation();
   const books = apiData?.results || [];
 
   // Local helper to format book type
@@ -52,7 +53,7 @@ const BookLibrary = () => {
     setShowUploadModal(false);
   };
 
-  const handleRemoveBook = (id) => {
+  const handleRemoveBook = (book) => {
     toast(
       (t) => (
         <div className="flex items-center gap-4 p-1">
@@ -61,7 +62,7 @@ const BookLibrary = () => {
               Confirm Delete
             </p>
             <p className="text-xs text-neutral-500 mt-0.5">
-              Are you sure you want to remove this book?
+              Are you sure you want to remove "{book.title}"?
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -72,16 +73,21 @@ const BookLibrary = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
                 toast.dismiss(t.id);
-                toast.success("Book removed successfully", {
-                  icon: "🗑️",
-                  style: {
-                    borderRadius: "12px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                try {
+                  await deleteBook(book.slug).unwrap();
+                  toast.success("Book removed successfully", {
+                    icon: "🗑️",
+                    style: {
+                      borderRadius: "12px",
+                      background: "#333",
+                      color: "#fff",
+                    },
+                  });
+                } catch (error) {
+                  toast.error("Failed to delete book");
+                }
               }}
               className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
             >
@@ -265,7 +271,7 @@ const BookLibrary = () => {
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2 mt-auto pt-4 border-t border-black/5">
                   <button
-                    onClick={() => setSelectedBook(book)}
+                    onClick={() => navigate(`/admin/book-library/${book.slug}`)}
                     className="flex-1 h-9 bg-[#7AA4A5] hover:bg-[#6b9192] text-white rounded-lg flex items-center justify-center gap-2 text-sm font-normal transition-colors"
                   >
                     <Eye className="w-4 h-4" />
@@ -278,7 +284,7 @@ const BookLibrary = () => {
                     <Edit3 className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleRemoveBook(book.id)}
+                    onClick={() => handleRemoveBook(book)}
                     className="w-9 h-9 border border-black/10 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -290,13 +296,6 @@ const BookLibrary = () => {
         </div>
       )}
 
-      {/* Book Details Modal */}
-      {selectedBook && (
-        <BookDetailsModal
-          book={selectedBook}
-          onClose={() => setSelectedBook(null)}
-        />
-      )}
 
       {/* Edit Book Modal */}
       {editingBook && (

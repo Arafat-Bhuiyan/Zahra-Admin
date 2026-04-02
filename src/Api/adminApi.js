@@ -52,6 +52,47 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: ["books"],
     }),
+
+    // Other image upload endpoints
+    addBookGalleryImage: builder.mutation({
+      query: ({ slug, image, order }) => {
+        const formData = new FormData();
+        formData.append("image", image);
+        formData.append("order", order);
+        return {
+          url: `/books/${slug}/gallery/`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: ["books"],
+    }),
+
+    // Book Details
+    getBookDetails: builder.query({
+      query: (slug) => `/books/${slug}/`,
+      providesTags: ["books"],
+    }),
+
+    // Update Book
+    updateBook: builder.mutation({
+      query: ({ slug, body }) => ({
+        url: `/books/${slug}/`,
+        method: "PATCH",
+        body: body,
+      }),
+      invalidatesTags: ["books"],
+    }),
+
+    // Delete Book
+    deleteBook: builder.mutation({
+      query: (slug) => ({
+        url: `/books/${slug}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["books"],
+    }),
+
     // Add more admin-specific endpoints here as needed...
   }),
   overrideExisting: false,
@@ -64,4 +105,8 @@ export const {
   useDeleteDoorMutation,
   useGetBooksDataQuery,
   useAddBookMutation,
+  useAddBookGalleryImageMutation,
+  useGetBookDetailsQuery,
+  useUpdateBookMutation,
+  useDeleteBookMutation,
 } = adminApi;
