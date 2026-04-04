@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Edit3, Save, ChevronDown, Eye, EyeOff } from "lucide-react";
 import QuillEditor from "../../components/QuillEditor";
-import { useUpdateBookMutation } from "../../Api/adminApi";
+import { useUpdateBookMutation, useGetBookCategoriesQuery } from "../../Api/adminApi";
 import toast from "react-hot-toast";
 
 const EditBookModal = ({ book, onClose, onSave }) => {
@@ -26,6 +26,7 @@ const EditBookModal = ({ book, onClose, onSave }) => {
   });
 
   const [updateBook, { isLoading }] = useUpdateBookMutation();
+  const { data: categories } = useGetBookCategoriesQuery();
 
   useEffect(() => {
     if (book) {
@@ -287,12 +288,11 @@ const EditBookModal = ({ book, onClose, onSave }) => {
                         onChange={handleChange}
                         className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-neutral-950 text-sm focus:ring-2 focus:ring-teal-600/20"
                       >
-                        <option value="1">Health</option>
-                        <option value="2">Psychology</option>
-                        <option value="3">Lifestyle</option>
-                        <option value="4">History</option>
-                        <option value="5">Parenting</option>
-                        <option value="6">Mental Health</option>
+                        {categories?.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>

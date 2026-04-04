@@ -53,15 +53,13 @@ const BookLibrary = () => {
     }
   };
 
-  const handleDeleteCategory = async (id, e) => {
+  const handleDeleteCategory = async (id, slug, e) => {
     e.stopPropagation();
-    if (!window.confirm("Delete this category?")) return;
     try {
-      await deleteBookCategory(id).unwrap();
-      toast.success("Category removed");
+      await deleteBookCategory(slug).unwrap();
       if (selectedCategory === id.toString()) setSelectedCategory("");
     } catch (error) {
-      toast.error("Failed to delete category");
+      console.error("Delete category error:", error);
     }
   };
 
@@ -269,10 +267,11 @@ const BookLibrary = () => {
                           {cat.name}
                         </span>
                         <button
-                          onClick={(e) => handleDeleteCategory(cat.id, e)}
-                          className="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-md opacity-0 group-hover:opacity-100 transition-all"
+                          onClick={(e) => handleDeleteCategory(cat.id, cat.slug, e)}
+                          className="p-1.5 text-neutral-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-all ml-auto flex-shrink-0"
+                          title="Delete Category"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     ))}

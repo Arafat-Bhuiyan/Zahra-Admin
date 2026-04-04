@@ -12,7 +12,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { useAddBookMutation, useAddBookGalleryImageMutation } from "../../Api/adminApi";
+import { useAddBookMutation, useAddBookGalleryImageMutation, useGetBookCategoriesQuery } from "../../Api/adminApi";
 import toast from "react-hot-toast";
 
 import QuillEditor from "../../components/QuillEditor";
@@ -42,6 +42,13 @@ const UploadBookModal = ({ onClose, onSave }) => {
 
   const [addBook, { isLoading: isCreating }] = useAddBookMutation();
   const [addGalleryImage, { isLoading: isUploadingGallery }] = useAddBookGalleryImageMutation();
+  const { data: categories } = useGetBookCategoriesQuery();
+  
+  useEffect(() => {
+    if (categories?.length > 0) {
+      setFormData((prev) => ({ ...prev, category: categories[0].id.toString() }));
+    }
+  }, [categories]);
 
   const isLoading = isCreating || isUploadingGallery;
 
@@ -317,9 +324,11 @@ const UploadBookModal = ({ onClose, onSave }) => {
                         onChange={handleChange}
                         className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-sm text-neutral-950"
                       >
-                        <option value="1">Health</option>
-                        <option value="2">Psychology</option>
-                        <option value="3">Lifestyle</option>
+                        {categories?.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
