@@ -17,18 +17,61 @@ import {
 } from "lucide-react";
 import EditBookModal from "./EditBookModal";
 import UploadBookModal from "./UploadBookModal";
-import { useGetBooksDataQuery, useDeleteBookMutation } from "../../Api/adminApi";
+import { 
+  useGetBooksDataQuery, 
+  useDeleteBookMutation,
+  useGetBookCategoriesQuery,
+  useAddBookCategoryMutation,
+  useDeleteBookCategoryMutation
+} from "../../Api/adminApi";
 import toast from "react-hot-toast";
 
 const BookLibrary = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [editingBook, setEditingBook] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const { data: apiData, isLoading, isError } = useGetBooksDataQuery();
+  const { data: categories } = useGetBookCategoriesQuery();
+  console.log("categories",categories)
+  const [addBookCategory] = useAddBookCategoryMutation();
+  const [deleteBookCategory] = useDeleteBookCategoryMutation();
   const [deleteBook] = useDeleteBookMutation();
-  const books = apiData?.results || [];
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      await addBookCategory(newCategoryName).unwrap();
+      setNewCategoryName("");
+      toast.success("Category added!");
+    } catch (error) {
+      toast.error("Failed to add category");
+    }
+  };
+
+  const handleDeleteCategory = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm("Delete this category?")) return;
+    try {
+      await deleteBookCategory(id).unwrap();
+      toast.success("Category removed");
+      if (selectedCategory === id.toString()) setSelectedCategory("");
+    } catch (error) {
+      toast.error("Failed to delete category");
+    }
+  };
+
+  const books = apiData?.results?.filter((book) => {
+    const matchesSearch =
+      book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory ? book.category === parseInt(selectedCategory) : true;
+    return matchesSearch && matchesCategory;
+  }) || [];
 
   // Local helper to format book type
   const getBookType = (book) => {
@@ -186,13 +229,75 @@ const BookLibrary = () => {
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative min-w-[200px] flex-1 md:flex-none">
-            <select className="w-full h-11 pl-4 pr-10 bg-zinc-100 border-none rounded-lg appearance-none text-sm text-neutral-950 focus:ring-2 focus:ring-[#7AA4A5]/20 font-normal">
-              <option>All Categories</option>
-              <option>Psychology</option>
-              <option>Lifestyle</option>
-              <option>History</option>
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <div
+              onClick={() => setShowCategoryMenu(!showCategoryMenu)}
+              className="w-full h-11 pl-4 pr-10 bg-zinc-100 border-none rounded-lg flex items-center justify-between cursor-pointer text-sm text-neutral-950 focus-within:ring-2 focus-within:ring-[#7AA4A5]/20 font-normal"
+            >
+              <span className="truncate">
+                {categories?.find(c => c.id === parseInt(selectedCategory))?.name || "All Categories"}
+              </span>
+              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCategoryMenu ? 'rotate-180' : ''}`} />
+            </div>
+
+            {showCategoryMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowCategoryMenu(false)} 
+                />
+                <div className="absolute top-full left-0 w-full mt-2 bg-white border border-black/10 rounded-xl shadow-xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  <div className="max-h-60 overflow-y-auto p-1 custom-scrollbar">
+                    <button
+                      onClick={() => {
+                        setSelectedCategory("");
+                        setShowCategoryMenu(false);
+                      }}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded-lg transition-colors ${!selectedCategory ? 'text-teal-600 bg-teal-50/50 font-medium' : 'text-neutral-700'}`}
+                    >
+                      All Categories
+                    </button>
+                    {categories?.map((cat) => (
+                      <div
+                        key={cat.id}
+                        className="group flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                        onClick={() => {
+                          setSelectedCategory(cat.id.toString());
+                          setShowCategoryMenu(false);
+                        }}
+                      >
+                        <span className={`text-sm truncate ${selectedCategory === cat.id.toString() ? 'text-teal-600 font-medium' : 'text-neutral-700'}`}>
+                          {cat.name}
+                        </span>
+                        <button
+                          onClick={(e) => handleDeleteCategory(cat.id, e)}
+                          className="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-md opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-3 border-t border-black/5 bg-gray-50/50">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Add category..."
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                        className="flex-1 h-9 px-3 text-xs bg-white border border-black/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all font-normal"
+                      />
+                      <button
+                        onClick={handleAddCategory}
+                        className="p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           <button className="p-3 bg-zinc-100 rounded-lg text-gray-500 hover:bg-zinc-200 transition-colors">
             <Filter className="w-5 h-5" />
