@@ -13,8 +13,14 @@ import {
   List,
   ChevronDown,
   Filter,
+  Trash2,
 } from "lucide-react";
-import { useGetCoursesDataQuery } from "../../Api/adminApi";
+import {
+  useGetCoursesDataQuery,
+  useGetCourseCategoriesQuery,
+  useAddCourseCategoryMutation,
+  useDeleteCourseCategoryMutation,
+} from "../../Api/adminApi";
 import AddEditCourse from "./AddEditCourse";
 import CourseBuilder from "./CourseBuilder";
 import LiveSessions from "./LiveSessions";
@@ -22,9 +28,10 @@ import LiveSessions from "./LiveSessions";
 const Courses = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -34,14 +41,11 @@ const Courses = () => {
   const [dateTo, setDateTo] = useState("");
 
   const { data: apiResponse, isLoading, isError } = useGetCoursesDataQuery();
+  const { data: categoriesResponse } = useGetCourseCategoriesQuery();
+  const [addCategory] = useAddCourseCategoryMutation();
+  const [deleteCategory] = useDeleteCourseCategoryMutation();
 
-  const categories = [
-    "All",
-    "Mental Health",
-    "Spiritual Growth",
-    "Relationships",
-    "Professional",
-  ];
+  const categories = categoriesResponse?.results || [];
   const statuses = ["All", "Running", "Recorded", "Upcoming"];
 
   const getStatusLabel = (status) => {
@@ -64,7 +68,7 @@ const Courses = () => {
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       instructorName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
-      selectedCategory === "All" || c.category?.name === selectedCategory;
+      selectedCategory === "" || c.category?.id === parseInt(selectedCategory);
     const matchesStatus =
       selectedStatus === "All" || statusLabel === selectedStatus;
 
@@ -93,6 +97,29 @@ const Courses = () => {
   const handleOpenBuilder = (course) => {
     setSelectedCourse(course);
     setActiveView("builder");
+  };
+
+  const handleAddCategory = async () => {
+    if (newCategoryName.trim()) {
+      try {
+        await addCategory(newCategoryName.trim()).unwrap();
+        setNewCategoryName("");
+      } catch (err) {
+        console.error("Failed to add category:", err);
+      }
+    }
+  };
+
+  const handleDeleteCategory = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await deleteCategory(id).unwrap();
+      if (selectedCategory === id.toString()) {
+        setSelectedCategory("");
+      }
+    } catch (err) {
+      console.error("Failed to delete category:", err);
+    }
   };
 
   const handleSaveCourse = (formData) => {
@@ -146,12 +173,6 @@ const Courses = () => {
           </p>
           <h4 className="text-2xl font-bold text-neutral-900">86%</h4>
         </div>
-        {/* <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-            Avg Rating
-          </p>
-          <h4 className="text-2xl font-bold text-neutral-900">4.8</h4>
-        </div> */}
       </div>
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
@@ -180,7 +201,8 @@ const Courses = () => {
           >
             <Filter className="w-4 h-4 text-stone-500 group-hover:text-teal-600" />
             <span className="text-sm font-bold font-['Arial'] leading-5 tracking-wide">
-              CATEGORY
+              {categories.find((c) => c.id === parseInt(selectedCategory))
+                ?.name || "CATEGORY"}
             </span>
             <ChevronDown
               className={`w-4 h-4 transition-transform duration-300 ${isCategoryOpen ? "rotate-180" : ""}`}
@@ -188,38 +210,94 @@ const Courses = () => {
           </button>
 
           {isCategoryOpen && (
-            <div className="absolute top-8 left-0 mt-2 p-5 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl flex flex-col gap-1 min-w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    setSelectedCategory(cat);
-                    setIsCategoryOpen(false);
-                  }}
-                  className={`px-4 py-2.5 rounded-xl text-sm text-left transition-all ${
-                    selectedCategory === cat
-                      ? "bg-teal-50 text-teal-700 font-bold"
-                      : "text-stone-600 hover:bg-stone-50"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsCategoryOpen(false)}
+              />
+              <div className="absolute top-8 left-0 mt-2 p-1 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl flex flex-col gap-1 min-w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                <div className="max-h-60 overflow-y-auto p-2">
+                  <button
+                    onClick={() => {
+                      setSelectedCategory("");
+                      setIsCategoryOpen(false);
+                    }}
+                    className={`w-full px-4 py-2.5 rounded-xl text-sm text-left transition-all ${
+                      selectedCategory === ""
+                        ? "bg-teal-50 text-teal-700 font-bold"
+                        : "text-stone-600 hover:bg-stone-50"
+                    }`}
+                  >
+                    All Categories
+                  </button>
+                  {categories.map((cat) => (
+                    <div
+                      key={cat.id}
+                      className={`group flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${
+                        selectedCategory === cat.id.toString()
+                          ? "bg-teal-50 text-teal-700 font-bold"
+                          : "text-stone-600 hover:bg-stone-50"
+                      }`}
+                      onClick={() => {
+                        setSelectedCategory(cat.id.toString());
+                        setIsCategoryOpen(false);
+                      }}
+                    >
+                      <span className="truncate">{cat.name}</span>
+                      <button
+                        onClick={(e) => handleDeleteCategory(cat.id, e)}
+                        className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all ml-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-3 border-t border-stone-50 bg-stone-50/50 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add category..."
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && handleAddCategory()
+                    }
+                    className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
+                  />
+                  <button
+                    onClick={handleAddCategory}
+                    className="p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-md active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </>
           )}
 
           <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory("")}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                selectedCategory === ""
+                  ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
+                  : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
+              }`}
+            >
+              All
+            </button>
             {categories.map((cat) => (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id.toString())}
                 className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedCategory === cat
+                  selectedCategory === cat.id.toString()
                     ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
                     : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
                 }`}
               >
-                {cat}
+                {cat.name}
               </button>
             ))}
           </div>

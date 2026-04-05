@@ -124,6 +124,26 @@ export const adminApi = api.injectEndpoints({
       query: () => "/courses/",
       providesTags: ["courses"],
     }),
+    // Course Categories
+    getCourseCategories: builder.query({
+      query: () => "/course-categories/",
+      providesTags: ["courses"],
+    }),
+    addCourseCategory: builder.mutation({
+      query: (name) => ({
+        url: "/course-categories/",
+        method: "POST",
+        body: { name },
+      }),
+      invalidatesTags: ["courses"],
+    }),
+    deleteCourseCategory: builder.mutation({
+      query: (id) => ({
+        url: `/course-categories/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["courses"],
+    }),
 
     // Add more admin-specific endpoints here as needed...
   }),
@@ -146,4 +166,7 @@ export const {
   useDeleteBookCategoryMutation,
   useGetBlogsDataQuery,
   useGetCoursesDataQuery,
+  useGetCourseCategoriesQuery,
+  useAddCourseCategoryMutation,
+  useDeleteCourseCategoryMutation,
 } = adminApi;
