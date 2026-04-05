@@ -10,8 +10,20 @@ import {
   Play,
   CheckCircle2,
   ChevronDown,
+  XCircle,
+  Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import {
+  useGetBlogsDataQuery,
+  useDeleteBlogMutation,
+  useApproveBlogMutation,
+  useRejectBlogMutation,
+  useGetBlogCategoriesQuery,
+  useAddBlogCategoryMutation,
+  useDeleteBlogCategoryMutation,
+} from "../../Api/adminApi";
 import UploadContent from "./UploadContent";
 import UploadVideo from "./UploadVideo";
 
@@ -19,36 +31,219 @@ const Contents = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [showUploadForm, setShowUploadForm] = useState(null); // 'article', 'video', or null
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
-  const [contentsList, setContentsList] = useState([
-    {
-      id: 1,
-      type: "Article",
-      thumbnail:
-        "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2832&auto=format&fit=crop",
-      date: "Dec 22, 2025",
-      readTime: "6 min read",
-      category: "Relationships",
-      title: "Building Healthy Relationships Through Islamic Values",
-      description:
-        "Learn how Islamic principles can strengthen your family bonds and improve communication.",
-      author: "Dr. Sarah Ahmed",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      type: "Article",
-      thumbnail:
-        "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop",
-      date: "Dec 20, 2025",
-      readTime: "8 min read",
-      category: "Mental Health",
-      title: "Healing Trauma with Faith and Professional Support",
-      description:
-        "Combining Islamic spiritual practices with evidence-based therapeutic approaches for trauma recovery.",
-      author: "Admin",
-      status: "Approved",
-    },
+  const { data: blogsResponse, isLoading: isBlogsLoading } = useGetBlogsDataQuery();
+  const { data: categoriesResponse } = useGetBlogCategoriesQuery();
+  const [addBlogCategory] = useAddBlogCategoryMutation();
+  const [deleteBlogCategory] = useDeleteBlogCategoryMutation();
+  const [approveBlog] = useApproveBlogMutation();
+  const [rejectBlog] = useRejectBlogMutation();
+  const [deleteBlog] = useDeleteBlogMutation();
+
+  const categories = categoriesResponse || [];
+
+  const handleDelete = async (slug) => {
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4 p-1">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-neutral-800 inter-font">
+              Confirm Delete
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Are you sure you want to remove this blog?
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await deleteBlog(slug).unwrap();
+                  toast.success("Blog deleted", {
+                    icon: "🗑️",
+                    style: {
+                      borderRadius: "12px",
+                      background: "#333",
+                      color: "#fff",
+                    },
+                  });
+                } catch (err) {
+                  console.error("Failed to delete blog:", err);
+                  toast.error("Failed to delete blog");
+                }
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          minWidth: "350px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        },
+      },
+    );
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      await addBlogCategory(newCategoryName.trim()).unwrap();
+      setNewCategoryName("");
+    } catch (err) {
+      console.error("Failed to add category:", err);
+    }
+  };
+
+  const handleDeleteCategory = async (slug, e) => {
+    e.stopPropagation();
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4 p-1">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-neutral-800 inter-font">
+              Confirm Delete
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Are you sure you want to remove this category?
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await deleteBlogCategory(slug).unwrap();
+                  toast.success("Category deleted", {
+                    icon: "🗑️",
+                    style: {
+                      borderRadius: "12px",
+                      background: "#333",
+                      color: "#fff",
+                    },
+                  });
+                  if (
+                    categories.find((c) => c.slug === slug)?.id.toString() ===
+                    selectedCategory
+                  ) {
+                    setSelectedCategory("");
+                  }
+                } catch (err) {
+                  console.error("Failed to delete category:", err);
+                  toast.error("Failed to delete category");
+                }
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          minWidth: "350px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        },
+      },
+    );
+  };
+
+  const handleApprove = async (item) => {
+    try {
+      const body = {
+        author: item.author_detail?.id || 0,
+        category: item.categoryId || 0,
+        title: item.title,
+        cover_image: item.cover_image,
+        excerpt: item.excerpt,
+        content: item.content,
+        status: "approve",
+        rejection_reason: "",
+        tags: item.tags || [],
+      };
+      await approveBlog({ slug: item.slug, body }).unwrap();
+    } catch (err) {
+      console.error("Failed to approve blog:", err);
+    }
+  };
+
+  const handleReject = async (item) => {
+    try {
+      const body = {
+        author: item.author_detail?.id || 0,
+        category: item.categoryId || 0,
+        title: item.title,
+        cover_image: item.cover_image,
+        excerpt: item.excerpt,
+        content: item.content,
+        status: "reject",
+        rejection_reason: "Rejected by admin",
+        tags: item.tags || [],
+      };
+      await rejectBlog({ slug: item.slug, body }).unwrap();
+    } catch (err) {
+      console.error("Failed to reject blog:", err);
+    }
+  };
+
+  const blogs = (blogsResponse?.results || []).map((b) => ({
+    ...b,
+    dbId: b.id,
+    id: b.slug, // Use slug for navigation
+    type: b.cover_image ? "Article" : "Video",
+    thumbnail: b.cover_image,
+    date: new Date(b.published_at).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+    readTime: `${b.reading_time} min read`,
+    category: b.category?.name || "Uncategorized",
+    categoryId: b.category?.id,
+    title: b.title,
+    description: b.excerpt,
+    author: b.author_detail?.full_name || "Admin",
+    status:
+      b.status === "pending"
+        ? "Pending Approval"
+        : b.status === "published"
+          ? "Published"
+          : "Rejected",
+    rawStatus: b.status,
+  }));
+
+  // Preserve manual video static for now, or use blogs if they contain videos
+  const [staticVideos, setStaticVideos] = useState([
     {
       id: 3,
       type: "Video",
@@ -61,21 +256,21 @@ const Contents = () => {
     },
   ]);
 
-  const handleToggleStatus = (id) => {
-    setContentsList((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: item.status === "Approved" ? "Pending" : "Approved",
-            }
-          : item,
-      ),
-    );
-  };
+  const contentsList = [...blogs, ...staticVideos].filter((item) => {
+    const matchesSearch =
+      item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory
+      ? item.categoryId?.toString() === selectedCategory
+      : true;
+    return matchesSearch && matchesCategory;
+  });
 
   const handleSaveContent = (newItem) => {
-    setContentsList((prev) => [newItem, ...prev]);
+    if (newItem.type === "Video") {
+      setStaticVideos((prev) => [newItem, ...prev]);
+    }
+    // Articles will be handled by API invalidation after upload
     setShowUploadForm(null);
   };
 
@@ -133,17 +328,127 @@ const Contents = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <button className="p-2.5 bg-white rounded-[10px] border border-neutral-300 hover:bg-neutral-50 transition-colors">
-          <Filter className="w-5 h-5 text-neutral-500" />
-        </button>
-        <button className="min-w-[120px] px-4 h-11 bg-white border border-neutral-300 rounded-[10px] flex items-center justify-between text-neutral-500 font-normal">
-          All
-          <ChevronDown className="w-4 h-4" />
-        </button>
+        {/* Category Filter */}
+        <div className="flex flex-col gap-3 relative">
+          <button
+            onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+            className="w-48 h-11 px-4 bg-white border border-neutral-300 rounded-[10px] flex items-center justify-between text-neutral-500 font-normal hover:bg-neutral-50 transition-all"
+          >
+            <span className="truncate">
+              {categories.find((c) => c.id.toString() === selectedCategory)
+                ?.name || "All Categories"}
+            </span>
+            <ChevronDown
+              className={`w-4 h-4 transition-transform duration-300 ${isCategoryOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {isCategoryOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setIsCategoryOpen(false)}
+              />
+              <div className="absolute top-12 left-0 mt-2 p-1 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl flex flex-col gap-1 min-w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                <div className="max-h-60 overflow-y-auto p-2">
+                  <button
+                    onClick={() => {
+                      setSelectedCategory("");
+                      setIsCategoryOpen(false);
+                    }}
+                    className={`w-full px-4 py-2.5 rounded-xl text-sm text-left transition-all ${
+                      selectedCategory === ""
+                        ? "bg-teal-50 text-teal-700 font-bold"
+                        : "text-stone-600 hover:bg-stone-50"
+                    }`}
+                  >
+                    All Categories
+                  </button>
+                  {categories.map((cat) => (
+                    <div
+                      key={cat.id}
+                      className={`group flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${
+                        selectedCategory === cat.id.toString()
+                          ? "bg-teal-50 text-teal-700 font-bold"
+                          : "text-stone-600 hover:bg-stone-50"
+                      }`}
+                      onClick={() => {
+                        setSelectedCategory(cat.id.toString());
+                        setIsCategoryOpen(false);
+                      }}
+                    >
+                      <span className="truncate">{cat.name}</span>
+                      <button
+                        onClick={(e) => handleDeleteCategory(cat.slug, e)}
+                        className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all ml-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-3 border-t border-stone-50 bg-stone-50/50 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add category..."
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && handleAddCategory()
+                    }
+                    className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
+                  />
+                  <button
+                    onClick={handleAddCategory}
+                    className="p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-md active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {contentsList.map((item) => (
+      {/* Category Pills */}
+      <div className="flex flex-wrap gap-3">
+        <button
+          onClick={() => setSelectedCategory("")}
+          className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+            selectedCategory === ""
+              ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
+              : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
+          }`}
+        >
+          All
+        </button>
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id.toString())}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+              selectedCategory === cat.id.toString()
+                ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
+                : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
+            }`}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+
+      {isBlogsLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 font-medium animate-pulse">
+            Fetching articles...
+          </p>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {contentsList.map((item) => (
           <div
             key={item.id}
             className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
@@ -224,29 +529,56 @@ const Contents = () => {
             {item.type === "Article" && (
               <div className="px-5 py-4 bg-neutral-50 border-t border-black/10 flex items-center justify-end gap-3">
                 <button
+                  onClick={() => handleDelete(item.slug)}
+                  className="p-2 border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-5 h-4" />
+                </button>
+                <button
                   onClick={() => navigate(`/admin/contents/${item.id}`)}
                   className="p-2 border border-slate-400 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
                 >
                   <Eye className="w-5 h-4" />
                 </button>
-                {item.status === "Pending" ? (
-                  <button
-                    onClick={() => handleToggleStatus(item.id)}
-                    className="px-6 py-2 bg-white border border-slate-400 rounded-lg text-slate-500 text-sm font-medium hover:bg-[#7AA4A5] hover:text-white hover:border-[#7AA4A5] transition-all"
-                  >
-                    Approve
-                  </button>
-                ) : (
+                {item.status === "Pending Approval" ? (
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 text-green-600 text-sm font-bold">
+                    <button
+                      onClick={() => handleReject(item)}
+                      className="px-4 py-1.5 bg-white border border-red-200 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition-colors"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => handleApprove(item)}
+                      className="px-6 py-2 bg-white border border-slate-400 rounded-lg text-slate-500 text-sm font-medium hover:bg-[#7AA4A5] hover:text-white hover:border-[#7AA4A5] transition-all"
+                    >
+                      Approve
+                    </button>
+                  </div>
+                ) : item.status === "Published" ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 text-green-600 text-sm font-bold bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
                       <CheckCircle2 className="w-4 h-4" />
                       Approved
                     </div>
                     <button
-                      onClick={() => handleToggleStatus(item.id)}
+                      onClick={() => handleReject(item)}
                       className="px-4 py-1.5 bg-white border border-red-200 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition-colors"
                     >
                       Reject
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 text-red-600 text-sm font-bold bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">
+                      <XCircle className="w-4 h-4" />
+                      Rejected
+                    </div>
+                    <button
+                      onClick={() => handleApprove(item)}
+                      className="px-6 py-2 bg-white border border-slate-400 rounded-lg text-slate-500 text-sm font-medium hover:bg-[#7AA4A5] hover:text-white hover:border-[#7AA4A5] transition-all"
+                    >
+                      Approve
                     </button>
                   </div>
                 )}
@@ -254,7 +586,8 @@ const Contents = () => {
             )}
           </div>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

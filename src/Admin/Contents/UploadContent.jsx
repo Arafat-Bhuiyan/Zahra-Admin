@@ -10,27 +10,32 @@ import {
   ArrowLeft,
   Trash2,
   ExternalLink,
+  ChevronDown,
 } from "lucide-react";
 import QuillEditor from "../../components/QuillEditor";
+import {
+  useAddBlogMutation,
+  useGetBlogCategoriesQuery,
+} from "../../Api/adminApi";
 
 const UploadContent = ({ onSave, onBack }) => {
   const [formData, setFormData] = useState({
     title: "",
     excerpt: "",
-    content:
-      "In our fast-paced modern world, finding moments of peace and tranquility can seem like an impossible task. However, Islamic tradition offers us a wealth of mindfulness practices that have been used for centuries to cultivate inner peace and spiritual awareness.\n\nDhikr (remembrance of Allah) is perhaps the most fundamental mindfulness practice in Islam. When we engage in dhikr with presence and intention, we create a state of mindful awareness that anchors us in the present moment.",
-    readTime: "5 min read",
-    publishDate: "",
-    tags: ["Islamic Spirituality", "Mental Health", "Mindfulness"],
+    content: "",
+    tags: [],
     coverImage: null,
-    additionalMedia: [],
-    externalLink: "",
+    coverImagePreview: null,
+    category: "",
   });
 
   const [tagInput, setTagInput] = useState("");
   const fileInputRef = useRef(null);
-  const mediaImageRef = useRef(null);
-  const mediaVideoRef = useRef(null);
+  const { data: categoriesResponse } = useGetBlogCategoriesQuery();
+  const [addBlog] = useAddBlogMutation();
+  // The API returns a direct array [{}, {}] instead of a paginated object with results
+  const categories = categoriesResponse || [];
+  console.log("Categories:", categories);
 
   const stripHtml = (html) => {
     const tmp = document.createElement("DIV");
@@ -64,42 +69,39 @@ const UploadContent = ({ onSave, onBack }) => {
     if (!file) return;
 
     if (type === "cover") {
-      setFormData({ ...formData, coverImage: URL.createObjectURL(file) });
-    } else {
       setFormData({
         ...formData,
-        additionalMedia: [
-          ...formData.additionalMedia,
-          {
-            id: Date.now(),
-            type,
-            url: URL.createObjectURL(file),
-            name: file.name,
-          },
-        ],
+        coverImage: file,
+        coverImagePreview: URL.createObjectURL(file),
       });
     }
   };
 
-  const handleUpload = () => {
-    // Static save for demonstration
-    const newItem = {
-      id: Date.now(),
-      type: "Article",
-      thumbnail:
-        formData.coverImage ||
-        "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?q=80&w=2670&auto=format&fit=crop",
-      date: formData.publishDate || "Feb 01, 2026",
-      readTime: formData.readTime,
-      category: formData.tags[0] || "General",
-      title: formData.title || "Untitled Mindfulness Post",
-      description:
-        formData.excerpt ||
-        "A brief summary of the newly uploaded content for preview purposes.",
-      author: "Admin",
-      status: "Pending",
-    };
-    onSave(newItem);
+  const handleUpload = async () => {
+    if (!formData.title || !formData.category || !formData.content) {
+      alert("Please fill in title, category, and content.");
+      return;
+    }
+
+    try {
+      const uploadData = new FormData();
+      uploadData.append("title", formData.title);
+      uploadData.append("excerpt", formData.excerpt);
+      uploadData.append("content", formData.content);
+      uploadData.append("category", formData.category);
+      if (formData.coverImage) {
+        uploadData.append("cover_image", formData.coverImage);
+      }
+      formData.tags.forEach((tag) => {
+        uploadData.append("tags", tag);
+      });
+
+      await addBlog(uploadData).unwrap();
+      onBack();
+    } catch (err) {
+      console.error("Failed to add blog:", err);
+      alert("Error adding blog: " + (err.data?.detail || err.message || "Unknown error"));
+    }
   };
 
   return (
@@ -127,9 +129,9 @@ const UploadContent = ({ onSave, onBack }) => {
               onClick={() => fileInputRef.current.click()}
               className="w-full h-80 rounded-[10px] border-2 border-dashed border-gray-300 flex flex-col justify-center items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer group relative overflow-hidden"
             >
-              {formData.coverImage ? (
+              {formData.coverImagePreview ? (
                 <img
-                  src={formData.coverImage}
+                  src={formData.coverImagePreview}
                   className="w-full h-full object-cover"
                   alt="Cover"
                 />
@@ -216,164 +218,32 @@ const UploadContent = ({ onSave, onBack }) => {
               </p>
             </div>
           </div>
-
-          {/* Additional Media */}
-          <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">
-            <h3 className="text-neutral-950 text-lg font-medium">
-              Additional Media
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div
-                onClick={() => mediaImageRef.current.click()}
-                className="h-28 rounded-[10px] border-2 border-dashed border-gray-300 flex flex-col justify-center items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                <ImageIcon className="w-6 h-6 text-gray-400" />
-                <span className="text-gray-600 text-sm font-semibold">
-                  Add Image
-                </span>
-                <input
-                  type="file"
-                  ref={mediaImageRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, "image")}
-                />
-              </div>
-              <div
-                onClick={() => mediaVideoRef.current.click()}
-                className="h-28 rounded-[10px] border-2 border-dashed border-gray-300 flex flex-col justify-center items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                <Video className="w-6 h-6 text-gray-400" />
-                <span className="text-gray-600 text-sm font-semibold">
-                  Add Video
-                </span>
-                <input
-                  type="file"
-                  ref={mediaVideoRef}
-                  className="hidden"
-                  accept="video/*"
-                  onChange={(e) => handleFileChange(e, "video")}
-                />
-              </div>
-            </div>
-
-            {/* External Link Option - Following AddLesson.jsx style */}
-            <div className="space-y-4 pt-4 border-t border-gray-100">
-              <div className="flex justify-between items-center ml-1">
-                <div className="flex items-center gap-2">
-                  <ExternalLink className="w-4 h-4 text-[#7AA4A5]" />
-                  <label className="text-sm font-bold text-gray-700">
-                    External Source Link
-                  </label>
-                </div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-md">
-                  YouTube, Vimeo, S3, etc.
-                </span>
-              </div>
-              <input
-                type="text"
-                value={formData.externalLink}
-                onChange={(e) =>
-                  setFormData({ ...formData, externalLink: e.target.value })
-                }
-                placeholder="Paste your video or resource link here (e.g. YouTube, Google Drive)"
-                className="w-full px-4 py-3 bg-zinc-100 rounded-xl text-sm text-blue-600 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 font-bold placeholder:font-normal placeholder:text-gray-400 transition-all border border-transparent"
-              />
-              <p className="text-[10px] font-medium text-gray-400 ml-1">
-                * This link will be prioritized if no video is uploaded. All
-                external storage and streaming providers are supported.
-              </p>
-            </div>
-
-            {/* Media Preview */}
-            {formData.additionalMedia.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                {formData.additionalMedia.map((media) => (
-                  <div
-                    key={media.id}
-                    className="relative group rounded-lg overflow-hidden border border-gray-200 h-20"
-                  >
-                    {media.type === "image" ? (
-                      <img
-                        src={media.url}
-                        className="w-full h-full object-cover"
-                        alt="Media"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                        <Video className="w-6 h-6 text-slate-400" />
-                      </div>
-                    )}
-                    <button
-                      onClick={() =>
-                        setFormData({
-                          ...formData,
-                          additionalMedia: formData.additionalMedia.filter(
-                            (m) => m.id !== media.id,
-                          ),
-                        })
-                      }
-                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <p className="text-gray-500 text-xs font-normal text-center">
-              Upload images or videos to include in your content
-            </p>
-          </div>
         </div>
 
         {/* Sidebar Section */}
-        <div className="w-full lg:w-96 flex flex-col justify-between">
+        <div className="w-full lg:w-96 flex flex-col gap-6">
           <div className="space-y-6">
-            {/* Publishing Options */}
-            {/* <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">
-              <h3 className="text-neutral-950 text-lg font-medium">
-                Publishing Options
-              </h3>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-gray-700 text-sm font-semibold">
-                    Read Time
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.readTime}
-                      onChange={(e) =>
-                        setFormData({ ...formData, readTime: e.target.value })
-                      }
-                      className="w-full h-10 px-3 bg-zinc-100 rounded-lg flex items-center text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20"
-                      placeholder="e.g. 5 min read"
-                    />
-                    <Clock className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-gray-700 text-sm font-semibold">
-                    Publish Date
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      value={formData.publishDate}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          publishDate: e.target.value,
-                        })
-                      }
-                      className="w-full h-10 bg-zinc-100 rounded-lg flex items-center px-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20"
-                    />
-                  </div>
-                </div>
+            {/* Category Selection */}
+            <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">
+              <h3 className="text-neutral-950 text-lg font-medium">Category</h3>
+              <div className="relative">
+                <select
+                  className="w-full h-11 px-4 bg-zinc-100 border-none rounded-lg text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 appearance-none cursor-pointer"
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-gray-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
-            </div> */}
+            </div>
 
             {/* Tags */}
             <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">

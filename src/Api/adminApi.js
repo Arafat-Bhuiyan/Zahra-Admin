@@ -119,6 +119,71 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["blogs"],
     }),
 
+    // Add Blog
+    addBlog: builder.mutation({
+      query: (data) => ({
+        url: "/blogs/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["blogs"],
+    }),
+
+    // Delete Blog
+    deleteBlog: builder.mutation({
+      query: (slug) => ({
+        url: `/blogs/${slug}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["blogs"],
+    }),
+
+    // single blog get
+    getBlogDetails: builder.query({
+      query: (slug) => `/blogs/${slug}/`,
+      providesTags: ["blogs"],
+    }),
+
+    // approve blog
+    approveBlog: builder.mutation({
+      query: ({ slug, body }) => ({
+        url: `/blogs/${slug}/approve/`,
+        method: "POST",
+        body: body,
+      }),
+      invalidatesTags: ["blogs"],
+    }),
+
+    // reject blog
+    rejectBlog: builder.mutation({
+      query: ({ slug, body }) => ({
+        url: `/blogs/${slug}/reject/`,
+        method: "POST",
+        body: body,
+      }),
+      invalidatesTags: ["blogs"],
+    }),
+    // Blog Categories
+    getBlogCategories: builder.query({
+      query: () => "/blogs/categories/",
+      providesTags: ["blogs"],
+    }),
+    addBlogCategory: builder.mutation({
+      query: (name) => ({
+        url: "/blogs/categories/",
+        method: "POST",
+        body: { name },
+      }),
+      invalidatesTags: ["blogs"],
+    }),
+    deleteBlogCategory: builder.mutation({
+      query: (slug) => ({
+        url: `/blogs/categories/${slug}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["blogs"],
+    }),
+
     // Get Courses
     getCoursesData: builder.query({
       query: () => "/courses/",
@@ -165,6 +230,14 @@ export const {
   useAddBookCategoryMutation,
   useDeleteBookCategoryMutation,
   useGetBlogsDataQuery,
+  useAddBlogMutation,
+  useDeleteBlogMutation,
+  useGetBlogDetailsQuery,
+  useApproveBlogMutation,
+  useRejectBlogMutation,
+  useGetBlogCategoriesQuery,
+  useAddBlogCategoryMutation,
+  useDeleteBlogCategoryMutation,
   useGetCoursesDataQuery,
   useGetCourseCategoriesQuery,
   useAddCourseCategoryMutation,

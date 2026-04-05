@@ -10,29 +10,54 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useGetBlogDetailsQuery } from "../../Api/adminApi";
 
 const ContentDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [isPlaying, setIsPlaying] = useState(false);
+  const { data: blog, isLoading, isError } = useGetBlogDetailsQuery(id);
 
-  // Mock data for the specific article in the design
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-12 h-12 border-4 border-[#7AA4A5] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (isError || !blog) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white flex-col gap-4">
+        <p className="text-stone-600 text-lg">Error loading content details.</p>
+        <button
+          onClick={() => navigate("/admin/contents")}
+          className="text-[#7AA4A5] hover:underline"
+        >
+          Go back to blog
+        </button>
+      </div>
+    );
+  }
+
   const content = {
-    title: "Finding Peace Through Islamic Mindfulness Practices",
-    subtitle:
-      "Clinical Psychologist & Islamic Scholar specializing in mindfulness-based therapy",
-    author: "Dr. Fatima Rahman",
-    authorInitial: "D",
-    date: "Dec 28, 2025",
-    readTime: "5 min read",
-    category: "Spiritual Growth",
-    heroImage:
-      "https://images.unsplash.com/photo-1507502707541-f369a3b18502?q=80&w=2788&auto=format&fit=crop",
-    videoTitle: "The Power of Gratitude in Islam",
-    videoDuration: "16:55",
-    videoThumbnail:
-      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2899&auto=format&fit=crop",
-    videoUrl: "https://www.youtube.com/embed/FXNsrLUksuY?autoplay=1", // A related inspirational video
+    title: blog.title,
+    subtitle: blog.author_detail?.professional_title || "Islamic Psychology Expert",
+    author: blog.author_detail?.full_name || "Admin",
+    authorInitial: blog.author_detail?.full_name?.[0] || "A",
+    date: new Date(blog.published_at).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+    readTime: `${blog.reading_time || "5"} min read`,
+    category: blog.category?.name || "Uncategorized",
+    heroImage: blog.cover_image,
+    body: blog.content,
+    videoTitle: blog.title, // Placeholder for video
+    videoDuration: "0:00",
+    videoThumbnail: blog.cover_image,
+    videoUrl: "", // API doesn't seem to provide this yet
   };
 
   return (
@@ -102,115 +127,84 @@ const ContentDetails = () => {
       </div>
 
       {/* Article Content */}
-      <div className="max-w-[932px] mx-auto mt-14 px-4 md:px-0 space-y-8">
-        <div className="space-y-6 text-stone-700 text-base leading-relaxed">
-          <p>
-            In our fast-paced modern world, finding moments of peace and
-            tranquility can seem like an impossible task. However, Islamic
-            tradition offers us a wealth of mindfulness practices that have been
-            used for centuries to cultivate inner peace and spiritual awareness.
-          </p>
-          <p>
-            Dhikr (remembrance of Allah) is perhaps the most fundamental
-            mindfulness practice in Islam. When we engage in dhikr with presence
-            and intention, we create a state of mindful awareness that anchors
-            us in the present moment. The Prophet Muhammad (peace be upon him)
-            said, "The similitude of the one who remembers his Lord and the one
-            who does not is like that of the living and the dead."
-          </p>
-          <p>
-            Research in modern psychology has shown that mindfulness practices
-            can significantly reduce anxiety and stress. When we combine this
-            scientific understanding with the spiritual depth of Islamic
-            practices, we create a powerful tool for mental and spiritual
-            wellness.
-          </p>
-          <p>
-            Practical steps for incorporating Islamic mindfulness into your
-            daily life include: Setting aside specific times for dhikr,
-            practicing mindful prayer (salah) with full presence, taking moments
-            throughout the day for reflection (muraqabah), and cultivating
-            gratitude (shukr) through conscious awareness of Allah's blessings.
-          </p>
-          <p>
-            The key is consistency and sincerity. Even five minutes of focused
-            dhikr can transform your day and create a sense of peace that
-            carries through your daily activities. Start small, be patient with
-            yourself, and trust in the healing power of remembering Allah.
-            <button className="text-cyan-800 underline ml-1 hover:text-cyan-900 transition-colors">
-              See more
-            </button>
-          </p>
-        </div>
+      <div className="max-w-[932px] mx-auto mt-14 px-4 md:px-0 mb-20">
+        <div
+          className="prose prose-stone max-w-none text-stone-700 text-base leading-relaxed quill-content"
+          dangerouslySetInnerHTML={{ __html: content.body }}
+        />
+      </div>
 
-        {/* Video Section Card */}
-        <div className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden mt-14 shadow-sm">
-          <div className="bg-white border-b border-stone-200 p-6 flex justify-between items-center">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-[#7AA4A5] text-xs font-bold uppercase tracking-tight">
-                <Play className="w-4 h-4 fill-current" />
-                Watch Video
+      {/* Video Section Card (Conditional - only if video data exists) */}
+      {content.videoUrl && (
+        <div className="max-w-[932px] mx-auto space-y-8 px-4 md:px-0">
+          <div className="bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
+            <div className="bg-white border-b border-stone-200 p-6 flex justify-between items-center">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-[#7AA4A5] text-xs font-bold uppercase tracking-tight">
+                  <Play className="w-4 h-4 fill-current" />
+                  Watch Video
+                </div>
+                <h2 className="text-stone-900 text-lg font-bold leading-7">
+                  {content.videoTitle}
+                </h2>
               </div>
-              <h2 className="text-stone-900 text-lg font-bold leading-7">
-                {content.videoTitle}
-              </h2>
+              {isPlaying && (
+                <button
+                  onClick={() => setIsPlaying(false)}
+                  className="p-2 hover:bg-stone-50 rounded-full transition-colors text-stone-500"
+                  title="Close Video"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
-            {isPlaying && (
-              <button
-                onClick={() => setIsPlaying(false)}
-                className="p-2 hover:bg-stone-50 rounded-full transition-colors text-stone-500"
-                title="Close Video"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            )}
-          </div>
 
-          <div className="relative aspect-video group overflow-hidden bg-black">
-            {!isPlaying ? (
-              <div
-                className="w-full h-full cursor-pointer relative"
-                onClick={() => setIsPlaying(true)}
-              >
-                <img
-                  src={content.videoThumbnail}
-                  alt="Video Thumbnail"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <div className="w-20 h-20 bg-white/95 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
-                    <Play className="w-10 h-10 text-[#7AA4A5] fill-current ml-1" />
+            <div className="relative aspect-video group overflow-hidden bg-black">
+              {!isPlaying ? (
+                <div
+                  className="w-full h-full cursor-pointer relative"
+                  onClick={() => setIsPlaying(true)}
+                >
+                  <img
+                    src={content.videoThumbnail}
+                    alt="Video Thumbnail"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="w-20 h-20 bg-white/95 rounded-full flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
+                      <Play className="w-10 h-10 text-[#7AA4A5] fill-current ml-1" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-6 right-6 bg-black/80 px-3 py-1.5 rounded text-white text-sm font-bold">
+                    {content.videoDuration}
                   </div>
                 </div>
-                <div className="absolute bottom-6 right-6 bg-black/80 px-3 py-1.5 rounded text-white text-sm font-bold">
-                  {content.videoDuration}
-                </div>
-              </div>
-            ) : (
-              <iframe
-                className="w-full h-full"
-                src={content.videoUrl}
-                title={content.videoTitle}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              ></iframe>
-            )}
-          </div>
+              ) : (
+                <iframe
+                  className="w-full h-full"
+                  src={content.videoUrl}
+                  title={content.videoTitle}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
+              )}
+            </div>
 
-          <div className="bg-white p-4 px-6 border-t border-stone-200 flex justify-between items-center">
-            <p className="text-stone-600 text-sm font-normal">
-              {isPlaying
-                ? "Currently playing video"
-                : "Click to play embedded video"}
-            </p>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-300 rounded-lg text-stone-700 text-sm font-normal hover:bg-stone-50 transition-colors">
-              Watch Full Page
-              <Maximize2 className="w-4 h-4" />
-            </button>
+            <div className="bg-white p-4 px-6 border-t border-stone-200 flex justify-between items-center">
+              <p className="text-stone-600 text-sm font-normal">
+                {isPlaying
+                  ? "Currently playing video"
+                  : "Click to play embedded video"}
+              </p>
+              <button className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-300 rounded-lg text-stone-700 text-sm font-normal hover:bg-stone-50 transition-colors">
+                Watch Full Page
+                <Maximize2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
