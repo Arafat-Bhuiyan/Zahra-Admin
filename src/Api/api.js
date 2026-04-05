@@ -1,5 +1,11 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+const normalizeListResponse = (response) => {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.results)) return response.results;
+  return [];
+};
+
 const baseQuery = fetchBaseQuery({
   baseUrl: "http://10.10.13.8:8000/",
   prepareHeaders: (headers, { getState, endpoint }) => {
@@ -56,10 +62,13 @@ export const api = createApi({
         url: "course-categories/",
         method: "GET",
       }),
-      providesTags: (result) =>
-        result
+      transformResponse: normalizeListResponse,
+      providesTags: (result = []) =>
+        result.length
           ? [
-              ...result.map(({ id }) => ({ type: "categories", id })),
+              ...result
+                .filter((item) => item?.id != null)
+                .map(({ id }) => ({ type: "categories", id })),
               { type: "categories", id: "LIST" },
             ]
           : [{ type: "categories", id: "LIST" }],
@@ -76,10 +85,13 @@ export const api = createApi({
           method: "GET",
         };
       },
-      providesTags: (result) =>
-        result
+      transformResponse: normalizeListResponse,
+      providesTags: (result = []) =>
+        result.length
           ? [
-              ...result.map(({ id }) => ({ type: "courses", id })),
+              ...result
+                .filter((item) => item?.id != null)
+                .map(({ id }) => ({ type: "courses", id })),
               { type: "courses", id: "LIST" },
             ]
           : [{ type: "courses", id: "LIST" }],
