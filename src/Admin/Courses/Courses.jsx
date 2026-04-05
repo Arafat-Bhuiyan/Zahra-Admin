@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Filter,
 } from "lucide-react";
+import { useGetCoursesDataQuery } from "../../Api/adminApi";
 import AddEditCourse from "./AddEditCourse";
 import CourseBuilder from "./CourseBuilder";
 import LiveSessions from "./LiveSessions";
@@ -32,6 +33,8 @@ const Courses = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
+  const { data: apiResponse, isLoading, isError } = useGetCoursesDataQuery();
+
   const categories = [
     "All",
     "Mental Health",
@@ -41,143 +44,33 @@ const Courses = () => {
   ];
   const statuses = ["All", "Running", "Recorded", "Upcoming"];
 
-  const [courses, setCourses] = useState([
-    {
-      id: 1,
-      title: "Tafsir Al-Quran: Understanding Divine Messages",
-      subtitle: "A journey through the meanings of the Holy Quran",
-      description:
-        "This course provides a comprehensive understanding of the Quranic messages and their application in modern life.",
-      instructor: "Dr. Ahmed Hassan",
-      category: "Mental Health",
-      status: "Upcoming",
-      lessons: 24,
-      duration: "12 weeks",
-      totalHours: 12,
-      sessionDuration: "2hr per session",
-      price: "$99",
-      image:
-        "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2787&auto=format&fit=crop",
-      level: "Intermediate",
-      learningObjectives: [
-        "Understand core Quranic themes",
-        "Learn historical context",
-        "Reflect on divine messages",
-      ],
-      requirements: [
-        "Basic understanding of Islam",
-        "Stable internet connection",
-      ],
-      startDate: "2026-05-10",
-      curriculum: [
-        {
-          id: 1,
-          title: "Introduction to Tafsir",
-          lessons: [
-            {
-              id: 101,
-              title: "What is Tafsir?",
-              type: "video",
-              duration: "10:00",
-            },
-            {
-              id: 102,
-              title: "Principles of Interpretation",
-              type: "document",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "Mindfulness in Islam",
-      subtitle: "Faith-centered emotional healing journey",
-      description:
-        "Learn how to combine Islamic principles with modern mindfulness techniques for emotional wellbeing.",
-      instructor: "Dr. Ahmed Hassan",
-      category: "Mental Health",
-      status: "Running",
-      lessons: 24,
-      duration: "12 weeks",
-      totalHours: 12,
-      sessionDuration: "2hr per session",
-      price: "$99",
-      image:
-        "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2824&auto=format&fit=crop",
-      level: "Beginner",
-      learningObjectives: [
-        "Master Islamic meditation",
-        "Manage stress through faith",
-        "Build emotional resilience",
-      ],
-      requirements: ["None, open to all"],
-      startDate: "2026-04-15",
-    },
-    {
-      id: 3,
-      title: "Spiritual Growth Mastery",
-      subtitle: "Elevate your soul through daily practices",
-      description:
-        "A deep dive into the spiritual dimensions of Islam and how to cultivate a closer relationship with Allah.",
-      instructor: "Dr. Ahmed Hassan",
-      category: "Mental Health",
-      status: "Recorded",
-      lessons: 24,
-      duration: "12 weeks",
-      totalHours: 12,
-      sessionDuration: "2hr per session",
-      price: "$99",
-      image:
-        "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2800&auto=format&fit=crop",
-      level: "Advanced",
-      learningObjectives: [
-        "Develop consistent spiritual habits",
-        "Understand Tazkiyah-al-Nafs",
-        "Overcome spiritual plateaus",
-      ],
-      requirements: ["Completion of Foundation course"],
-      startDate: "2026-03-20",
-    },
-    {
-      id: 4,
-      title: "Foundation of Islamic Ethics",
-      subtitle: "Building character based on prophetic tradition",
-      description:
-        "Explore the ethical framework of Islam and how it shapes personal and professional conduct.",
-      instructor: "Dr. Yasir Qadhi",
-      category: "Spiritual Growth",
-      status: "Recorded",
-      lessons: 18,
-      duration: "10 weeks",
-      totalHours: 15,
-      sessionDuration: "1.5hr per session",
-      price: "$79",
-      image:
-        "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=2787&auto=format&fit=crop",
-      level: "Beginner",
-      learningObjectives: [
-        "Identify core Islamic values",
-        "Apply ethics in daily life",
-        "Study prophetic character",
-      ],
-      requirements: ["Basic literacy"],
-      startDate: "2026-02-28",
-    },
-  ]);
+  const getStatusLabel = (status) => {
+    if (status === "upcoming") return "Upcoming";
+    if (status === "running") return "Running";
+    if (status === "recorded") return "Recorded";
+    return status;
+  };
 
-  const filteredCourses = courses.filter((c) => {
+  const getInstructorName = (teacher) => {
+    if (!teacher?.user) return "N/A";
+    return `${teacher.user.first_name} ${teacher.user.last_name}`;
+  };
+
+  const filteredCourses = (apiResponse?.results || []).filter((c) => {
+    const instructorName = getInstructorName(c.teacher);
+    const statusLabel = getStatusLabel(c.status);
+
     const matchesSearch =
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+      instructorName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
-      selectedCategory === "All" || c.category === selectedCategory;
+      selectedCategory === "All" || c.category?.name === selectedCategory;
     const matchesStatus =
-      selectedStatus === "All" || c.status === selectedStatus;
+      selectedStatus === "All" || statusLabel === selectedStatus;
 
     const matchesDate =
-      (!dateFrom || new Date(c.startDate) >= new Date(dateFrom)) &&
-      (!dateTo || new Date(c.startDate) <= new Date(dateTo));
+      (!dateFrom || new Date(c.start_date) >= new Date(dateFrom)) &&
+      (!dateTo || new Date(c.start_date) <= new Date(dateTo));
 
     return matchesSearch && matchesCategory && matchesStatus && matchesDate;
   });
@@ -203,24 +96,7 @@ const Courses = () => {
   };
 
   const handleSaveCourse = (formData) => {
-    if (courseToEdit) {
-      // Edit existing course
-      setCourses((prev) =>
-        prev.map((c) =>
-          c.id === courseToEdit.id
-            ? { ...formData, id: c.id, image: formData.imagePreview }
-            : c,
-        ),
-      );
-    } else {
-      // Add new course
-      const newCourse = {
-        ...formData,
-        id: courses.length > 0 ? Math.max(...courses.map((c) => c.id)) + 1 : 1,
-        image: formData.imagePreview || "https://placehold.co/360x219",
-      };
-      setCourses((prev) => [...prev, newCourse]);
-    }
+    // API integration for saving would go here
     setActiveView("listing");
     setCourseToEdit(null);
   };
@@ -277,7 +153,6 @@ const Courses = () => {
           <h4 className="text-2xl font-bold text-neutral-900">4.8</h4>
         </div> */}
       </div>
-
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
         <button
@@ -295,7 +170,6 @@ const Courses = () => {
           Add New Course
         </button>
       </div>
-
       {/* Filters Section */}
       <div className="flex flex-col md:flex-row gap-12 z-20">
         {/* Category Filter */}
@@ -404,7 +278,6 @@ const Courses = () => {
           </div>
         </div>
       </div>
-
       {/* Toolbar */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-black/5 shadow-sm">
         <div className="relative w-full md:w-[400px]">
@@ -419,7 +292,7 @@ const Courses = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-2 bg-zinc-50 border border-black/5 rounded-xl px-3 h-10 w-full md:w-auto">
+          {/* <div className="flex items-center gap-2 bg-zinc-50 border border-black/5 rounded-xl px-3 h-10 w-full md:w-auto">
             <Calendar className="w-4 h-4 text-gray-400" />
             <input
               type="date"
@@ -447,7 +320,7 @@ const Courses = () => {
                 Clear
               </button>
             )}
-          </div>
+          </div> */}
 
           <div className="flex bg-zinc-100 p-1 rounded-xl">
             <button
@@ -464,203 +337,248 @@ const Courses = () => {
             </button>
           </div>
         </div>
+      </div>{" "}
+      {/* Course Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
+            Total Courses
+          </p>
+          <h4 className="text-2xl font-bold text-neutral-900">
+            {apiResponse?.count || 0}
+          </h4>
+        </div>
       </div>
-
-      {/* Courses Display */}
-      {viewMode === "grid" ? (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 tracking-tight">
-          {filteredCourses.map((c) => (
-            <div
-              key={c.id}
-              className="bg-white rounded-[2rem] border border-stone-200 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300"
-            >
-              <div className="relative h-64 w-full p-4">
-                <div className="absolute top-6 right-8 z-10 px-4 py-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl text-stone-700 text-xs font-medium shadow-sm">
-                  {c.category}
-                </div>
-                <img
-                  src={c.image}
-                  alt={c.title}
-                  className="w-full h-full object-cover rounded-[1.5rem]"
-                />
-              </div>
-
-              <div className="px-6 pb-6 flex flex-col gap-5 flex-grow">
-                {/* Status Badge */}
-                <div className="flex">
-                  <span
-                    className={`px-4 py-1.5 rounded-[20px] text-xs font-semibold text-white flex items-center gap-2 ${
-                      c.status === "Upcoming"
-                        ? "bg-lime-600"
-                        : c.status === "Running"
-                          ? "bg-red-700"
-                          : "bg-sky-500"
-                    }`}
-                  >
-                    {c.status === "Running" && (
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                      </span>
-                    )}
-                    {c.status}
-                  </span>
-                </div>
-
-                {/* Title and Instructor */}
-                <div className="space-y-2">
-                  <h4 className="text-stone-900 text-xl font-bold leading-tight line-clamp-2 min-h-[3.5rem] group-hover:text-teal-700 transition-colors">
-                    {c.title}
-                  </h4>
-                  <div className="flex items-center justify-between gap-2 text-stone-600">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center">
-                        <Users className="w-4 h-4" />
-                      </div>
-                      <span className="text-sm font-medium">
-                        {c.instructor}
-                      </span>
-                    </div>
-                    {c.status === "Upcoming" && (
-                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest bg-stone-50 px-2 py-1 rounded-lg border border-stone-100">
-                        Starts{" "}
-                        {c.startDate
-                          ? new Date(c.startDate).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : "TBD"}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Course Stats */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-2">
-                  <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
-                    <BookOpen className="w-4 h-4 text-teal-600" />
-                    <span className="text-xs font-bold whitespace-nowrap">
-                      {c.lessons} Lessons
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
-                    <Calendar className="w-4 h-4 text-teal-600" />
-                    <span className="text-xs font-bold whitespace-nowrap">
-                      {c.duration}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
-                    <Clock className="w-4 h-4 text-teal-600" />
-                    <span className="text-xs font-bold whitespace-nowrap">
-                      {c.totalHours} hr
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
-                    <Clock className="w-4 h-4 text-teal-600" />
-                    <span className="text-xs font-bold whitespace-nowrap line-clamp-1">
-                      {c.sessionDuration}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Footer: Price and Actions */}
-                <div className="pt-5 border-t border-stone-100 flex items-center justify-between mt-auto">
-                  <span className="text-teal-800 text-2xl font-black">
-                    {c.price}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEditCourse(c)}
-                      className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleOpenBuilder(c)}
-                      className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 text-sm animate-pulse">
+            Loading amazing courses...
+          </p>
+        </div>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <p className="text-red-500 font-bold">Failed to load courses</p>
+          <p className="text-gray-500 text-sm mt-1">Please try again later.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-          <table className="w-full text-sm text-left arimo-font font-medium">
-            <thead className="bg-zinc-50 border-b border-black/5 text-neutral-500">
-              <tr>
-                <th className="py-4 px-6">Course Name</th>
-                <th className="py-4 px-6">Instructor</th>
-                <th className="py-4 px-6 text-center">Lessons</th>
-                <th className="py-4 px-6 text-center">Duration</th>
-                <th className="py-4 px-6">Price</th>
-                <th className="py-4 px-6 text-center">Status</th>
-                <th className="py-4 px-6 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-black/5">
-              {filteredCourses.map((c) => (
-                <tr
-                  key={c.id}
-                  className="hover:bg-zinc-50/50 transition-colors"
-                >
-                  <td className="py-4 px-6 flex items-center gap-3">
-                    <img
-                      src={c.image}
-                      className="w-12 h-8 rounded-lg object-cover border border-black/5"
-                    />
-                    <span className="text-neutral-950 font-bold">
-                      {c.title}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-neutral-600">{c.instructor}</td>
-                  <td className="py-4 px-6 text-center text-neutral-600">
-                    {c.lessons}
-                  </td>
-                  <td className="py-4 px-6 text-center text-neutral-600">
-                    {c.duration}
-                  </td>
-                  <td className="py-4 px-6 font-bold">{c.price}</td>
-                  <td className="py-4 px-6">
-                    <div className="flex justify-center">
-                      <span
-                        className={`px-3 py-1 rounded-[20px] text-[10px] font-bold uppercase ${
-                          c.status === "Upcoming"
-                            ? "bg-lime-600 text-white"
-                            : c.status === "Running"
-                              ? "bg-red-700 text-white"
-                              : "bg-sky-500 text-white"
-                        }`}
-                      >
-                        {c.status}
-                      </span>
+        <>
+          {viewMode === "grid" ? (
+            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 tracking-tight">
+              {filteredCourses.map((c) => {
+                const instructorName = getInstructorName(c.teacher);
+                const statusLabel = getStatusLabel(c.status);
+                return (
+                  <div
+                    key={c.id}
+                    className="bg-white rounded-[2rem] border border-stone-200 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="relative h-64 w-full p-4">
+                      <div className="absolute top-6 right-8 z-10 px-4 py-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl text-stone-700 text-xs font-medium shadow-sm">
+                        {c.category?.name || "Uncategorized"}
+                      </div>
+                      <img
+                        src={c.thumbnail || "https://placehold.co/360x219"}
+                        alt={c.title}
+                        className="w-full h-full object-cover rounded-[1.5rem]"
+                      />
                     </div>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => handleEditCourse(c)}
-                        className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleOpenBuilder(c)}
-                        className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+
+                    <div className="px-6 pb-6 flex flex-col gap-5 flex-grow">
+                      {/* Status Badge */}
+                      <div className="flex">
+                        <span
+                          className={`px-4 py-1.5 rounded-[20px] text-xs font-semibold text-white flex items-center gap-2 ${
+                            statusLabel === "Upcoming"
+                              ? "bg-lime-600"
+                              : statusLabel === "Running"
+                                ? "bg-red-700"
+                                : "bg-sky-500"
+                          }`}
+                        >
+                          {statusLabel === "Running" && (
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                            </span>
+                          )}
+                          {statusLabel}
+                        </span>
+                      </div>
+
+                      {/* Title and Instructor */}
+                      <div className="space-y-2">
+                        <h4 className="text-stone-900 text-xl font-bold leading-tight line-clamp-2 min-h-[3.5rem] group-hover:text-teal-700 transition-colors">
+                          {c.title}
+                        </h4>
+                        <div className="flex items-center justify-between gap-2 text-stone-600">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center">
+                              {c.teacher?.profile_picture ? (
+                                <img
+                                  src={c.teacher.profile_picture}
+                                  className="w-full h-full rounded-full object-cover"
+                                />
+                              ) : (
+                                <Users className="w-4 h-4" />
+                              )}
+                            </div>
+                            <span className="text-sm font-medium">
+                              {instructorName}
+                            </span>
+                          </div>
+                          {statusLabel === "Upcoming" && (
+                            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest bg-stone-50 px-2 py-1 rounded-lg border border-stone-100">
+                              Starts{" "}
+                              {c.start_date
+                                ? new Date(c.start_date).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    },
+                                  )
+                                : "TBD"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Course Stats */}
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-2">
+                        <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
+                          <BookOpen className="w-4 h-4 text-teal-600" />
+                          <span className="text-xs font-bold whitespace-nowrap">
+                            {c.total_lessons || 0} Lessons
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
+                          <Calendar className="w-4 h-4 text-teal-600" />
+                          <span className="text-xs font-bold whitespace-nowrap">
+                            {c.duration_in_weeks} Weeks
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
+                          <Clock className="w-4 h-4 text-teal-600" />
+                          <span className="text-xs font-bold whitespace-nowrap">
+                            {c.total_hours} hr
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-stone-500 bg-stone-50 p-2 rounded-xl">
+                          <Clock className="w-4 h-4 text-teal-600" />
+                          <span className="text-xs font-bold whitespace-nowrap line-clamp-1">
+                            {c.hours_per_session} hr/session
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Footer: Price and Actions */}
+                      <div className="pt-5 border-t border-stone-100 flex items-center justify-between mt-auto">
+                        <span className="text-teal-800 text-2xl font-black">
+                          ${c.price}
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditCourse(c)}
+                            className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleOpenBuilder(c)}
+                            className="w-10 h-10 bg-white rounded-xl border border-stone-200 flex justify-center items-center text-stone-400 hover:text-teal-600 hover:border-teal-600 hover:bg-teal-50 transition-all shadow-sm"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-black/10 shadow-sm overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+              <table className="w-full text-sm text-left arimo-font font-medium">
+                <thead className="bg-zinc-50 border-b border-black/5 text-neutral-500">
+                  <tr>
+                    <th className="py-4 px-6">Course Name</th>
+                    <th className="py-4 px-6">Instructor</th>
+                    <th className="py-4 px-6 text-center">Lessons</th>
+                    <th className="py-4 px-6 text-center">Duration</th>
+                    <th className="py-4 px-6">Price</th>
+                    <th className="py-4 px-6 text-center">Status</th>
+                    <th className="py-4 px-6 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/5">
+                  {filteredCourses.map((c) => {
+                    const instructorName = getInstructorName(c.teacher);
+                    const statusLabel = getStatusLabel(c.status);
+                    return (
+                      <tr
+                        key={c.id}
+                        className="hover:bg-zinc-50/50 transition-colors"
+                      >
+                        <td className="py-4 px-6 flex items-center gap-3">
+                          <img
+                            src={c.thumbnail || "https://placehold.co/360x219"}
+                            className="w-12 h-8 rounded-lg object-cover border border-black/5"
+                          />
+                          <span className="text-neutral-950 font-bold">
+                            {c.title}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-neutral-600">
+                          {instructorName}
+                        </td>
+                        <td className="py-4 px-6 text-center text-neutral-600">
+                          {c.total_lessons || 0}
+                        </td>
+                        <td className="py-4 px-6 text-center text-neutral-600">
+                          {c.duration_in_weeks} Weeks
+                        </td>
+                        <td className="py-4 px-6 font-bold">${c.price}</td>
+                        <td className="py-4 px-6">
+                          <div className="flex justify-center">
+                            <span
+                              className={`px-3 py-1 rounded-[20px] text-[10px] font-bold uppercase ${
+                                statusLabel === "Upcoming"
+                                  ? "bg-lime-600 text-white"
+                                  : statusLabel === "Running"
+                                    ? "bg-red-700 text-white"
+                                    : "bg-sky-500 text-white"
+                              }`}
+                            >
+                              {statusLabel}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => handleEditCourse(c)}
+                              className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleOpenBuilder(c)}
+                              className="p-1.5 hover:bg-gray-100 rounded text-slate-400"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

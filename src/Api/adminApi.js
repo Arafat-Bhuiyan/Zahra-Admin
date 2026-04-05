@@ -113,6 +113,17 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: ["books"],
     }),
+    // Get Blogs
+    getBlogsData: builder.query({
+      query: () => "/blogs/",
+      providesTags: ["blogs"],
+    }),
+
+    // Get Courses
+    getCoursesData: builder.query({
+      query: () => "/courses/",
+      providesTags: ["courses"],
+    }),
 
     // Add more admin-specific endpoints here as needed...
   }),
@@ -133,4 +144,6 @@ export const {
   useGetBookCategoriesQuery,
   useAddBookCategoryMutation,
   useDeleteBookCategoryMutation,
+  useGetBlogsDataQuery,
+  useGetCoursesDataQuery,
 } = adminApi;
