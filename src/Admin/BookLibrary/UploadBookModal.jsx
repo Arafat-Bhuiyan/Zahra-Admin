@@ -25,7 +25,8 @@ const UploadBookModal = ({ onClose, onSave }) => {
     description: "",
     category: "1",
     language: "English",
-    price: "99",
+    digitalPrice: "",
+    physicalPrice: "",
     type: "Both (Physical & Digital)",
     isbn: "978-1-234567-89-0",
     publisher: "",
@@ -97,10 +98,10 @@ const UploadBookModal = ({ onClose, onSave }) => {
     if (formData.bookFile) data.append("sample_file", formData.bookFile);
     data.append("video_url", formData.video_url || "");
     data.append("has_physical", has_physical);
-    data.append("physical_price", has_physical ? formData.price : "0");
+    data.append("physical_price", has_physical ? formData.physicalPrice : "0");
     data.append("stock_count", formData.stock_count || "0");
     data.append("has_digital", has_digital);
-    data.append("digital_price", has_digital ? formData.price : "0");
+    data.append("digital_price", has_digital ? formData.digitalPrice : "0");
     const tagsArray = formData.tags
       ? formData.tags.split(",").map((t) => t.trim()).filter((t) => t !== "")
       : [];
@@ -353,16 +354,29 @@ const UploadBookModal = ({ onClose, onSave }) => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-neutral-950 text-sm font-normal">
-                      Price ($) *
+                      Digital Price ($) *
                     </label>
                     <input
                       type="text"
-                      name="price"
+                      name="digitalPrice"
                       placeholder="99"
-                      value={formData.price}
+                      value={formData.digitalPrice}
+                      onChange={handleChange}
+                      className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-neutral-950 text-sm font-normal">
+                      Physical Price ($) *
+                    </label>
+                    <input
+                      type="text"
+                      name="physicalPrice"
+                      placeholder="99"
+                      value={formData.physicalPrice}
                       onChange={handleChange}
                       className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none text-sm"
                     />

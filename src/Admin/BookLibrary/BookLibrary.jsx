@@ -17,12 +17,12 @@ import {
 } from "lucide-react";
 import EditBookModal from "./EditBookModal";
 import UploadBookModal from "./UploadBookModal";
-import { 
-  useGetBooksDataQuery, 
+import {
+  useGetBooksDataQuery,
   useDeleteBookMutation,
   useGetBookCategoriesQuery,
   useAddBookCategoryMutation,
-  useDeleteBookCategoryMutation
+  useDeleteBookCategoryMutation,
 } from "../../Api/adminApi";
 import toast from "react-hot-toast";
 
@@ -37,7 +37,7 @@ const BookLibrary = () => {
 
   const { data: apiData, isLoading, isError } = useGetBooksDataQuery();
   const { data: categories } = useGetBookCategoriesQuery();
-  console.log("categories",categories)
+  console.log("categories", categories);
   const [addBookCategory] = useAddBookCategoryMutation();
   const [deleteBookCategory] = useDeleteBookCategoryMutation();
   const [deleteBook] = useDeleteBookMutation();
@@ -63,13 +63,16 @@ const BookLibrary = () => {
     }
   };
 
-  const books = apiData?.results?.filter((book) => {
-    const matchesSearch =
-      book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory ? book.category === parseInt(selectedCategory) : true;
-    return matchesSearch && matchesCategory;
-  }) || [];
+  const books =
+    apiData?.results?.filter((book) => {
+      const matchesSearch =
+        book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory
+        ? book.category === parseInt(selectedCategory)
+        : true;
+      return matchesSearch && matchesCategory;
+    }) || [];
 
   // Local helper to format book type
   const getBookType = (book) => {
@@ -232,16 +235,19 @@ const BookLibrary = () => {
               className="w-full h-11 pl-4 pr-10 bg-zinc-100 border-none rounded-lg flex items-center justify-between cursor-pointer text-sm text-neutral-950 focus-within:ring-2 focus-within:ring-[#7AA4A5]/20 font-normal"
             >
               <span className="truncate">
-                {categories?.find(c => c.id === parseInt(selectedCategory))?.name || "All Categories"}
+                {categories?.find((c) => c.id === parseInt(selectedCategory))
+                  ?.name || "All Categories"}
               </span>
-              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCategoryMenu ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`w-4 h-4 text-gray-400 transition-transform ${showCategoryMenu ? "rotate-180" : ""}`}
+              />
             </div>
 
             {showCategoryMenu && (
               <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setShowCategoryMenu(false)} 
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowCategoryMenu(false)}
                 />
                 <div className="absolute top-full left-0 w-full mt-2 bg-white border border-black/10 rounded-xl shadow-xl z-20 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                   <div className="max-h-60 overflow-y-auto p-1 custom-scrollbar">
@@ -250,7 +256,7 @@ const BookLibrary = () => {
                         setSelectedCategory("");
                         setShowCategoryMenu(false);
                       }}
-                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded-lg transition-colors ${!selectedCategory ? 'text-teal-600 bg-teal-50/50 font-medium' : 'text-neutral-700'}`}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 rounded-lg transition-colors ${!selectedCategory ? "text-teal-600 bg-teal-50/50 font-medium" : "text-neutral-700"}`}
                     >
                       All Categories
                     </button>
@@ -263,11 +269,15 @@ const BookLibrary = () => {
                           setShowCategoryMenu(false);
                         }}
                       >
-                        <span className={`text-sm truncate ${selectedCategory === cat.id.toString() ? 'text-teal-600 font-medium' : 'text-neutral-700'}`}>
+                        <span
+                          className={`text-sm truncate ${selectedCategory === cat.id.toString() ? "text-teal-600 font-medium" : "text-neutral-700"}`}
+                        >
                           {cat.name}
                         </span>
                         <button
-                          onClick={(e) => handleDeleteCategory(cat.id, cat.slug, e)}
+                          onClick={(e) =>
+                            handleDeleteCategory(cat.id, cat.slug, e)
+                          }
                           className="p-1.5 text-neutral-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-all ml-auto flex-shrink-0"
                           title="Delete Category"
                         >
@@ -283,7 +293,9 @@ const BookLibrary = () => {
                         placeholder="Add category..."
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && handleAddCategory()
+                        }
                         className="flex-1 h-9 px-3 text-xs bg-white border border-black/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all font-normal"
                       />
                       <button
@@ -308,7 +320,9 @@ const BookLibrary = () => {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 text-sm animate-pulse">Loading amazing books...</p>
+          <p className="text-gray-500 text-sm animate-pulse">
+            Loading amazing books...
+          </p>
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -316,7 +330,9 @@ const BookLibrary = () => {
             <X className="w-8 h-8 text-red-500" />
           </div>
           <p className="text-gray-800 font-bold">Failed to load library</p>
-          <p className="text-gray-500 text-sm mt-1">Please check your connection or try again later.</p>
+          <p className="text-gray-500 text-sm mt-1">
+            Please check your connection or try again later.
+          </p>
         </div>
       ) : (
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -355,16 +371,28 @@ const BookLibrary = () => {
                 <div className="flex justify-between items-center mt-2">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5 text-gray-500 text-xs">
-                      <Download className="w-3.5 h-3.5" />
-                      0
+                      <Download className="w-3.5 h-3.5" />0
                     </div>
                     <div className="flex items-center gap-1.5 text-gray-500 text-xs">
                       <Calendar className="w-3.5 h-3.5" />
                       {new Date(book.published_date).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className="text-teal-600 text-lg font-bold leading-7">
-                    ${parseFloat(book.digital_price) > 0 ? book.digital_price : book.physical_price}
+                  <div className="text-teal-600 text-sm font-bold leading-tight text-right">
+                    {parseFloat(book.digital_price) > 0 && (
+                      <div>
+                        <span className="text-xs text-gray-500">Digital Price:</span> ${" "}
+                        {book.digital_price}
+                      </div>
+                    )}
+                    {parseFloat(book.physical_price) > 0 && (
+                      <div>
+                        <span className="text-xs text-gray-500">
+                          Physical Price:
+                        </span>{" "}
+                        {book.physical_price}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -399,7 +427,6 @@ const BookLibrary = () => {
           ))}
         </div>
       )}
-
 
       {/* Edit Book Modal */}
       {editingBook && (
