@@ -23,6 +23,8 @@ import {
   useGetBlogCategoriesQuery,
   useAddBlogCategoryMutation,
   useDeleteBlogCategoryMutation,
+  useGetVideosDataQuery,
+  useDeleteVideoMutation,
 } from "../../Api/adminApi";
 import UploadContent from "./UploadContent";
 import UploadVideo from "./UploadVideo";
@@ -36,16 +38,19 @@ const Contents = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
 
   const { data: blogsResponse, isLoading: isBlogsLoading } = useGetBlogsDataQuery();
+  const { data: videosResponse, isLoading: isVideosLoading } = useGetVideosDataQuery();
   const { data: categoriesResponse } = useGetBlogCategoriesQuery();
   const [addBlogCategory] = useAddBlogCategoryMutation();
   const [deleteBlogCategory] = useDeleteBlogCategoryMutation();
   const [approveBlog] = useApproveBlogMutation();
   const [rejectBlog] = useRejectBlogMutation();
   const [deleteBlog] = useDeleteBlogMutation();
+  const [deleteVideo] = useDeleteVideoMutation();
 
   const categories = categoriesResponse || [];
 
-  const handleDelete = async (slug) => {
+  const handleDelete = async (slug, type) => {
+    const isVideo = type === "Video";
     toast(
       (t) => (
         <div className="flex items-center gap-4 p-1">
@@ -54,7 +59,7 @@ const Contents = () => {
               Confirm Delete
             </p>
             <p className="text-xs text-neutral-500 mt-0.5">
-              Are you sure you want to remove this blog?
+              Are you sure you want to remove this {isVideo ? "video" : "blog"}?
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -68,8 +73,12 @@ const Contents = () => {
               onClick={async () => {
                 toast.dismiss(t.id);
                 try {
-                  await deleteBlog(slug).unwrap();
-                  toast.success("Blog deleted", {
+                  if (isVideo) {
+                    await deleteVideo(slug).unwrap();
+                  } else {
+                    await deleteBlog(slug).unwrap();
+                  }
+                  toast.success(`${isVideo ? "Video" : "Blog"} deleted`, {
                     icon: "🗑️",
                     style: {
                       borderRadius: "12px",
@@ -78,8 +87,11 @@ const Contents = () => {
                     },
                   });
                 } catch (err) {
-                  console.error("Failed to delete blog:", err);
-                  toast.error("Failed to delete blog");
+                  console.error(
+                    `Failed to delete ${isVideo ? "video" : "blog"}:`,
+                    err,
+                  );
+                  toast.error(`Failed to delete ${isVideo ? "video" : "blog"}`);
                 }
               }}
               className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
@@ -216,47 +228,76 @@ const Contents = () => {
     }
   };
 
-  const blogs = (blogsResponse?.results || []).map((b) => ({
-    ...b,
-    dbId: b.id,
-    id: b.slug, // Use slug for navigation
-    type: b.cover_image ? "Article" : "Video",
-    thumbnail: b.cover_image,
-    date: new Date(b.published_at).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }),
-    readTime: `${b.reading_time} min read`,
-    category: b.category?.name || "Uncategorized",
-    categoryId: b.category?.id,
-    title: b.title,
-    description: b.excerpt,
-    author: b.author_detail?.full_name || "Admin",
-    status:
-      b.status === "pending"
-        ? "Pending Approval"
-        : b.status === "published"
-          ? "Published"
-          : "Rejected",
-    rawStatus: b.status,
-  }));
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
 
-  // Preserve manual video static for now, or use blogs if they contain videos
-  const [staticVideos, setStaticVideos] = useState([
-    {
-      id: 3,
+  const blogs = (blogsResponse?.results || []).map((b) => {
+    const categoryObj = categories.find((c) => c.id === (b.category?.id || b.category));
+    return {
+      ...b,
+      dbId: b.id,
+      id: b.slug, // Use slug for navigation
+      type: "Article",
+      thumbnail: b.cover_image,
+      date: new Date(b.published_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      readTime: `${b.reading_time || 0} min read`,
+      category: b.category?.name || categoryObj?.name || "Uncategorized",
+      categoryId: b.category?.id || b.category,
+      title: b.title,
+      description: b.excerpt,
+      author: b.author_detail?.full_name || "Admin",
+      status:
+        b.status === "pending"
+          ? "Pending Approval"
+          : b.status === "published"
+            ? "Published"
+            : "Rejected",
+      rawStatus: b.status,
+    };
+  });
+
+  const videos = (videosResponse?.results || []).map((v) => {
+    const youtubeId = getYoutubeId(v.video_url);
+    const thumbnail =
+      v.cover_image ||
+      (youtubeId
+        ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`
+        : "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2670&auto=format&fit=crop");
+
+    const categoryObj = categories.find((c) => c.id === (v.category?.id || v.category));
+
+    return {
+      ...v,
+      dbId: v.id,
+      id: v.slug,
       type: "Video",
-      thumbnail:
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2670&auto=format&fit=crop",
-      title: "Welcome to Sakeena Institute",
-      description:
-        "Discover how we integrate Islamic wisdom with modern psychological practices for holistic healing.",
-      duration: "12:45",
-    },
-  ]);
+      thumbnail: thumbnail,
+      date: new Date(v.published_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      category: v.category?.name || categoryObj?.name || "Uncategorized",
+      categoryId: v.category?.id || v.category,
+      title: v.title,
+      description: v.excerpt,
+      author: v.author_detail?.full_name || "Admin",
+      duration: "Video",
+      status: "Published",
+      rawStatus: "published",
+    };
+  });
 
-  const contentsList = [...blogs, ...staticVideos].filter((item) => {
+  const contentsList = [...blogs, ...videos].filter((item) => {
     const matchesSearch =
       item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -267,10 +308,7 @@ const Contents = () => {
   });
 
   const handleSaveContent = (newItem) => {
-    if (newItem.type === "Video") {
-      setStaticVideos((prev) => [newItem, ...prev]);
-    }
-    // Articles will be handled by API invalidation after upload
+    // Both articles and videos now handled by API invalidation
     setShowUploadForm(null);
   };
 
@@ -394,9 +432,7 @@ const Contents = () => {
                     placeholder="Add category..."
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && handleAddCategory()
-                    }
+                    onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
                     className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
                   />
                   <button
@@ -439,81 +475,86 @@ const Contents = () => {
         ))}
       </div>
 
-      {isBlogsLoading ? (
+      {isBlogsLoading || isVideosLoading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-gray-500 font-medium animate-pulse">
-            Fetching articles...
+            Fetching content...
           </p>
         </div>
       ) : (
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {contentsList.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
-          >
-            {/* Thumbnail */}
-            <div className="relative h-[227px] w-full overflow-hidden">
-              {item.type === "Video" && item.thumbnail?.startsWith("blob:") ? (
-                <video
-                  src={item.thumbnail}
-                  className="w-full h-full object-cover"
-                  muted
-                />
-              ) : (
-                <img
-                  src={item.thumbnail}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                  alt={item.title}
-                />
-              )}
-              {item.type === "Video" && (
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center group cursor-pointer">
-                  <div
-                    onClick={() => navigate(`/admin/contents/${item.id}`)}
-                    className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 backdrop-blur-sm"
-                  >
-                    <Play className="w-6 h-6 text-slate-600 fill-slate-600 ml-1" />
-                  </div>
-                  <div className="absolute bottom-4 right-4 bg-black/50 px-2 py-1 rounded text-white text-xs font-bold">
-                    {item.duration}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Card Content */}
-            <div className="p-5 flex-1 flex flex-col gap-3">
-              {item.type === "Article" && (
-                <>
-                  <div className="flex items-center gap-4 text-stone-500 text-xs font-normal">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {item.date}
+            <div
+              key={item.id}
+              className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col"
+            >
+              {/* Thumbnail */}
+              <div className="relative h-[227px] w-full overflow-hidden">
+                {item.type === "Video" &&
+                item.thumbnail?.startsWith("blob:") ? (
+                  <video
+                    src={item.thumbnail}
+                    className="w-full h-full object-cover"
+                    muted
+                  />
+                ) : (
+                  <img
+                    src={item.thumbnail}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                    alt={item.title}
+                  />
+                )}
+                {item.type === "Video" && (
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center group cursor-pointer">
+                    <div
+                      onClick={() => navigate(`/admin/contents/${item.id}`)}
+                      className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 backdrop-blur-sm"
+                    >
+                      <Play className="w-6 h-6 text-slate-600 fill-slate-600 ml-1" />
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Card Content */}
+              <div className="p-5 flex-1 flex flex-col gap-3">
+                <div className="flex items-center gap-4 text-stone-500 text-xs font-normal">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {item.date}
+                  </div>
+                  {item.type === "Article" && (
                     <div className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />
                       {item.readTime}
                     </div>
-                  </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
                   <div className="inline-flex items-center px-3 py-1 bg-white border border-teal-200 rounded-lg text-slate-600 text-xs font-medium w-fit">
                     {item.category}
                   </div>
-                </>
-              )}
+                  <div
+                    className={`inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                      item.type === "Video"
+                        ? "bg-amber-50 text-amber-600 border border-amber-100"
+                        : "bg-blue-50 text-blue-600 border border-blue-100"
+                    }`}
+                  >
+                    {item.type === "Video" ? "Video" : "Blog"}
+                  </div>
+                </div>
 
-              <h3
-                className={`text-stone-900 font-bold leading-7 line-clamp-2 ${item.type === "Video" ? "text-lg pt-1" : "text-lg"}`}
-              >
-                {item.title}
-              </h3>
+                <h3 className="text-stone-900 font-bold leading-7 line-clamp-2 text-lg">
+                  {item.title}
+                </h3>
 
-              <p className="text-stone-600 text-sm leading-6 line-clamp-2">
-                {item.description}
-              </p>
+                <p className="text-stone-600 text-sm leading-6 line-clamp-2">
+                  {item.description}
+                </p>
 
-              {item.type === "Article" && (
                 <div className="flex items-center gap-2 mt-2">
                   <div className="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center">
                     <User className="w-3.5 h-3.5 text-stone-400" />
@@ -522,70 +563,74 @@ const Contents = () => {
                     {item.author}
                   </span>
                 </div>
-              )}
-            </div>
+              </div>
 
-            {/* Footer Actions */}
-            {item.type === "Article" && (
+              {/* Footer Actions */}
               <div className="px-5 py-4 bg-neutral-50 border-t border-black/10 flex items-center justify-end gap-3">
                 <button
-                  onClick={() => handleDelete(item.slug)}
+                  onClick={() => handleDelete(item.slug, item.type)}
                   className="p-2 border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-colors"
                 >
                   <Trash2 className="w-5 h-4" />
                 </button>
                 <button
-                  onClick={() => navigate(`/admin/contents/${item.id}`)}
+                  onClick={() =>
+                    navigate(`/admin/contents/${item.id}?type=${item.type}`)
+                  }
                   className="p-2 border border-slate-400 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
                 >
                   <Eye className="w-5 h-4" />
                 </button>
-                {item.status === "Pending Approval" ? (
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => handleReject(item)}
-                      className="px-4 py-1.5 bg-white border border-red-200 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition-colors"
-                    >
-                      Reject
-                    </button>
-                    <button
-                      onClick={() => handleApprove(item)}
-                      className="px-6 py-2 bg-white border border-slate-400 rounded-lg text-slate-500 text-sm font-medium hover:bg-[#7AA4A5] hover:text-white hover:border-[#7AA4A5] transition-all"
-                    >
-                      Approve
-                    </button>
-                  </div>
-                ) : item.status === "Published" ? (
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 text-green-600 text-sm font-bold bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Approved
-                    </div>
-                    <button
-                      onClick={() => handleReject(item)}
-                      className="px-4 py-1.5 bg-white border border-red-200 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 text-red-600 text-sm font-bold bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">
-                      <XCircle className="w-4 h-4" />
-                      Rejected
-                    </div>
-                    <button
-                      onClick={() => handleApprove(item)}
-                      className="px-6 py-2 bg-white border border-slate-400 rounded-lg text-slate-500 text-sm font-medium hover:bg-[#7AA4A5] hover:text-white hover:border-[#7AA4A5] transition-all"
-                    >
-                      Approve
-                    </button>
-                  </div>
-                )}
+
+                {item.type === "Article" ? (
+                  <>
+                    {item.status === "Pending Approval" ? (
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleReject(item)}
+                          className="px-4 py-1.5 bg-white border border-red-200 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition-colors"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          onClick={() => handleApprove(item)}
+                          className="px-6 py-2 bg-white border border-slate-400 rounded-lg text-slate-500 text-sm font-medium hover:bg-[#7AA4A5] hover:text-white hover:border-[#7AA4A5] transition-all"
+                        >
+                          Approve
+                        </button>
+                      </div>
+                    ) : item.status === "Published" ? (
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-green-600 text-sm font-bold bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Approved
+                        </div>
+                        <button
+                          onClick={() => handleReject(item)}
+                          className="px-4 py-1.5 bg-white border border-red-200 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-red-600 text-sm font-bold bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">
+                          <XCircle className="w-4 h-4" />
+                          Rejected
+                        </div>
+                        <button
+                          onClick={() => handleApprove(item)}
+                          className="px-6 py-2 bg-white border border-slate-400 rounded-lg text-slate-500 text-sm font-medium hover:bg-[#7AA4A5] hover:text-white hover:border-[#7AA4A5] transition-all"
+                        >
+                          Approve
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : null}
               </div>
-            )}
-          </div>
-        ))}
+            </div>
+          ))}
         </div>
       )}
     </div>

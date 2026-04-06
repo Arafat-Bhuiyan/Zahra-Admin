@@ -12,19 +12,24 @@ import {
   ExternalLink,
 } from "lucide-react";
 import QuillEditor from "../../components/QuillEditor";
+import { useAddVideoMutation, useGetBlogCategoriesQuery } from "../../Api/adminApi";
+import toast from "react-hot-toast";
 
 const UploadVideo = ({ onSave, onBack }) => {
   const [formData, setFormData] = useState({
     title: "",
     excerpt: "",
-    content:
-      "Discover how we integrate Islamic wisdom with modern psychological practices for holistic healing.",
-    readTime: "12:45",
-    publishDate: "",
+    content: "",
+    category: "",
     tags: ["Islamic Spirituality", "Mental Health", "Mindfulness"],
-    coverImage: null,
-    externalLink: "",
+    coverImage: null, // This will store the preview URL
+    coverImageFile: null, // This will store the actual File object
+    videoUrl: "", // For external links
   });
+
+  const { data: categoriesResponse } = useGetBlogCategoriesQuery();
+  const [addVideo, { isLoading: isUploading }] = useAddVideoMutation();
+  const categories = categoriesResponse || [];
 
   const [tagInput, setTagInput] = useState("");
   const fileInputRef = useRef(null);
@@ -59,28 +64,43 @@ const UploadVideo = ({ onSave, onBack }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setFormData({ ...formData, coverImage: URL.createObjectURL(file) });
+    setFormData({
+      ...formData,
+      coverImage: URL.createObjectURL(file), // Preview image
+      coverImageFile: file, // Image file to upload
+    });
   };
 
-  const handleUpload = () => {
-    // Static save for demonstration
-    const newItem = {
-      id: Date.now(),
-      type: "Video",
-      thumbnail:
-        formData.coverImage ||
-        "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2670&auto=format&fit=crop",
-      date: formData.publishDate || "Feb 01, 2026",
-      duration: formData.readTime || "12:45",
-      category: formData.tags[0] || "General",
-      title: formData.title || "Untitled Video Content",
-      description:
-        formData.excerpt ||
-        "A brief summary of the newly uploaded video for preview purposes.",
-      author: "Admin",
-      status: "Approved",
-    };
-    onSave(newItem);
+  const handleUpload = async () => {
+    if (!formData.title || !formData.category) {
+      toast.error("Title and Category are required");
+      return;
+    }
+
+    try {
+      const data = new FormData();
+      data.append("title", formData.title);
+      data.append("category", formData.category);
+      data.append("video_url", formData.videoUrl);
+      data.append("excerpt", formData.excerpt);
+      data.append("content", formData.content);
+      
+      // Handle tags as an array
+      formData.tags.forEach(tag => {
+        data.append("tags", tag);
+      });
+
+      if (formData.coverImageFile) {
+        data.append("cover_image", formData.coverImageFile);
+      }
+
+      await addVideo(data).unwrap();
+      toast.success("Video uploaded successfully!");
+      onSave(); // Close form or refresh
+    } catch (err) {
+      console.error("Failed to upload video:", err);
+      toast.error(err?.data?.detail || "Failed to upload video. Please try again.");
+    }
   };
 
   return (
@@ -99,91 +119,75 @@ const UploadVideo = ({ onSave, onBack }) => {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Form Section */}
         <div className="flex-1 space-y-6">
-          {/* Video Thumbnail Upload */}
+          {/* Video Thumbnail (Cover Image) */}
           <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm flex flex-col gap-6">
             <h3 className="text-neutral-950 text-lg font-medium">
-              Upload Video
+              Upload Video Link
             </h3>
-            <div
-              onClick={() => fileInputRef.current.click()}
-              className="w-full h-80 rounded-[10px] border-2 border-dashed border-gray-300 flex flex-col justify-center items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer group relative overflow-hidden"
-            >
-              {formData.coverImage ? (
-                <video
-                  src={formData.coverImage}
-                  className="w-full h-full object-cover"
-                  muted
-                  playsInline
-                />
-              ) : (
-                <>
-                  <div className="p-4 bg-gray-100 rounded-full group-hover:scale-110 transition-transform">
-                    <Video className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <p className="text-gray-600 text-sm font-semibold">
-                    Click to upload video
-                  </p>
-                  <p className="text-gray-500 text-xs font-medium uppercase tracking-wider">
-                    Recommended: 1280x720px, MP4 or MOV
-                  </p>
-                </>
-              )}
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="video/*"
-                onChange={handleFileChange}
-              />
-            </div>
 
-            {/* External Link Option - Following AddLesson/UploadContent style */}
+            {/* Video Source Link */}
             <div className="space-y-4 pt-2 border-t border-gray-100/50">
               <div className="flex justify-between items-center ml-1">
                 <div className="flex items-center gap-2">
-                  <ExternalLink className="w-4 h-4 text-[#7AA4A5]" />
+                  <Video className="w-4 h-4 text-[#7AA4A5]" />
                   <label className="text-sm font-bold text-gray-700">
-                    Video Source Link
+                    Video URL
                   </label>
                 </div>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-md">
-                  YouTube, Vimeo, S3, etc.
+                  YouTube, Vimeo, etc.
                 </span>
               </div>
               <input
                 type="text"
-                value={formData.externalLink}
+                value={formData.videoUrl}
                 onChange={(e) =>
-                  setFormData({ ...formData, externalLink: e.target.value })
+                  setFormData({ ...formData, videoUrl: e.target.value })
                 }
-                placeholder="Paste your video link here (YouTube, Vimeo, etc.)"
+                placeholder="Paste your video link here..."
                 className="w-full px-4 py-3 bg-zinc-100 rounded-xl text-sm text-blue-600 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 font-bold placeholder:font-normal placeholder:text-gray-400 transition-all border border-transparent"
               />
-              <p className="text-[10px] font-medium text-gray-400 ml-1">
-                * All external streaming and storage providers are supported.
-                The link will be used if no file is uploaded.
-              </p>
             </div>
           </div>
 
-          {/* Content Title */}
-          <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-4">
-            <h3 className="text-neutral-950 text-lg font-medium">
-              Video Title
-            </h3>
-            <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="Enter a compelling video title..."
-                className="w-full px-4 py-3 bg-zinc-100 rounded-lg text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 font-bold placeholder:text-gray-500"
-                value={formData.title}
+          {/* Category & Content Title */}
+          <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-neutral-950 text-lg font-medium">Category</h3>
+              <select
+                value={formData.category}
                 onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
+                  setFormData({ ...formData, category: e.target.value })
                 }
-              />
-              <p className="text-gray-500 text-xs font-normal">
-                0/100 characters
-              </p>
+                className="w-full px-4 py-3 bg-zinc-100 rounded-lg text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 font-medium"
+              >
+                <option value="">Select Category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-neutral-950 text-lg font-medium">
+                Video Title
+              </h3>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Enter a compelling video title..."
+                  className="w-full px-4 py-3 bg-zinc-100 rounded-lg text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 font-bold placeholder:text-gray-500"
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                />
+                <p className="text-gray-500 text-xs font-normal">
+                  {formData.title.length}/100 characters
+                </p>
+              </div>
             </div>
           </div>
 
@@ -337,10 +341,15 @@ const UploadVideo = ({ onSave, onBack }) => {
           <div className="flex justify-end pt-4">
             <button
               onClick={handleUpload}
-              className="bg-[#7AA4A5] hover:bg-[#6b9192] text-white px-8 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md flex items-center gap-2 group"
+              disabled={isUploading}
+              className="bg-[#7AA4A5] hover:bg-[#6b9192] text-white px-8 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md flex items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Send className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              Upload
+              {isUploading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              )}
+              {isUploading ? "Uploading..." : "Upload"}
             </button>
           </div>
         </div>

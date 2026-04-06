@@ -9,14 +9,40 @@ import {
   Maximize2,
   X,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useGetBlogDetailsQuery } from "../../Api/adminApi";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useGetBlogDetailsQuery, useGetBlogCategoriesQuery, useGetVideoDetailsQuery } from "../../Api/adminApi";
 
 const ContentDetails = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id: slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const type = searchParams.get("type") || "Article";
   const [isPlaying, setIsPlaying] = useState(false);
-  const { data: blog, isLoading, isError } = useGetBlogDetailsQuery(id);
+
+  const { data: blog, isLoading: isBlogLoading, isError: isBlogError } = useGetBlogDetailsQuery(slug, {
+    skip: type !== "Article"
+  });
+  const { data: video, isLoading: isVideoLoading, isError: isVideoError } = useGetVideoDetailsQuery(slug, {
+    skip: type !== "Video"
+  });
+  const { data: categories } = useGetBlogCategoriesQuery();
+
+  const isLoading = type === "Article" ? isBlogLoading : isVideoLoading;
+  const isError = type === "Article" ? isBlogError : isVideoError;
+  const data = type === "Article" ? blog : video;
+
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
+  const getYoutubeEmbedUrl = (url) => {
+    const id = getYoutubeId(url);
+    return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : null;
+  };
 
   if (isLoading) {
     return (
@@ -26,38 +52,42 @@ const ContentDetails = () => {
     );
   }
 
-  if (isError || !blog) {
+  if (isError || !data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white flex-col gap-4">
-        <p className="text-stone-600 text-lg">Error loading content details.</p>
+        <p className="text-stone-600 text-lg">Error loading {type.toLowerCase()} details.</p>
         <button
           onClick={() => navigate("/admin/contents")}
           className="text-[#7AA4A5] hover:underline"
         >
-          Go back to blog
+          Go back to contents
         </button>
       </div>
     );
   }
 
   const content = {
-    title: blog.title,
-    subtitle: blog.author_detail?.professional_title || "Islamic Psychology Expert",
-    author: blog.author_detail?.full_name || "Admin",
-    authorInitial: blog.author_detail?.full_name?.[0] || "A",
-    date: new Date(blog.published_at).toLocaleDateString("en-US", {
+    title: data.title,
+    subtitle: data.author_detail?.professional_title || "Islamic Psychology Expert",
+    author: data.author_detail?.full_name || "Admin",
+    authorInitial: data.author_detail?.full_name?.[0] || "A",
+    date: new Date(data.published_at).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     }),
-    readTime: `${blog.reading_time || "5"} min read`,
-    category: blog.category?.name || "Uncategorized",
-    heroImage: blog.cover_image,
-    body: blog.content,
-    videoTitle: blog.title, // Placeholder for video
-    videoDuration: "0:00",
-    videoThumbnail: blog.cover_image,
-    videoUrl: "", // API doesn't seem to provide this yet
+    readTime: type === "Article" ? `${data.reading_time || "5"} min read` : "Video Content",
+    category:
+      data.category?.name ||
+      categories?.find((c) => c.id === (data.category?.id || data.category))
+        ?.name ||
+      "Uncategorized",
+    heroImage: data.cover_image || (type === "Video" && getYoutubeId(data.video_url) ? `https://img.youtube.com/vi/${getYoutubeId(data.video_url)}/maxresdefault.jpg` : null),
+    body: data.content,
+    videoTitle: data.title,
+    videoDuration: type === "Video" ? "Video" : "0:00",
+    videoThumbnail: data.cover_image || (type === "Video" && getYoutubeId(data.video_url) ? `https://img.youtube.com/vi/${getYoutubeId(data.video_url)}/mqdefault.jpg` : null),
+    videoUrl: type === "Video" ? getYoutubeEmbedUrl(data.video_url) : "",
   };
 
   return (
@@ -68,7 +98,7 @@ const ContentDetails = () => {
         className="flex items-center gap-2 px-4 py-2 text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors mb-4"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span className="text-base font-normal">Back to Blog</span>
+        <span className="text-base font-normal">Back to Content</span>
       </button>
 
       {/* Hero Section */}
@@ -150,11 +180,10 @@ const ContentDetails = () => {
               </div>
               {isPlaying && (
                 <button
-                  onClick={() => setIsPlaying(false)}
-                  className="p-2 hover:bg-stone-50 rounded-full transition-colors text-stone-500"
-                  title="Close Video"
+                  onClick={() => navigate(`/admin/contents/${slug}?type=${type}`)}
+                  className="p-2 border border-slate-400 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <Eye className="w-5 h-4" />
                 </button>
               )}
             </div>
