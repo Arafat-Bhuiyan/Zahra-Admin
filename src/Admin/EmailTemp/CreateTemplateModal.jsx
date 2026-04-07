@@ -109,7 +109,7 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
           className="flex-1 overflow-y-auto flex flex-col bg-slate-50/30"
         >
           <div className="p-10 space-y-8">
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-8">
               {/* Template Name */}
               <div className="space-y-2.5 flex flex-col">
                 <label className="text-[12px] font-bold text-neutral-500 uppercase tracking-widest ml-1">
@@ -127,7 +127,7 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
               </div>
 
               {/* Template Type */}
-              <div className="space-y-2.5 relative flex flex-col">
+              {/* <div className="space-y-2.5 relative flex flex-col">
                 <label className="text-[12px] font-bold text-neutral-500 uppercase tracking-widest ml-1">
                   Category Tag
                 </label>
@@ -171,7 +171,7 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
                     ))}
                   </div>
                 )}
-              </div>
+              </div> */}
             </div>
 
             {/* Email Subject */}

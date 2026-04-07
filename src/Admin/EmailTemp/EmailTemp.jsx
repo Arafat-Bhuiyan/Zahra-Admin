@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Plus, FileText, Search, Filter } from "lucide-react";
+import { Plus, FileText, Search, Filter, Loader2 } from "lucide-react";
 import CreateTemplateModal from "./CreateTemplateModal";
 import EditTemplateModal from "./EditTemplateModal";
 import TemplateCard from "./TemplateCard";
 import toast from "react-hot-toast";
+import { useGetEmailTemplatesQuery, useGetSendgridApiQuery, useDeleteEmailTemplateMutation } from "../../Api/adminApi";
 
 const EmailTemplates = () => {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -11,55 +12,47 @@ const EmailTemplates = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [templates, setTemplates] = useState([
-    {
-      id: 1,
-      title: "User Registration Confirmation",
-      tag: "registration",
-      tagColor: "bg-blue-100 text-blue-700",
-      subject: "Welcome to LearnHub! Confirm Your Email",
-      preview:
-        "Hi {{name}}, Thank you for joining LearnHub! Please confirm your email address by clicking the link below: {{confirmation_link}} Best regards, LearnHub Team",
-      used: 847,
-      modified: "2026-01-15",
-    },
-    {
-      id: 2,
-      title: "Welcome Email",
-      tag: "welcome",
-      tagColor: "bg-green-100 text-green-700",
-      subject: "Welcome to LearnHub - Start Your Learning Journey",
-      preview:
-        "Hi {{name}}, Welcome to LearnHub! We're excited to have you in our learning community. Explore our courses and start learning today! Best regards, LearnHub Team",
-      used: 823,
-      modified: "2026-01-10",
-    },
-    {
-      id: 3,
-      title: "Password Reset",
-      tag: "password-reset",
-      tagColor: "bg-red-100 text-red-700",
-      subject: "Reset Your LearnHub Password",
-      preview:
-        "Hi {{name}}, We received a request to reset your password. Click the link below to create a new password: {{reset_link}} If you didn't request this, please ignore this email. Best regards, LearnHub Team",
-      used: 156,
-      modified: "2026-01-08",
-    },
-    {
-      id: 4,
-      title: "Course Enrollment Confirmation",
-      tag: "course-enrollment",
-      tagColor: "bg-purple-100 text-purple-700",
-      subject: "You're Enrolled! {{course_name}}",
-      preview:
-        "Hi {{name}}, Congratulations! You're now enrolled in {{course_name}}. Access your course here: {{course_link}} Happy learning! LearnHub Team",
-      used: 542,
-      modified: "2026-01-12",
-    },
-  ]);
+  const { data: emailTemplates = [], isLoading: templatesLoading } = useGetEmailTemplatesQuery();
+  const { data: sendgridTemplates = [], isLoading: sendgridLoading } = useGetSendgridApiQuery();
+  const [deleteEmailTemplate] = useDeleteEmailTemplateMutation();
+
+  const getMappedTemplates = () => {
+    const getTagColor = (purpose) => {
+      const colors = {
+        registration: "bg-blue-100 text-blue-700",
+        welcome: "bg-green-100 text-green-700",
+        "password-reset": "bg-red-100 text-red-700",
+        "course-enrollment": "bg-purple-100 text-purple-700",
+      };
+      return colors[purpose] || "bg-[#7BA0A0]/10 text-[#7BA0A0]";
+    };
+
+    return emailTemplates.map((template) => {
+      const matchingSendgrid = sendgridTemplates?.find(
+        (st) => st.id === template.sendgrid_template_id
+      );
+      const activeVersion = matchingSendgrid?.versions?.find((v) => v.active);
+
+      return {
+        ...template,
+        title: template.purpose_display,
+        tag: template.purpose,
+        subject: activeVersion?.subject || "No Subject",
+        preview: template.description,
+        modified: new Date(template.updated_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
+        used: 0, // Not provided in database
+        tagColor: getTagColor(template.purpose),
+      };
+    });
+  };
+
+  const templates = getMappedTemplates();
 
   const handleSaveTemplate = (newTemplate) => {
-    setTemplates((prev) => [newTemplate, ...prev]);
     toast.success("Template created successfully!");
   };
 
@@ -69,9 +62,6 @@ const EmailTemplates = () => {
   };
 
   const handleUpdateTemplate = (updatedTemplate) => {
-    setTemplates((prev) =>
-      prev.map((t) => (t.id === updatedTemplate.id ? updatedTemplate : t)),
-    );
     toast.success("Template updated successfully!");
   };
 
@@ -95,17 +85,21 @@ const EmailTemplates = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
-                setTemplates((prev) => prev.filter((t) => t.id !== id));
-                toast.dismiss(t.id);
-                toast.success("Template deleted successfully!", {
-                  icon: "🗑️",
-                  style: {
-                    borderRadius: "12px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+              onClick={async () => {
+                try {
+                  await deleteEmailTemplate(id).unwrap();
+                  toast.dismiss(t.id);
+                  toast.success("Template deleted successfully!", {
+                    icon: "🗑️",
+                    style: {
+                      borderRadius: "12px",
+                      background: "#333",
+                      color: "#fff",
+                    },
+                  });
+                } catch (error) {
+                  toast.error("Failed to delete the template.");
+                }
               }}
               className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
             >
@@ -185,8 +179,13 @@ const EmailTemplates = () => {
         </div>
       </div>
 
-      {/* Templates Grid */}
-      {filteredTemplates.length > 0 ? (
+      {/* Templates Grid or Loader */}
+      {(templatesLoading || sendgridLoading) ? (
+        <div className="flex flex-col items-center justify-center p-20 bg-white rounded-2xl border border-neutral-200">
+          <Loader2 className="w-10 h-10 text-[#7BA0A0] animate-spin mb-4" />
+          <p className="text-neutral-500 font-medium">Fetching Awesome Templates...</p>
+        </div>
+      ) : filteredTemplates.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredTemplates.map((template) => (
             <TemplateCard

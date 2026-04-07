@@ -241,6 +241,33 @@ export const adminApi = api.injectEndpoints({
       invalidatesTags: ["courses"],
     }),
 
+    // GET EMAIL TEMPLATES
+    getEmailTemplates: builder.query({
+      query: () => "/email-templates/",
+      providesTags: ["email-templates"],
+    }),
+
+    // get Sendgrid API
+    getSendgridApi: builder.query({
+      query: () => "/email-templates/sendgrid-templates/",
+      providesTags: ["sendgrid-api"],
+    }),
+
+    // get Purposes
+    getPurposes: builder.query({
+      query: () => "/email-templates/purposes/",
+      providesTags: ["purposes"],
+    }),
+
+    // Delete Email Template
+    deleteEmailTemplate: builder.mutation({
+      query: (id) => ({
+        url: `/email-templates/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["email-templates"],
+    }),
+
     // Add more admin-specific endpoints here as needed...
   }),
   overrideExisting: false,
@@ -277,4 +304,8 @@ export const {
   useGetCourseCategoriesQuery,
   useAddCourseCategoryMutation,
   useDeleteCourseCategoryMutation,
+  useGetEmailTemplatesQuery,
+  useGetSendgridApiQuery,
+  useGetPurposesQuery,
+  useDeleteEmailTemplateMutation,
 } = adminApi;

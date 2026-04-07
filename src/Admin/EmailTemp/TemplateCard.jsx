@@ -25,7 +25,7 @@ const TemplateCard = ({ template, onEdit, onDelete }) => {
       <div className="space-y-4 flex-1 relative">
         <div className="space-y-1">
           <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-            Subject Line
+            Subject
           </label>
           <p className="text-sm font-medium text-neutral-600 truncate bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
             {template.subject}
@@ -34,7 +34,7 @@ const TemplateCard = ({ template, onEdit, onDelete }) => {
 
         <div className="space-y-2">
           <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-            Content Preview
+            Body
           </label>
           <div className="bg-white rounded-xl p-4 text-xs text-neutral-500 leading-relaxed line-clamp-4 min-h-[100px] border border-neutral-100 shadow-inner italic relative">
             "{template.preview}"
@@ -44,32 +44,7 @@ const TemplateCard = ({ template, onEdit, onDelete }) => {
       </div>
 
       {/* Footer Stats & Actions */}
-      <div className="flex justify-between items-end pt-5 border-t border-neutral-100 mt-2 relative">
-        <div className="flex gap-4">
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 text-neutral-400">
-              <MousePointer2 size={12} />
-              <span className="text-[10px] uppercase font-bold tracking-tight">
-                Usage
-              </span>
-            </div>
-            <span className="text-xs font-bold text-neutral-700">
-              {template.used} times
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 text-neutral-400">
-              <Calendar size={12} />
-              <span className="text-[10px] uppercase font-bold tracking-tight">
-                Updated
-              </span>
-            </div>
-            <span className="text-xs font-bold text-neutral-700">
-              {template.modified}
-            </span>
-          </div>
-        </div>
+      <div className="flex justify-end items-end pt-5 border-t border-neutral-100 mt-2 relative">
 
         <div className="flex items-center gap-2">
           <button
