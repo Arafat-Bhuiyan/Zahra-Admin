@@ -1,71 +1,67 @@
 import React, { useState } from "react";
-import { X, Save, ChevronDown } from "lucide-react";
+import { X, Save, ChevronDown, Loader2 } from "lucide-react";
+import { useGetPurposesQuery, useGetSendgridApiQuery, useAddEmailTemplateMutation } from "../../Api/adminApi";
+import toast from "react-hot-toast";
 
 const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     title: "",
     type: "",
+    sendgrid_template_id: "",
     subject: "",
     content: "",
   });
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSendgridDropdownOpen, setIsSendgridDropdownOpen] = useState(false);
 
-  // Template types based on the design
-  const templateTypes = [
-    {
-      label: "Registration",
-      value: "registration",
-      color: "bg-blue-100 text-blue-700",
-    },
-    {
-      label: "Welcome",
-      value: "welcome",
-      color: "bg-green-100 text-green-700",
-    },
-    {
-      label: "Password Reset",
-      value: "password-reset",
-      color: "bg-red-100 text-red-700",
-    },
-    {
-      label: "Course Enrollment",
-      value: "course-enrollment",
-      color: "bg-purple-100 text-purple-700",
-    },
-    { label: "Custom", value: "custom", color: "bg-gray-100 text-gray-700" },
-  ];
+  const { data: purposes = [], isLoading: purposesLoading } = useGetPurposesQuery();
+  const { data: sendgridTemplates = [], isLoading: sendgridLoading } = useGetSendgridApiQuery();
+  const [addEmailTemplate, { isLoading: isPublishing }] = useAddEmailTemplateMutation();
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (
-      !formData.title ||
       !formData.type ||
-      !formData.subject ||
+      !formData.sendgrid_template_id ||
       !formData.content
     ) {
-      alert("Please fill in all fields.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
-    const selectedType = templateTypes.find((t) => t.value === formData.type);
+    try {
+      const payload = {
+        purpose: formData.type,
+        purpose_display: formData.title, // keeping title as purpose_display
+        sendgrid_template_id: formData.sendgrid_template_id,
+        description: formData.content,
+        is_active: true,
+      };
 
-    const newTemplate = {
-      id: Date.now(),
-      title: formData.title,
-      tag: selectedType ? selectedType.value : "custom",
-      tagColor: selectedType ? selectedType.color : "bg-gray-100 text-gray-700",
-      subject: formData.subject,
-      preview: formData.content, // Using content as preview for now
-      used: 0,
-      modified: new Date().toISOString().split("T")[0],
-    };
+      await addEmailTemplate(payload).unwrap();
+      
+      toast.success("Email template created successfully!", {
+        icon: "🚀",
+        style: {
+          borderRadius: "16px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
 
-    onSave(newTemplate);
-    setFormData({ title: "", type: "", subject: "", content: "" });
-    onClose();
+      setFormData({ title: "", type: "", subject: "", content: "", sendgrid_template_id: "" });
+      onClose();
+    } catch (error) {
+      console.error("Failed to create template:", error);
+      if (error?.data?.purpose?.[0] === "Email Template Config with this purpose already exists.") {
+        toast.error("Email Template Config with this purpose already exists.");
+      } else {
+        toast.error("Failed to create template. Please try again.");
+      }
+    }
   };
 
   const handleChange = (e) => {
@@ -73,8 +69,22 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSendgridSelect = (templateId, subject) => {
+    setFormData((prev) => ({
+      ...prev,
+      sendgrid_template_id: templateId,
+      subject: subject,
+    }));
+    setIsSendgridDropdownOpen(false);
+  };
+
   const handleTypeSelect = (typeValue) => {
-    setFormData((prev) => ({ ...prev, type: typeValue }));
+    const selectedPurpose = purposes.find((p) => p.value === typeValue);
+    setFormData((prev) => ({
+      ...prev,
+      type: typeValue,
+      title: selectedPurpose ? selectedPurpose.label : "",
+    }));
     setIsDropdownOpen(false);
   };
 
@@ -110,26 +120,10 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
         >
           <div className="p-10 space-y-8">
             <div className="grid grid-cols-1 gap-8">
-              {/* Template Name */}
-              <div className="space-y-2.5 flex flex-col">
+              {/* Purpose Selection */}
+              <div className="space-y-2.5 relative flex flex-col">
                 <label className="text-[12px] font-bold text-neutral-500 uppercase tracking-widest ml-1">
-                  Template Identity
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="e.g., Onboarding Welcome"
-                  className="w-full px-5 py-3.5 rounded-2xl border border-neutral-200 focus:outline-none focus:ring-4 focus:ring-[#7BA0A0]/10 focus:border-[#7BA0A0] transition-all bg-white shadow-sm placeholder:text-neutral-300"
-                  required
-                />
-              </div>
-
-              {/* Template Type */}
-              {/* <div className="space-y-2.5 relative flex flex-col">
-                <label className="text-[12px] font-bold text-neutral-500 uppercase tracking-widest ml-1">
-                  Category Tag
+                  Purpose
                 </label>
                 <div
                   className="w-full px-5 py-3.5 rounded-2xl border border-neutral-200 cursor-pointer flex justify-between items-center bg-white shadow-sm hover:border-[#7BA0A0] transition-all"
@@ -143,9 +137,8 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
                     }
                   >
                     {formData.type
-                      ? templateTypes.find((t) => t.value === formData.type)
-                          ?.label
-                      : "Select category..."}
+                      ? purposes.find((t) => t.value === formData.type)?.label
+                      : "Select purpose..."}
                   </span>
                   <ChevronDown
                     size={20}
@@ -155,49 +148,110 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
 
                 {isDropdownOpen && (
                   <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white border border-neutral-100 rounded-2xl shadow-xl py-2 overflow-hidden animate-in slide-in-from-top-2 duration-200">
-                    {templateTypes.map((type) => (
-                      <div
-                        key={type.value}
-                        onClick={() => handleTypeSelect(type.value)}
-                        className="px-5 py-3 hover:bg-slate-50 cursor-pointer flex items-center justify-between group transition-colors"
-                      >
-                        <span className="text-neutral-700 text-sm font-medium group-hover:text-[#7BA0A0]">
-                          {type.label}
-                        </span>
-                        {formData.type === type.value && (
-                          <div className="w-1.5 h-1.5 bg-[#7BA0A0] rounded-full" />
-                        )}
+                    {purposesLoading ? (
+                      <div className="px-5 py-3 flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 text-[#7BA0A0] animate-spin" />
                       </div>
-                    ))}
+                    ) : (
+                      purposes.map((type) => (
+                        <div
+                          key={type.value}
+                          onClick={() => handleTypeSelect(type.value)}
+                          className="px-5 py-3 hover:bg-slate-50 cursor-pointer flex items-center justify-between group transition-colors"
+                        >
+                          <span className="text-neutral-700 text-sm font-medium group-hover:text-[#7BA0A0]">
+                            {type.label}
+                          </span>
+                          {formData.type === type.value && (
+                            <div className="w-1.5 h-1.5 bg-[#7BA0A0] rounded-full" />
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
-              </div> */}
+              </div>
             </div>
 
-            {/* Email Subject */}
-            <div className="space-y-2.5 flex flex-col">
+            {/* SendGrid Subject Dropdown */}
+            <div className="space-y-2.5 relative flex flex-col">
               <label className="text-[12px] font-bold text-neutral-500 uppercase tracking-widest ml-1">
-                Default Subject Line
+                SendGrid Template Subject
               </label>
-              <input
-                type="text"
-                name="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                placeholder="e.g., Welcome to Sakeena Institute! 👋"
-                className="w-full px-5 py-3.5 rounded-2xl border border-neutral-200 focus:outline-none focus:ring-4 focus:ring-[#7BA0A0]/10 focus:border-[#7BA0A0] transition-all bg-white shadow-sm placeholder:text-neutral-300 font-medium"
-                required
-              />
+              <div
+                className="w-full px-5 py-3.5 rounded-2xl border border-neutral-200 cursor-pointer flex justify-between items-center bg-white shadow-sm hover:border-[#7BA0A0] transition-all"
+                onClick={() =>
+                  setIsSendgridDropdownOpen(!isSendgridDropdownOpen)
+                }
+              >
+                <span
+                  className={
+                    formData.subject
+                      ? "text-neutral-800 font-medium"
+                      : "text-neutral-300"
+                  }
+                >
+                  {formData.subject || "Select a SendGrid subject..."}
+                </span>
+                <ChevronDown
+                  size={20}
+                  className={`text-neutral-400 transition-transform duration-300 ${isSendgridDropdownOpen ? "rotate-180" : ""}`}
+                />
+              </div>
+
+              {isSendgridDropdownOpen && (
+                <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white border border-neutral-100 rounded-2xl shadow-xl py-2 overflow-hidden animate-in slide-in-from-top-2 duration-200 max-h-[300px] overflow-y-auto">
+                  {sendgridLoading ? (
+                    <div className="px-5 py-3 flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 text-[#7BA0A0] animate-spin" />
+                    </div>
+                  ) : (
+                    sendgridTemplates.map((template) => {
+                      const activeVersion = template.versions?.find(
+                        (v) => v.active
+                      );
+                      const subject = activeVersion?.subject || "No Subject";
+                      return (
+                        <div
+                          key={template.id}
+                          onClick={() =>
+                            handleSendgridSelect(template.id, subject)
+                          }
+                          className="px-5 py-3 hover:bg-slate-50 cursor-pointer flex flex-col gap-0.5 group transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-neutral-700 text-sm font-bold group-hover:text-[#7BA0A0]">
+                              {subject}
+                            </span>
+                            {formData.sendgrid_template_id === template.id && (
+                              <div className="w-1.5 h-1.5 bg-[#7BA0A0] rounded-full" />
+                            )}
+                          </div>
+                          <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-tight">
+                            Template: {template.name}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Email Body */}
             <div className="space-y-2.5 flex flex-col">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-[12px] font-bold text-neutral-500 uppercase tracking-widest">
-                  Email Blueprint
+                  Email Body
                 </label>
                 <span className="text-[10px] text-neutral-400 font-medium bg-neutral-100 px-2 py-0.5 rounded italic">
-                  Markdown & Placeholders supported
+                  {purposes.find((p) => p.value === formData.type)?.variables
+                    ?.length > 0
+                    ? `Supports: ${purposes
+                        .find((p) => p.value === formData.type)
+                        .variables.map((v) => `{{${v}}}`)
+                        .join(", ")}`
+                    : "Markdown & Placeholders supported"}
                 </span>
               </div>
               <textarea
@@ -227,23 +281,28 @@ The Team`}
             </button>
             <button
               type="submit"
-              className={`px-10 py-3.5 rounded-2xl flex items-center gap-2.5 font-bold transition-all shadow-lg active:scale-95 text-sm ${
-                formData.title &&
+              className={`px-10 py-3.5 rounded-2xl flex items-center justify-center gap-2.5 font-bold transition-all shadow-lg active:scale-95 text-sm min-w-[200px] ${
                 formData.type &&
-                formData.subject &&
+                formData.sendgrid_template_id &&
                 formData.content
                   ? "bg-[#7BA0A0] text-white hover:bg-[#6A8F8F] shadow-[#7BA0A0]/20"
                   : "bg-neutral-100 text-neutral-400 cursor-not-allowed shadow-none"
               }`}
               disabled={
-                !formData.title ||
                 !formData.type ||
-                !formData.subject ||
-                !formData.content
+                !formData.sendgrid_template_id ||
+                !formData.content ||
+                isPublishing
               }
             >
-              <Save size={20} />
-              Publish Template
+              {isPublishing ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Save size={20} />
+                  Publish Template
+                </>
+              )}
             </button>
           </div>
         </form>

@@ -259,6 +259,26 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["purposes"],
     }),
 
+    // Add Email Template
+    addEmailTemplate: builder.mutation({
+      query: (data) => ({
+        url: "/email-templates/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["email-templates"],
+    }),
+
+    // Update Email Template
+    updateEmailTemplate: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/email-templates/${id}/`,
+        method: "PATCH",
+        body: body,
+      }),
+      invalidatesTags: ["email-templates"],
+    }),
+
     // Delete Email Template
     deleteEmailTemplate: builder.mutation({
       query: (id) => ({
@@ -307,5 +327,7 @@ export const {
   useGetEmailTemplatesQuery,
   useGetSendgridApiQuery,
   useGetPurposesQuery,
+  useAddEmailTemplateMutation,
+  useUpdateEmailTemplateMutation,
   useDeleteEmailTemplateMutation,
 } = adminApi;

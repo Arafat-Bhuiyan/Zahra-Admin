@@ -52,18 +52,12 @@ const EmailTemplates = () => {
 
   const templates = getMappedTemplates();
 
-  const handleSaveTemplate = (newTemplate) => {
-    toast.success("Template created successfully!");
-  };
 
   const handleEditTemplate = (template) => {
     setSelectedTemplate(template);
     setIsEditTemplateModalOpen(true);
   };
 
-  const handleUpdateTemplate = (updatedTemplate) => {
-    toast.success("Template updated successfully!");
-  };
 
   const handleDeleteTemplate = (id) => {
     toast(
@@ -145,7 +139,6 @@ const EmailTemplates = () => {
       <CreateTemplateModal
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
-        onSave={handleSaveTemplate}
       />
 
       <EditTemplateModal
@@ -154,7 +147,6 @@ const EmailTemplates = () => {
           setIsEditTemplateModalOpen(false);
           setSelectedTemplate(null);
         }}
-        onSave={handleUpdateTemplate}
         template={selectedTemplate}
       />
 
