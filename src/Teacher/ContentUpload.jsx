@@ -8,7 +8,6 @@ export default function ContentUpload() {
 
   const [formData, setFormData] = useState({
     title: '',
-    excerpt: '',
     content: '',
     coverImage: null,
     tags: [],
@@ -91,7 +90,7 @@ export default function ContentUpload() {
   const handlePublish = () => {
     console.log('Publishing content:', formData);
     alert('Content published successfully!');
-    setFormData({ title: '', excerpt: '', content: '', coverImage: null, tags: [], readTime: '', publishDate: '', category: '' });
+    setFormData({ title: '', content: '', coverImage: null, tags: [], readTime: '', publishDate: '', category: '' });
   };
 
   return (
@@ -201,19 +200,7 @@ export default function ContentUpload() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
-
-              {/* Excerpt */}
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Excerpt</label>
-                <textarea
-                  name="excerpt"
-                  value={formData.excerpt}
-                  onChange={handleInputChange}
-                  placeholder="Write a short summary (this will appear in blog previews)"
-                  rows="3"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-                />
-              </div>
+         
 
               {/* Blog Content */}
               <div className="bg-white p-6 rounded-lg border border-gray-200">
@@ -229,7 +216,7 @@ export default function ContentUpload() {
               </div>
 
               {/* Additional Media */}
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
+              {/* <div className="bg-white p-6 rounded-lg border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-900 mb-4">Additional Media</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <button className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-400 hover:bg-teal-50 transition-colors">
@@ -241,7 +228,7 @@ export default function ContentUpload() {
                     <p className="text-sm font-medium text-gray-700">Add Video</p>
                   </button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Publish Button */}
               <div className="flex justify-end">
@@ -261,7 +248,7 @@ export default function ContentUpload() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Publishing Options</h3>
 
                 <div className="space-y-4">
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Read Time</label>
                     <input
                       type="text"
@@ -282,7 +269,7 @@ export default function ContentUpload() {
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
-                  </div>
+                  </div> */}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
