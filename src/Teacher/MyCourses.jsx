@@ -238,7 +238,7 @@ export default function MyCourses() {
               {/* Course Image */}
               <div className="relative h-48 bg-gray-200 overflow-hidden">
                 <img
-                  src={course.image || "/placeholder.svg"}
+                  src={course.thumbnail || "/placeholder.svg"}
                   alt={course.title}
                   className="w-full h-full object-cover"
                 />
@@ -277,15 +277,15 @@ export default function MyCourses() {
                   </div>
                   <div className="flex items-center gap-1">
                     <CalendarDays size={18} />
-                    {course.weeks} weeks
+                    {course.duration_in_weeks} weeks
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock size={18} />
-                    {course.totalHours} hr
+                    {course.total_hours} hr
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock size={18} />
-                    {course.hours_per_session || course.totalHours} per session
+                    {course.hours_per_session} hr per session
                   </div>
                 </div>
 
@@ -385,7 +385,7 @@ export default function MyCourses() {
                 <div>
                   <p className="font-semibold text-gray-500 mb-1">Duration</p>
                   <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
-                    {selectedCourse.weeks || selectedCourse.duration || "N/A"}{" "}
+                    {selectedCourse.duration_in_weeks || "N/A"}{" "}
                     weeks
                   </p>
                 </div>
@@ -394,8 +394,7 @@ export default function MyCourses() {
                     Total Lessons
                   </p>
                   <p className="bg-[#F9FAFB] p-4 rounded-lg font-semibold text-gray-900">
-                    {selectedCourse.lessons ||
-                      selectedCourse.num_lessons ||
+                    {selectedCourse.total_lessons ||
                       "N/A"}{" "}
                     lessons
                   </p>
