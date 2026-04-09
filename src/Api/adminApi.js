@@ -298,6 +298,16 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["students"],
     }),
 
+    getStudentProfile: builder.query({
+      query: (id) => `/student-profiles/${id}/`,
+      providesTags: ["student"],
+    }),
+
+    getEnrollments: builder.query({
+      query: (userId) => `/enrollments/?user=${userId}`,
+      providesTags: ["enrollments"],
+    }),
+
     // Add Student Profile
     addStudentProfile: builder.mutation({
       query: (data) => ({
@@ -350,5 +360,7 @@ export const {
   useDeleteEmailTemplateMutation,
   useGetTeacherProfilesQuery,
   useGetStudentProfilesQuery,
+  useGetStudentProfileQuery,
+  useGetEnrollmentsQuery,
   useAddStudentProfileMutation,
 } = adminApi;

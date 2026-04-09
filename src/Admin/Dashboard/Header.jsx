@@ -28,15 +28,7 @@ const Header = ({ title, subtitle }) => {
         <p className="text-base font-normal text-[#4A5565] mt-1">{subtitle}</p>
       </div>
       <div className="flex items-center gap-4">
-        <button
-          onClick={() => setHasNotification(false)}
-          className="relative p-2 text-[#4A5565] transition-colors hover:text-neutral-900"
-        >
-          <Bell size={20} />
-          {hasNotification && (
-            <span className="absolute top-2 right-2 w-3 h-3 bg-[#FB2C36] rounded-full border-2 border-white" />
-          )}
-        </button>
+        
         <div className="flex items-center gap-3 border-l-2 border-[#0000001A] pl-4">
           <div className="flex flex-col">
             <h1 className="text-right justify-start text-neutral-950 text-sm font-semibold inter-font">

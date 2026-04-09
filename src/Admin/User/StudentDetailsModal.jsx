@@ -1,17 +1,20 @@
 import React from "react";
 import { X, BookOpen } from "lucide-react";
+import {
+  useGetStudentProfileQuery,
+  useGetEnrollmentsQuery,
+} from "../../Api/adminApi";
 
 const StudentDetailsModal = ({ isOpen, onClose, student }) => {
   if (!isOpen || !student) return null;
 
-  // Mock enrolled courses based on the design request
-  const enrolledCourses = [
-    { name: "Advanced Mathematics", teacher: "Dr. John Smith" },
-    { name: "Physics 101", teacher: "Prof. Emily Brown" },
-    { name: "Chemistry Fundamentals", teacher: "Prof. Emily Brown" },
-    { name: "World History", teacher: "Dr. Anna Martinez" },
-    { name: "Creative Writing", teacher: "Dr. Marcus Johnson" },
-  ];
+  const { data: studentDetails } = useGetStudentProfileQuery(student.id);
+  const { data: enrollments } = useGetEnrollmentsQuery(
+    studentDetails?.user.id,
+    { skip: !studentDetails },
+  );
+
+  const courses = enrollments?.results || [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -41,7 +44,10 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                 Full Name
               </label>
               <div className="px-3 py-3.5 bg-gray-50 rounded-lg text-neutral-950 text-base arimo-font border border-black/5">
-                {student.name}
+                {studentDetails
+                  ? `${studentDetails.user.first_name} ${studentDetails.user.last_name}`.trim() ||
+                    studentDetails.user.email.split("@")[0]
+                  : student.name}
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -49,7 +55,7 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                 Email Address
               </label>
               <div className="px-3 py-3.5 bg-gray-50 rounded-lg text-neutral-950 text-base arimo-font border border-black/5">
-                {student.email}
+                {studentDetails?.user.email || student.email}
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -69,7 +75,7 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                 <BookOpen className="w-5 h-5 text-blue-600" />
               </div>
               <h3 className="text-neutral-950 text-base font-normal arimo-font">
-                Enrolled Courses ({student.courses})
+                Enrolled Courses ({courses.length})
               </h3>
             </div>
 
@@ -86,19 +92,17 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/10">
-                  {enrolledCourses
-                    .slice(0, student.courses)
-                    .map((course, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50/50">
-                        <td className="py-3 px-4 text-neutral-950">
-                          {course.name}
-                        </td>
-                        <td className="py-3 px-4 text-neutral-950">
-                          {course.teacher}
-                        </td>
-                      </tr>
-                    ))}
-                  {student.courses === 0 && (
+                  {courses.map((enrollment) => (
+                    <tr key={enrollment.id} className="hover:bg-gray-50/50">
+                      <td className="py-3 px-4 text-neutral-950">
+                        {enrollment.course.title}
+                      </td>
+                      <td className="py-3 px-4 text-neutral-950">
+                        {`${enrollment.course.teacher.user.first_name} ${enrollment.course.teacher.user.last_name}`.trim()}
+                      </td>
+                    </tr>
+                  ))}
+                  {courses.length === 0 && (
                     <tr>
                       <td
                         colSpan="2"
