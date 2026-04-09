@@ -297,6 +297,16 @@ export const adminApi = api.injectEndpoints({
       query: () => "/student-profiles/",
       providesTags: ["students"],
     }),
+
+    // Add Student Profile
+    addStudentProfile: builder.mutation({
+      query: (data) => ({
+        url: "/student-profiles/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["students"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -340,4 +350,5 @@ export const {
   useDeleteEmailTemplateMutation,
   useGetTeacherProfilesQuery,
   useGetStudentProfilesQuery,
+  useAddStudentProfileMutation,
 } = adminApi;
