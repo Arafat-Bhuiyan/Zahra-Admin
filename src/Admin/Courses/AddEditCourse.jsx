@@ -1,23 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
 import {
-  X,
-  Upload,
-  Save,
   ChevronLeft,
-  BookOpen,
-  Calendar,
-  Clock,
-  DollarSign,
-  User,
-  Tag,
-  Play,
-  CheckCircle2,
-  AlertCircle,
-  Plus,
   Image as ImageIcon,
+  Play,
+  Save
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import TextEditor from "../../components/Editor";
 import CourseCurriculum from "./CourseCurriculum";
-import QuillEditor from "../../components/QuillEditor";
 
 const AddEditCourse = ({ course, onBack, onSave }) => {
   const [activeTab, setActiveTab] = useState("Course Overview");
@@ -259,11 +248,12 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
               </FormGroup>
 
               <FormGroup label="Course Description">
-                <QuillEditor
+                <TextEditor
                   value={formData.description}
                   onChange={(html) =>
                     setFormData((prev) => ({ ...prev, description: html }))
                   }
+                  isEditable={true}
                   placeholder="Detailed description of what students will learn..."
                 />
               </FormGroup>

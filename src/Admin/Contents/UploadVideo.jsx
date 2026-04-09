@@ -11,9 +11,9 @@ import {
   Trash2,
   ExternalLink,
 } from "lucide-react";
-import QuillEditor from "../../components/QuillEditor";
 import { useAddVideoMutation, useGetBlogCategoriesQuery } from "../../Api/adminApi";
 import toast from "react-hot-toast";
+import TextEditor from "../../components/Editor";
 
 const UploadVideo = ({ onSave, onBack }) => {
   const [formData, setFormData] = useState({
@@ -218,11 +218,12 @@ const UploadVideo = ({ onSave, onBack }) => {
               About this Video
             </h3>
             <div className="space-y-2">
-              <QuillEditor
+              <TextEditor
                 value={formData.content}
                 onChange={(html) =>
                   setFormData({ ...formData, content: html })
                 }
+                isEditable={true}
                 placeholder="Write about this video..."
               />
               <p className="text-gray-500 text-sm font-normal">

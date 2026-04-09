@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Filter } from "lucide-react";
 import StudentTable from "./StudentTable";
 import TeacherTable from "./TeacherTable";
 import TeacherDetails from "./TeacherDetails";
 import AddUserModal from "./AddUserModal";
 import toast from "react-hot-toast";
+import { useGetTeacherProfilesQuery, useGetStudentProfilesQuery } from "../../Api/adminApi";
 
 const User = () => {
   const [activeTab, setActiveTab] = useState("students");
@@ -12,107 +13,41 @@ const User = () => {
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const [students, setStudents] = useState([
-    {
-      id: 1,
-      name: "Emma Wilson",
-      email: "emma.w@email.com",
-      courses: 5,
-      joined: "2024-01-15",
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      email: "michael.c@email.com",
-      courses: 0,
-      joined: "2024-02-20",
-    },
-    {
-      id: 3,
-      name: "Sarah Parker",
-      email: "sarah.p@email.com",
-      courses: 0,
-      joined: "2023-11-10",
-    },
-    {
-      id: 4,
-      name: "David Kim",
-      email: "david.k@email.com",
-      courses: 0,
-      joined: "2024-03-05",
-    },
-    {
-      id: 5,
-      name: "Lisa Anderson",
-      email: "lisa.a@email.com",
-      courses: 7,
-      joined: "2023-09-12",
-    },
-    {
-      id: 6,
-      name: "James Rodriguez",
-      email: "james.r@email.com",
-      courses: 4,
-      joined: "2024-01-22",
-    },
-    {
-      id: 7,
-      name: "Olivia Thompson",
-      email: "olivia.t@email.com",
-      courses: 5,
-      joined: "2023-12-08",
-    },
-    {
-      id: 8,
-      name: "Robert Lee",
-      email: "robert.l@email.com",
-      courses: 6,
-      joined: "2024-02-14",
-    },
-  ]);
+  const { data: studentProfiles } = useGetStudentProfilesQuery();
+  const { data: teacherProfiles } = useGetTeacherProfilesQuery();
 
-  const [teachers, setTeachers] = useState([
-    {
-      id: 1,
-      name: "Dr. John Smith",
-      email: "john.smith@school.com",
-      department: "Mathematics",
-      courses: 3,
-      students: 245,
-    },
-    {
-      id: 2,
-      name: "Prof. Emily Brown",
-      email: "emily.brown@school.com",
-      department: "Science",
-      courses: 4,
-      students: 320,
-    },
-    {
-      id: 3,
-      name: "Dr. Marcus Johnson",
-      email: "marcus.j@school.com",
-      department: "English",
-      courses: 2,
-      students: 180,
-    },
-    {
-      id: 4,
-      name: "Dr. Anna Martinez",
-      email: "anna.m@school.com",
-      department: "History",
-      courses: 3,
-      students: 210,
-    },
-    {
-      id: 5,
-      name: "Prof. William Taylor",
-      email: "will.t@school.com",
-      department: "Arts",
-      courses: 2,
-      students: 150,
-    },
-  ]);
+  const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+-
+  useEffect(() => {
+    if (studentProfiles?.results) {
+      setStudents(
+        studentProfiles.results.map((student) => ({
+          id: student.id,
+          name: `${student.user.first_name || ""} ${student.user.last_name || ""}`.trim() || student.user.email.split('@')[0],
+          email: student.user.email,
+          courses: 0,
+          joined: "N/A",
+        }))
+      );
+    }
+  }, [studentProfiles]);
+
+  useEffect(() => {
+    if (teacherProfiles?.results) {
+      setTeachers(
+        teacherProfiles.results.map((teacher) => ({
+          id: teacher.id,
+          name: `${teacher.user.first_name || ""} ${teacher.user.last_name || ""}`.trim() || teacher.user.email.split('@')[0],
+          email: teacher.user.email,
+          department: teacher.professional_title || "N/A",
+          courses: 0,
+          students: 0,
+          raw: teacher,
+        }))
+      );
+    }
+  }, [teacherProfiles]);
 
   const currentData = activeTab === "students" ? students : teachers;
 
