@@ -17,11 +17,15 @@ import {
   CheckCircle2,
   History,
 } from "lucide-react";
+import { useAddStudentProfileMutation } from "../../Api/adminApi";
 
 const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
+  const [addStudentProfile, { isLoading: isAddingStudent }] = useAddStudentProfileMutation();
+
   // --- Student Specific State ---
   const [studentData, setStudentData] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     password: "",
   });
@@ -88,16 +92,37 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
   if (!isOpen) return null;
 
   // --- Form Handlers ---
-  const handleStudentSubmit = (e) => {
+  const handleStudentSubmit = async (e) => {
     e.preventDefault();
-    onAdd({
-      ...studentData,
-      role: "student",
-      id: Date.now(),
-      courses: 0,
-      joined: new Date().toISOString().split("T")[0],
-    });
-    onClose();
+    try {
+      const response = await addStudentProfile({
+        user: {
+          email: studentData.email,
+          password: studentData.password,
+          first_name: studentData.first_name,
+          last_name: studentData.last_name,
+        },
+      }).unwrap();
+
+      onAdd({
+        ...response,
+        role: "student",
+        courses: 0,
+        joined: new Date().toISOString().split("T")[0],
+      });
+
+      setStudentData({
+        first_name: "",
+        last_name: "",
+        email: "",
+        password: "",
+      });
+
+      onClose();
+    } catch (error) {
+      console.error("Failed to create student:", error);
+      // Handle error - you can show a toast notification here
+    }
   };
 
   const handleTeacherSubmit = (e) => {
@@ -149,17 +174,35 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
           >
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-neutral-700 ml-1">
-                Full Name
+                First Name
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="e.g. Abdullah Rahman"
+                  placeholder="e.g. Abdullah"
                   className="w-full h-11 pl-10 pr-4 bg-gray-50 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#89A6A7]/20 focus:border-[#89A6A7] transition-all text-sm"
-                  value={studentData.name}
+                  value={studentData.first_name}
                   onChange={(e) =>
-                    setStudentData({ ...studentData, name: e.target.value })
+                    setStudentData({ ...studentData, first_name: e.target.value })
+                  }
+                  required
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-neutral-700 ml-1">
+                Last Name
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="e.g. Rahman"
+                  className="w-full h-11 pl-10 pr-4 bg-gray-50 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#89A6A7]/20 focus:border-[#89A6A7] transition-all text-sm"
+                  value={studentData.last_name}
+                  onChange={(e) =>
+                    setStudentData({ ...studentData, last_name: e.target.value })
                   }
                   required
                 />
@@ -205,15 +248,17 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 h-11 border border-black/10 rounded-xl text-sm font-medium text-neutral-600 hover:bg-gray-50"
+                className="flex-1 h-11 border border-black/10 rounded-xl text-sm font-medium text-neutral-600 hover:bg-gray-50 disabled:opacity-50"
+                disabled={isAddingStudent}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-[2] h-11 bg-[#89A6A7] text-white rounded-xl text-sm font-medium shadow-md"
+                disabled={isAddingStudent}
+                className="flex-[2] h-11 bg-[#89A6A7] text-white rounded-xl text-sm font-medium shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Student
+                {isAddingStudent ? "Creating..." : "Create Student"}
               </button>
             </div>
           </form>
