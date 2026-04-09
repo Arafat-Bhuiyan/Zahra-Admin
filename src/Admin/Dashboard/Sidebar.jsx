@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   Users,
@@ -23,10 +23,11 @@ import {
   MessageSquare,
   Mail,
   DoorOpenIcon,
+  X,
 } from "lucide-react";
 import logo from "../../assets/img/logo.png";
 
-export const Sidebar = () => {
+export const Sidebar = ({ onClose }) => {
   const role = useSelector((state) => state.auth.role);
   let menuItems = [];
 
@@ -56,7 +57,6 @@ export const Sidebar = () => {
       { icon: Settings, label: "Settings", slug: "settings" },
     ];
   } else if (role === "teacher") {
-    // Teacher has a minimal sidebar
     menuItems = [
       { icon: Home, label: "Dashboard", active: true, slug: "teacher" },
       {
@@ -109,27 +109,36 @@ export const Sidebar = () => {
       },
     ];
   } else {
-    // No role set (not logged in) — show nothing or a minimal menu
     menuItems = [];
   }
+
   const location = useLocation();
 
-  // NavLink will determine active state; build `to` from slug below.
   return (
-    <div className="w-full h-[100vh] shadow-xl flex flex-col justify-between overflow-auto [&::-webkit-scrollbar]:hidden bg-[#D6CBAF33]">
-      {/* Logo */}
+    <div className="w-full h-[100vh] shadow-xl flex flex-col justify-between overflow-auto [&::-webkit-scrollbar]:hidden bg-[#F7F4EC]">
+      {/* Logo + Mobile Close Button */}
       <div>
-        <div className="w-full">
-          <div className="mb-2  p-6 flex flex-col items-center gap-2.5 justify-start">
+        <div className="w-full relative">
+          <div className="mb-2 p-6 flex flex-col items-center gap-2.5 justify-start">
             <img src={logo} alt="Logo" className="w-20 h-20" />
           </div>
+          {/* Close button — only visible on mobile/tablet */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="lg:hidden absolute top-4 right-4 p-1.5 rounded-full text-[#4A5565] hover:bg-black/10 transition-colors"
+              aria-label="Close sidebar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
+
         {/* Navigation */}
-        <nav className="w-full self-start  ">
-          <ul className="w-full ">
+        <nav className="w-full self-start">
+          <ul className="w-full">
             {menuItems.map((item, index) => {
               const Icon = item.icon;
-              // Build `to` for admin index, teacher route or admin sub-routes
               const to =
                 item.slug === "dashboard"
                   ? "/admin"
@@ -141,8 +150,8 @@ export const Sidebar = () => {
                 <li key={index}>
                   <NavLink
                     to={to}
+                    onClick={onClose}
                     className={() => {
-                      // Treat top-level index routes (/admin, /teacher) as exact-only matches
                       const isIndexRoute = to === "/admin" || to === "/teacher";
                       const isActive =
                         location.pathname === to ||

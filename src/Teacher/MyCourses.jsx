@@ -33,64 +33,7 @@ export default function MyCourses() {
     search: searchText || undefined,
   });
 
-  const localSampleCourses = [
-    {
-      id: 1,
-      title: "Tafair Al-Quran: Understanding D...",
-      instructor: "Dr. Ahmed Hassan",
-      status: "upcoming",
-      category: "Mental Health",
-      statusColor: "bg-[#5BB814] text-white",
-      lessons: 24,
-      weeks: 12,
-      totalHours: 12,
-      perSession: 20,
-      price: "$99",
-      image: featuredCourse1,
-      description:
-        "Learn the fundamentals of Quranic interpretation with expert guidance from Dr. Ahmed Hassan. This comprehensive course covers essential concepts and methodologies.",
-      level: "Beginner",
-      startDate: "Jan 15, 2026",
-    },
-    {
-      id: 2,
-      title: "Tafair Al-Quran: Understanding D...",
-      instructor: "Dr. Ahmed Hassan",
-      category: "Spiritual Growth",
-      status: "running",
-      statusColor: "bg-[#D3130C] text-white",
-      lessons: 24,
-      weeks: 12,
-      totalHours: 12,
-      perSession: 20,
-      price: "$99",
-      image: featuredCourse2,
-      description:
-        "Join our live Quranic interpretation sessions. Interactive learning with real-time Q&A opportunities.",
-      level: "Intermediate",
-      startDate: "Jan 10, 2026",
-    },
-    {
-      id: 3,
-      title: "Tafair Al-Quran: Understanding D...",
-      instructor: "Dr. Ahmed Hassan",
-      category: "Spiritual Growth",
-      status: "recorded",
-      statusColor: "bg-[#2E9BDF] text-white",
-      lessons: 24,
-      weeks: 12,
-      totalHours: 12,
-      perSession: 20,
-      price: "$99",
-      image: featuredCourse3,
-      description:
-        "Access recorded sessions of our Quranic interpretation course. Learn at your own pace with lifetime access.",
-      level: "Advanced",
-      startDate: "Dec 20, 2025",
-    },
-  ];
-
-  const courses = coursesData?.length ? coursesData : localSampleCourses;
+  const courses = coursesData?.length ? coursesData : [];
 
   const handleCardClick = (course) => {
     navigate(`/teacher/course/${course.id}`, { state: { course } });
