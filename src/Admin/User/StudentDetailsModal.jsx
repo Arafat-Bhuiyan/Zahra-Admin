@@ -58,14 +58,7 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                 {studentDetails?.user.email || student.email}
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-neutral-950 text-sm font-normal arimo-font">
-                Join Date
-              </label>
-              <div className="px-3 py-3.5 bg-gray-50 rounded-lg text-neutral-950 text-base arimo-font border border-black/5">
-                {student.joined}
-              </div>
-            </div>
+          
           </div>
 
           {/* Enrolled Courses Section */}
