@@ -5,7 +5,10 @@ import TeacherTable from "./TeacherTable";
 import TeacherDetails from "./TeacherDetails";
 import AddUserModal from "./AddUserModal";
 import toast from "react-hot-toast";
-import { useGetTeacherProfilesQuery, useGetStudentProfilesQuery } from "../../Api/adminApi";
+import {
+  useGetTeacherProfilesQuery,
+  useGetStudentProfilesQuery,
+} from "../../Api/adminApi";
 
 const User = () => {
   const [activeTab, setActiveTab] = useState("students");
@@ -18,17 +21,18 @@ const User = () => {
 
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
--
-  useEffect(() => {
+  -useEffect(() => {
     if (studentProfiles?.results) {
       setStudents(
         studentProfiles.results.map((student) => ({
           id: student.id,
-          name: `${student.user.first_name || ""} ${student.user.last_name || ""}`.trim() || student.user.email.split('@')[0],
+          name:
+            `${student.user.first_name || ""} ${student.user.last_name || ""}`.trim() ||
+            student.user.email.split("@")[0],
           email: student.user.email,
           courses: 0,
           joined: "N/A",
-        }))
+        })),
       );
     }
   }, [studentProfiles]);
@@ -38,13 +42,15 @@ const User = () => {
       setTeachers(
         teacherProfiles.results.map((teacher) => ({
           id: teacher.id,
-          name: `${teacher.user.first_name || ""} ${teacher.user.last_name || ""}`.trim() || teacher.user.email.split('@')[0],
+          name:
+            `${teacher.user.first_name || ""} ${teacher.user.last_name || ""}`.trim() ||
+            teacher.user.email.split("@")[0],
           email: teacher.user.email,
           department: teacher.professional_title || "N/A",
           courses: 0,
           students: 0,
           raw: teacher,
-        }))
+        })),
       );
     }
   }, [teacherProfiles]);
@@ -53,8 +59,10 @@ const User = () => {
 
   const filteredData = currentData.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()),
+      (user.name &&
+        user.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (user.email &&
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
   const handleTeacherView = (teacher) => {
@@ -161,9 +169,6 @@ const User = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <button className="w-9 h-9 flex items-center justify-center bg-white rounded-lg border border-black/10 hover:bg-gray-50 transition-colors">
-              <Filter className="w-4 h-4 text-neutral-950" />
-            </button>
           </div>
         </div>
 
