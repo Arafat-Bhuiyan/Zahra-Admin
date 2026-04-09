@@ -1,22 +1,17 @@
-import React, { useState, useRef } from "react";
 import {
-  X,
+  ArrowLeft,
+  ChevronDown,
   Image as ImageIcon,
-  Video,
   Plus,
   Send,
-  Calendar,
-  Clock,
-  ArrowLeft,
-  Trash2,
-  ExternalLink,
-  ChevronDown,
+  X
 } from "lucide-react";
-import QuillEditor from "../../components/QuillEditor";
+import { useRef, useState } from "react";
 import {
   useAddBlogMutation,
   useGetBlogCategoriesQuery,
 } from "../../Api/adminApi";
+import TextEditor from "../../components/Editor";
 
 const UploadContent = ({ onSave, onBack }) => {
   const [formData, setFormData] = useState({
@@ -206,11 +201,12 @@ const UploadContent = ({ onSave, onBack }) => {
               About this Content
             </h3>
             <div className="space-y-2">
-              <QuillEditor
+              <TextEditor
                 value={formData.content}
                 onChange={(html) =>
                   setFormData({ ...formData, content: html })
                 }
+                isEditable={true}
                 placeholder="Write your content here..."
               />
               <p className="text-gray-500 text-sm font-normal">

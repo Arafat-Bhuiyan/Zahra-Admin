@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { X, Edit3, Save, ChevronDown, Eye, EyeOff } from "lucide-react";
-import QuillEditor from "../../components/QuillEditor";
-import { useUpdateBookMutation, useGetBookCategoriesQuery } from "../../Api/adminApi";
+import QuillEditor from "../../components/Editor";
+import {
+  useUpdateBookMutation,
+  useGetBookCategoriesQuery,
+} from "../../Api/adminApi";
 import toast from "react-hot-toast";
 
 const EditBookModal = ({ book, onClose, onSave }) => {
@@ -44,7 +47,10 @@ const EditBookModal = ({ book, onClose, onSave }) => {
         description: book.description || "",
         category: book.category?.toString() || "1",
         language: book.language || "English",
-        price: parseFloat(book.digital_price) > 0 ? book.digital_price : book.physical_price || "0",
+        price:
+          parseFloat(book.digital_price) > 0
+            ? book.digital_price
+            : book.physical_price || "0",
         type: getBookType(book),
         isbn: book.isbn || "",
         publisher: book.publisher || "",
@@ -66,8 +72,10 @@ const EditBookModal = ({ book, onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const has_physical = formData.type.includes("Physical") || formData.type.includes("Both");
-    const has_digital = formData.type.includes("Digital") || formData.type.includes("Both");
+    const has_physical =
+      formData.type.includes("Physical") || formData.type.includes("Both");
+    const has_digital =
+      formData.type.includes("Digital") || formData.type.includes("Both");
 
     const payload = {
       category: parseInt(formData.category),
@@ -87,7 +95,10 @@ const EditBookModal = ({ book, onClose, onSave }) => {
       has_digital,
       digital_price: has_digital ? formData.price : "0",
       tags: formData.tags
-        ? formData.tags.split(",").map((t) => t.trim()).filter((t) => t !== "")
+        ? formData.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t !== "")
         : [],
       is_visible: formData.is_visible,
     };

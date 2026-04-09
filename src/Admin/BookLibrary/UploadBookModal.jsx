@@ -1,21 +1,21 @@
-import React, { useState, useRef, useEffect } from "react";
 import {
-  X,
-  Upload,
   ChevronDown,
-  Image as ImageIcon,
-  FileText,
-  Plus,
-  Heading1,
-  Type,
-  Link2,
   Eye,
   EyeOff,
+  FileText,
+  Image as ImageIcon,
+  Upload,
+  X
 } from "lucide-react";
-import { useAddBookMutation, useAddBookGalleryImageMutation, useGetBookCategoriesQuery } from "../../Api/adminApi";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import {
+  useAddBookGalleryImageMutation,
+  useAddBookMutation,
+  useGetBookCategoriesQuery,
+} from "../../Api/adminApi";
 
-import QuillEditor from "../../components/QuillEditor";
+import TextEditor from "../../components/Editor";
 const UploadBookModal = ({ onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState("Basic");
   const [formData, setFormData] = useState({
@@ -42,12 +42,16 @@ const UploadBookModal = ({ onClose, onSave }) => {
   });
 
   const [addBook, { isLoading: isCreating }] = useAddBookMutation();
-  const [addGalleryImage, { isLoading: isUploadingGallery }] = useAddBookGalleryImageMutation();
+  const [addGalleryImage, { isLoading: isUploadingGallery }] =
+    useAddBookGalleryImageMutation();
   const { data: categories } = useGetBookCategoriesQuery();
-  
+
   useEffect(() => {
     if (categories?.length > 0) {
-      setFormData((prev) => ({ ...prev, category: categories[0].id.toString() }));
+      setFormData((prev) => ({
+        ...prev,
+        category: categories[0].id.toString(),
+      }));
     }
   }, [categories]);
 
@@ -81,8 +85,10 @@ const UploadBookModal = ({ onClose, onSave }) => {
     e.preventDefault();
 
     const data = new FormData();
-    const has_physical = formData.type.includes("Physical") || formData.type.includes("Both");
-    const has_digital = formData.type.includes("Digital") || formData.type.includes("Both");
+    const has_physical =
+      formData.type.includes("Physical") || formData.type.includes("Both");
+    const has_digital =
+      formData.type.includes("Digital") || formData.type.includes("Both");
 
     data.append("category", formData.category);
     data.append("title", formData.title);
@@ -93,7 +99,10 @@ const UploadBookModal = ({ onClose, onSave }) => {
     data.append("isbn", formData.isbn);
     data.append("language", formData.language);
     data.append("publisher", formData.publisher);
-    data.append("published_date", formData.publishDate || new Date().toISOString().split("T")[0]);
+    data.append(
+      "published_date",
+      formData.publishDate || new Date().toISOString().split("T")[0],
+    );
     data.append("number_of_pages", formData.pages);
     if (formData.bookFile) data.append("sample_file", formData.bookFile);
     data.append("video_url", formData.video_url || "");
@@ -103,7 +112,10 @@ const UploadBookModal = ({ onClose, onSave }) => {
     data.append("has_digital", has_digital);
     data.append("digital_price", has_digital ? formData.digitalPrice : "0");
     const tagsArray = formData.tags
-      ? formData.tags.split(",").map((t) => t.trim()).filter((t) => t !== "")
+      ? formData.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t !== "")
       : [];
     data.append("tags", JSON.stringify(tagsArray));
     data.append("is_visible", formData.is_visible);
@@ -136,7 +148,9 @@ const UploadBookModal = ({ onClose, onSave }) => {
       onClose();
     } catch (error) {
       toast.dismiss();
-      toast.error(error?.data?.message || "Failed to upload book. Please try again.");
+      toast.error(
+        error?.data?.message || "Failed to upload book. Please try again.",
+      );
       console.error("Upload error:", error);
     }
   };
@@ -305,11 +319,12 @@ const UploadBookModal = ({ onClose, onSave }) => {
                   <label className="text-neutral-950 text-sm font-normal">
                     Description *
                   </label>
-                  <QuillEditor
+                  <TextEditor
                     value={formData.description}
                     onChange={(html) =>
                       setFormData((prev) => ({ ...prev, description: html }))
                     }
+                    isEditable={true}
                   />
                 </div>
 
