@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Search, Filter } from "lucide-react";
+import Pagination from "../../components/Pagination";
 import StudentTable from "./StudentTable";
 import TeacherTable from "./TeacherTable";
 import TeacherDetails from "./TeacherDetails";
@@ -15,13 +16,15 @@ const User = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [studentPage, setStudentPage] = useState(1);
+  const [teacherPage, setTeacherPage] = useState(1);
 
-  const { data: studentProfiles } = useGetStudentProfilesQuery();
-  const { data: teacherProfiles } = useGetTeacherProfilesQuery();
+  const { data: studentProfiles, isLoading: isStudentsLoading } = useGetStudentProfilesQuery(studentPage);
+  const { data: teacherProfiles, isLoading: isTeachersLoading } = useGetTeacherProfilesQuery(teacherPage);
 
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
-  -useEffect(() => {
+  useEffect(() => {
     if (studentProfiles?.results) {
       setStudents(
         studentProfiles.results.map((student) => ({
@@ -166,7 +169,11 @@ const User = () => {
                 placeholder="Search users..."
                 className="w-full h-9 pl-10 pr-3 py-1 bg-zinc-100 rounded-lg border-transparent focus:outline-none text-sm arimo-font text-gray-700 placeholder:text-gray-500"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setStudentPage(1);
+                  setTeacherPage(1);
+                }}
               />
             </div>
           </div>
@@ -176,21 +183,19 @@ const User = () => {
         <div className="w-full h-9 bg-gray-200/50 rounded-2xl p-[3px] flex gap-1 items-center">
           <button
             onClick={() => setActiveTab("students")}
-            className={`flex-1 h-7 rounded-2xl flex items-center justify-center text-sm arimo-font transition-all ${
-              activeTab === "students"
+            className={`flex-1 h-7 rounded-2xl flex items-center justify-center text-sm arimo-font transition-all ${activeTab === "students"
                 ? "bg-white shadow-sm text-neutral-950 font-medium"
                 : "text-neutral-600 hover:text-neutral-950 hover:bg-gray-300/30"
-            }`}
+              }`}
           >
             Students ({students.length})
           </button>
           <button
             onClick={() => setActiveTab("teachers")}
-            className={`flex-1 h-7 rounded-2xl flex items-center justify-center text-sm arimo-font transition-all ${
-              activeTab === "teachers"
+            className={`flex-1 h-7 rounded-2xl flex items-center justify-center text-sm arimo-font transition-all ${activeTab === "teachers"
                 ? "bg-white shadow-sm text-neutral-950 font-medium"
                 : "text-neutral-600 hover:text-neutral-950 hover:bg-gray-300/30"
-            }`}
+              }`}
           >
             Teachers ({teachers.length})
           </button>
@@ -198,13 +203,27 @@ const User = () => {
 
         {/* Tables */}
         {activeTab === "students" ? (
-          <StudentTable data={filteredData} onDelete={confirmDelete} />
+          <div className="flex-1 flex flex-col justify-between">
+            <StudentTable data={filteredData} onDelete={confirmDelete} />
+            <Pagination
+              currentPage={studentPage}
+              totalPages={studentProfiles?.total_pages || 1}
+              onPageChange={setStudentPage}
+            />
+          </div>
         ) : (
-          <TeacherTable
-            data={filteredData}
-            onView={handleTeacherView}
-            onDelete={confirmDelete}
-          />
+          <div className="flex-1 flex flex-col justify-between">
+            <TeacherTable
+              data={filteredData}
+              onView={handleTeacherView}
+              onDelete={confirmDelete}
+            />
+            <Pagination
+              currentPage={teacherPage}
+              totalPages={teacherProfiles?.total_pages || 1}
+              onPageChange={setTeacherPage}
+            />
+          </div>
         )}
 
         {filteredData.length === 0 && (

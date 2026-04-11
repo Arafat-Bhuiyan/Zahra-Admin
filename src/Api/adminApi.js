@@ -290,11 +290,11 @@ export const adminApi = api.injectEndpoints({
 
     // Add more admin-specific endpoints here as needed...
     getTeacherProfiles: builder.query({
-      query: () => "/teacher-profiles/",
+      query: (page = 1) => `/teacher-profiles/?page=${page}`,
       providesTags: ["teachers"],
     }),
     getStudentProfiles: builder.query({
-      query: () => "/student-profiles/",
+      query: (page = 1) => `/student-profiles/?page=${page}`,
       providesTags: ["students"],
     }),
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Eye, Trash2 } from "lucide-react";
 import StudentDetailsModal from "./StudentDetailsModal";
 
