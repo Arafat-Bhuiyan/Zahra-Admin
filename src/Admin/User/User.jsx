@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 import {
   useGetTeacherProfilesQuery,
   useGetStudentProfilesQuery,
+  useDeleteStudentProfileMutation,
+  useDeleteTeacherProfileMutation,
 } from "../../Api/adminApi";
 
 const User = () => {
@@ -19,8 +21,13 @@ const User = () => {
   const [studentPage, setStudentPage] = useState(1);
   const [teacherPage, setTeacherPage] = useState(1);
 
-  const { data: studentProfiles, isLoading: isStudentsLoading } = useGetStudentProfilesQuery(studentPage);
-  const { data: teacherProfiles, isLoading: isTeachersLoading } = useGetTeacherProfilesQuery(teacherPage);
+  const [deleteStudentProfile] = useDeleteStudentProfileMutation();
+  const [deleteTeacherProfile] = useDeleteTeacherProfileMutation();
+
+  const { data: studentProfiles, isLoading: isStudentsLoading } =
+    useGetStudentProfilesQuery(studentPage);
+  const { data: teacherProfiles, isLoading: isTeachersLoading } =
+    useGetTeacherProfilesQuery(teacherPage);
 
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -121,13 +128,20 @@ const User = () => {
     );
   };
 
-  const handleDelete = (userId) => {
-    if (activeTab === "students") {
-      setStudents(students.filter((s) => s.id !== userId));
-      toast.success("Student removed successfully", { duration: 3000 });
-    } else {
-      setTeachers(teachers.filter((t) => t.id !== userId));
-      toast.success("Teacher removed successfully", { duration: 3000 });
+  const handleDelete = async (userId) => {
+    try {
+      if (activeTab === "students") {
+        await deleteStudentProfile(userId).unwrap();
+        setStudents((prev) => prev.filter((s) => s.id !== userId));
+        toast.success("Student removed successfully", { duration: 3000 });
+      } else {
+        await deleteTeacherProfile(userId).unwrap();
+        setTeachers((prev) => prev.filter((t) => t.id !== userId));
+        toast.success("Teacher removed successfully", { duration: 3000 });
+      }
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast.error("Failed to delete user. Please try again.");
     }
   };
 
@@ -183,19 +197,21 @@ const User = () => {
         <div className="w-full h-9 bg-gray-200/50 rounded-2xl p-[3px] flex gap-1 items-center">
           <button
             onClick={() => setActiveTab("students")}
-            className={`flex-1 h-7 rounded-2xl flex items-center justify-center text-sm arimo-font transition-all ${activeTab === "students"
+            className={`flex-1 h-7 rounded-2xl flex items-center justify-center text-sm arimo-font transition-all ${
+              activeTab === "students"
                 ? "bg-white shadow-sm text-neutral-950 font-medium"
                 : "text-neutral-600 hover:text-neutral-950 hover:bg-gray-300/30"
-              }`}
+            }`}
           >
             Students ({students.length})
           </button>
           <button
             onClick={() => setActiveTab("teachers")}
-            className={`flex-1 h-7 rounded-2xl flex items-center justify-center text-sm arimo-font transition-all ${activeTab === "teachers"
+            className={`flex-1 h-7 rounded-2xl flex items-center justify-center text-sm arimo-font transition-all ${
+              activeTab === "teachers"
                 ? "bg-white shadow-sm text-neutral-950 font-medium"
                 : "text-neutral-600 hover:text-neutral-950 hover:bg-gray-300/30"
-              }`}
+            }`}
           >
             Teachers ({teachers.length})
           </button>

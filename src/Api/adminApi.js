@@ -303,6 +303,11 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["student"],
     }),
 
+    getTeacherProfile: builder.query({
+      query: (id) => `/teacher-profiles/${id}/`,
+      providesTags: ["teachers"],
+    }),
+
     getEnrollments: builder.query({
       query: (userId) => `/enrollments/?user=${userId}`,
       providesTags: ["enrollments"],
@@ -316,6 +321,34 @@ export const adminApi = api.injectEndpoints({
         body: data,
       }),
       invalidatesTags: ["students"],
+    }),
+
+    // Add Teacher Profile
+    addTeacherProfile: builder.mutation({
+      query: (data) => ({
+        url: "/teacher-profiles/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["teachers"],
+    }),
+
+    // Delete Student Profile
+    deleteStudentProfile: builder.mutation({
+      query: (id) => ({
+        url: `/student-profiles/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["students"],
+    }),
+
+    // Delete Teacher Profile
+    deleteTeacherProfile: builder.mutation({
+      query: (id) => ({
+        url: `/teacher-profiles/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["teachers"],
     }),
   }),
   overrideExisting: false,
@@ -360,7 +393,11 @@ export const {
   useDeleteEmailTemplateMutation,
   useGetTeacherProfilesQuery,
   useGetStudentProfilesQuery,
+  useGetTeacherProfileQuery,
   useGetStudentProfileQuery,
   useGetEnrollmentsQuery,
   useAddStudentProfileMutation,
+  useAddTeacherProfileMutation,
+  useDeleteStudentProfileMutation,
+  useDeleteTeacherProfileMutation,
 } = adminApi;

@@ -17,10 +17,17 @@ import {
   CheckCircle2,
   History,
 } from "lucide-react";
-import { useAddStudentProfileMutation } from "../../Api/adminApi";
+import {
+  useAddStudentProfileMutation,
+  useAddTeacherProfileMutation,
+} from "../../Api/adminApi";
+import toast from "react-hot-toast";
 
 const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
-  const [addStudentProfile, { isLoading: isAddingStudent }] = useAddStudentProfileMutation();
+  const [addStudentProfile, { isLoading: isAddingStudent }] =
+    useAddStudentProfileMutation();
+  const [addTeacherProfile, { isLoading: isAddingTeacher }] =
+    useAddTeacherProfileMutation();
 
   // --- Student Specific State ---
   const [studentData, setStudentData] = useState({
@@ -32,43 +39,28 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
 
   // --- Teacher Specific State ---
   const [teacherData, setTeacherData] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
     professionalTitle: "",
     email: "",
+    password: "",
     location: "",
     about: "",
-    approach: "",
-    specialties: [
-      "Anxiety Psychology",
-      "Family Management",
-      "Boundaries",
-      "CBT",
-      "Trauma Informed Care",
-    ],
-    education: [
-      {
-        degree: "PhD in Clinical Psychology",
-        institution: "University of Cambridge",
-      },
-      { degree: "MA in Islamic Studies", institution: "Al Azhar University" },
-      { degree: "BA in Psychology", institution: "University of London" },
-    ],
-    achievements: [
-      "Published researcher in Islamic Psychology",
-      "Speaker at International Islamic Psychology Conference",
-      "Consultant for Muslim Mental Health Initiative",
-      "Certified Mindfulness Instructor",
-    ],
-    courseRate: "75",
-    consultationRate: "100",
+    specialties: [],
+    education: {
+      degree: "",
+      institution: "",
+    },
+    achievements: [],
+    consultationRate: "0",
     profileImage: null,
+    offersConsultations: false,
   });
 
   const fileInputRef = React.useRef(null);
 
   // Helper states for adding new items
   const [newSpecialty, setNewSpecialty] = useState("");
-  const [newEdu, setNewEdu] = useState({ degree: "", institution: "" });
   const [newAchievement, setNewAchievement] = useState("");
 
   const handleImageChange = (e) => {
@@ -125,17 +117,122 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
     }
   };
 
-  const handleTeacherSubmit = (e) => {
+  const handleTeacherSubmit = async (e) => {
     e.preventDefault();
-    onAdd({
-      ...teacherData,
-      role: "teacher",
-      id: Date.now(),
-      courses: teacherData.education.length, // mock
-      students: 0,
-      joined: new Date().toISOString().split("T")[0],
-    });
-    onClose();
+
+    // Validate consultation_rate
+    const rate = parseFloat(teacherData.consultationRate) || 0;
+    if (rate < 0) {
+      toast.error("Consultation rate cannot be negative");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+
+      // Add user info
+      formData.append(
+        "user",
+        JSON.stringify({
+          email: teacherData.email,
+          password: teacherData.password,
+          first_name: teacherData.first_name,
+          last_name: teacherData.last_name,
+        }),
+      );
+
+      // Add teacher profile fields
+      formData.append("professional_title", teacherData.professionalTitle);
+      formData.append("location", teacherData.location);
+      formData.append("about", teacherData.about);
+
+      // Convert education object to string
+      formData.append("education", JSON.stringify(teacherData.education));
+
+      // Convert achievements array to string
+      formData.append("achievements", JSON.stringify(teacherData.achievements));
+
+      formData.append("consultation_rate", rate);
+
+      // Set offers_consultations based on consultation_rate
+      const offersConsultations = rate > 0;
+      formData.append("offers_consultations", offersConsultations);
+
+      // Add profile picture if available
+      if (
+        teacherData.profileImage &&
+        teacherData.profileImage.startsWith("data:")
+      ) {
+        // Convert base64 to file
+        const response = await fetch(teacherData.profileImage);
+        const blob = await response.blob();
+        formData.append("profile_picture", blob, "profile.jpg");
+      } else if (teacherData.profileImage instanceof File) {
+        formData.append("profile_picture", teacherData.profileImage);
+      }
+
+      // ==================== DEBUG: Console Log FormData ====================
+      console.log("=== FormData Contents ===");
+
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File || value instanceof Blob) {
+          console.log(
+            `${key}:`,
+            value.name || "Blob/File",
+            `(size: ${value.size} bytes)`,
+          );
+        } else if (
+          typeof value === "string" &&
+          (value.startsWith("{") || value.startsWith("["))
+        ) {
+          // Pretty print JSON strings
+          try {
+            console.log(`${key}:`, JSON.parse(value));
+          } catch {
+            console.log(`${key}:`, value);
+          }
+        } else {
+          console.log(`${key}:`, value);
+        }
+      }
+      console.log("=========================");
+
+      const result = await addTeacherProfile(formData).unwrap();
+
+      onAdd({
+        ...result,
+        role: "teacher",
+        courses: 0,
+        students: 0,
+        joined: new Date().toISOString().split("T")[0],
+      });
+
+      // Reset teacher data
+      setTeacherData({
+        first_name: "",
+        last_name: "",
+        professionalTitle: "",
+        email: "",
+        password: "",
+        location: "",
+        about: "",
+        specialties: [],
+        education: {
+          degree: "",
+          institution: "",
+        },
+        achievements: [],
+        consultationRate: "0",
+        profileImage: null,
+        offersConsultations: false,
+      });
+
+      toast.success("Teacher created successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Failed to create teacher:", error);
+      toast.error("Failed to create teacher. Please try again.");
+    }
   };
 
   // --- Teacher UI Components ---
@@ -184,7 +281,10 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
                   className="w-full h-11 pl-10 pr-4 bg-gray-50 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#89A6A7]/20 focus:border-[#89A6A7] transition-all text-sm"
                   value={studentData.first_name}
                   onChange={(e) =>
-                    setStudentData({ ...studentData, first_name: e.target.value })
+                    setStudentData({
+                      ...studentData,
+                      first_name: e.target.value,
+                    })
                   }
                   required
                 />
@@ -202,7 +302,10 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
                   className="w-full h-11 pl-10 pr-4 bg-gray-50 border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#89A6A7]/20 focus:border-[#89A6A7] transition-all text-sm"
                   value={studentData.last_name}
                   onChange={(e) =>
-                    setStudentData({ ...studentData, last_name: e.target.value })
+                    setStudentData({
+                      ...studentData,
+                      last_name: e.target.value,
+                    })
                   }
                   required
                 />
@@ -336,18 +439,40 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
 
               {/* Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Name */}
+                {/* First Name */}
                 <div className="flex flex-col gap-2">
                   <label className="text-neutral-950 text-sm font-medium inter-font">
-                    Full Name / Title
+                    First Name
                   </label>
                   <input
                     type="text"
                     className="w-full h-11 px-4 bg-zinc-100 rounded-lg border-transparent focus:outline-none focus:ring-1 focus:ring-[#89A6A7] text-sm"
-                    placeholder="Dr. Fatima Rahman"
-                    value={teacherData.name}
+                    placeholder="e.g. Fatima"
+                    value={teacherData.first_name}
                     onChange={(e) =>
-                      setTeacherData({ ...teacherData, name: e.target.value })
+                      setTeacherData({
+                        ...teacherData,
+                        first_name: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+                {/* Last Name */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-neutral-950 text-sm font-medium inter-font">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full h-11 px-4 bg-zinc-100 rounded-lg border-transparent focus:outline-none focus:ring-1 focus:ring-[#89A6A7] text-sm"
+                    placeholder="e.g. Rahman"
+                    value={teacherData.last_name}
+                    onChange={(e) =>
+                      setTeacherData({
+                        ...teacherData,
+                        last_name: e.target.value,
+                      })
                     }
                     required
                   />
@@ -386,6 +511,25 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
                     required
                   />
                 </div>
+                {/* Password */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-neutral-950 text-sm font-medium inter-font">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    className="w-full h-11 px-4 bg-zinc-100 rounded-lg border-transparent text-sm focus:outline-none focus:ring-1 focus:ring-[#89A6A7]"
+                    placeholder="Enter password"
+                    value={teacherData.password || ""}
+                    onChange={(e) =>
+                      setTeacherData({
+                        ...teacherData,
+                        password: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
                 {/* Location */}
                 <div className="flex flex-col gap-2">
                   <label className="text-neutral-950 text-sm font-medium inter-font">
@@ -408,43 +552,24 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
             </div>
           </div>
 
-          {/* Section 2: About & Professional Approach */}
+          {/* Section 2: About */}
           <div className="w-full bg-white rounded-2xl border border-black/10 p-8 flex flex-col gap-6 shadow-sm">
             <h3 className="text-greenTeal text-base font-medium inter-font">
-              About & Professional Approach
+              About Me
             </h3>
 
-            <div className="flex flex-col gap-8">
-              <div className="flex flex-col gap-2">
-                <label className="text-neutral-950 text-sm font-medium inter-font">
-                  About Me
-                </label>
-                <textarea
-                  className="w-full min-h-[120px] p-4 bg-zinc-100 rounded-lg border-transparent text-sm focus:outline-none focus:ring-1 focus:ring-[#89A6A7]"
-                  placeholder="Introduce yourself, your experience, and expertise..."
-                  value={teacherData.about}
-                  onChange={(e) =>
-                    setTeacherData({ ...teacherData, about: e.target.value })
-                  }
-                ></textarea>
-                <p className="text-gray-500 text-xs font-normal inter-font">
-                  {teacherData.about.length} characters
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-neutral-950 text-sm font-medium inter-font">
-                  Professional Approach
-                </label>
-                <textarea
-                  className="w-full min-h-[100px] p-4 bg-zinc-100 rounded-lg border-transparent text-sm focus:outline-none focus:ring-1 focus:ring-[#89A6A7]"
-                  placeholder="Describe your teaching methodology and approach..."
-                  value={teacherData.approach}
-                  onChange={(e) =>
-                    setTeacherData({ ...teacherData, approach: e.target.value })
-                  }
-                ></textarea>
-              </div>
+            <div className="flex flex-col gap-2">
+              <textarea
+                className="w-full min-h-[120px] p-4 bg-zinc-100 rounded-lg border-transparent text-sm focus:outline-none focus:ring-1 focus:ring-[#89A6A7]"
+                placeholder="Introduce yourself, your experience, and expertise..."
+                value={teacherData.about}
+                onChange={(e) =>
+                  setTeacherData({ ...teacherData, about: e.target.value })
+                }
+              ></textarea>
+              <p className="text-gray-500 text-xs font-normal inter-font">
+                {teacherData.about.length} characters
+              </p>
             </div>
           </div>
 
@@ -527,82 +652,47 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
             </div>
 
             <div className="flex flex-col gap-4">
-              {teacherData.education.map((edu, i) => (
-                <div
-                  key={i}
-                  className="self-stretch p-4 rounded-[10px] border border-gray-200 flex justify-between items-start"
-                >
-                  <div className="flex gap-4 items-start">
-                    <div className="w-9 h-9 bg-[#89A6A7]/10 rounded-[10px] flex items-center justify-center">
-                      <GraduationCap className="w-5 h-5 text-[#89A6A7]" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-neutral-950 text-base font-semibold inter-font">
-                        {edu.degree}
-                      </span>
-                      <span className="text-gray-600 text-sm font-normal inter-font">
-                        {edu.institution}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-neutral-950 text-sm font-medium inter-font">
+                    Degree
+                  </label>
+                  <input
+                    type="text"
+                    className="h-11 px-4 bg-zinc-100 rounded-lg border-transparent text-sm focus:outline-none focus:ring-1 focus:ring-[#89A6A7]"
+                    placeholder="e.g., PhD in Psychology"
+                    value={teacherData.education.degree}
+                    onChange={(e) =>
                       setTeacherData({
                         ...teacherData,
-                        education: teacherData.education.filter(
-                          (_, idx) => idx !== i,
-                        ),
+                        education: {
+                          ...teacherData.education,
+                          degree: e.target.value,
+                        },
                       })
                     }
-                    className="p-1.5 hover:bg-rose-50 rounded-lg text-rose-500 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-
-              {/* Add Education sub-form */}
-              <div className="p-4 bg-gray-50 rounded-[10px] flex flex-col gap-3">
-                <h4 className="text-neutral-950 text-sm font-semibold inter-font">
-                  Add Education
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    className="h-9 px-3 bg-zinc-100 rounded-lg border-transparent text-sm"
-                    placeholder="Degree (e.g., PhD in Psychology)"
-                    value={newEdu.degree}
-                    onChange={(e) =>
-                      setNewEdu({ ...newEdu, degree: e.target.value })
-                    }
-                  />
-                  <input
-                    type="text"
-                    className="h-9 px-3 bg-zinc-100 rounded-lg border-transparent text-sm"
-                    placeholder="Institution (e.g., Harvard University)"
-                    value={newEdu.institution}
-                    onChange={(e) =>
-                      setNewEdu({ ...newEdu, institution: e.target.value })
-                    }
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (newEdu.degree && newEdu.institution) {
+                <div className="flex flex-col gap-2">
+                  <label className="text-neutral-950 text-sm font-medium inter-font">
+                    Institution
+                  </label>
+                  <input
+                    type="text"
+                    className="h-11 px-4 bg-zinc-100 rounded-lg border-transparent text-sm focus:outline-none focus:ring-1 focus:ring-[#89A6A7]"
+                    placeholder="e.g., Harvard University"
+                    value={teacherData.education.institution}
+                    onChange={(e) =>
                       setTeacherData({
                         ...teacherData,
-                        education: [...teacherData.education, newEdu],
-                      });
-                      setNewEdu({ degree: "", institution: "" });
+                        education: {
+                          ...teacherData.education,
+                          institution: e.target.value,
+                        },
+                      })
                     }
-                  }}
-                  className="w-full h-9 bg-[#89A6A7] rounded-lg flex items-center justify-center gap-2 text-white text-sm font-medium inter-font"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Education</span>
-                </button>
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -699,40 +789,40 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
                   Payment Rates
                 </h3>
               </div>
-              <button
+              {/* <button
                 type="button"
                 className="h-9 px-4 bg-[#89A6A7] text-white rounded-[10px] text-sm font-normal arimo-font hover:bg-[#729394]"
               >
                 Add Rates
-              </button>
+              </button> */}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-5 bg-white rounded-[10px] border border-neutral-200 flex flex-col gap-3">
                 <span className="text-neutral-600 text-sm font-normal arimo-font">
-                  Course Rate
-                </span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-[#89A6A7] text-3xl font-bold arimo-font">
-                    ${teacherData.courseRate}
-                  </span>
-                  <span className="text-neutral-500 text-sm font-normal arimo-font">
-                    /hour
-                  </span>
-                </div>
-                <p className="text-neutral-500 text-xs font-normal arimo-font italic">
-                  Rate for regular course teaching sessions
-                </p>
-              </div>
-
-              <div className="p-5 bg-white rounded-[10px] border border-neutral-200 flex flex-col gap-3">
-                <span className="text-neutral-600 text-sm font-normal arimo-font">
                   Consultation Hourly Rate
                 </span>
-                <div className="flex items-baseline gap-1">
+                <div className="flex items-center gap-2 text-[#89A6A7] text-3xl font-bold arimo-font">
                   <span className="text-[#89A6A7] text-3xl font-bold arimo-font">
-                    ${teacherData.consultationRate}
+                    $
                   </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className="h-11 px-4 bg-zinc-100 rounded-lg border border-neutral-200 text-sm focus:outline-none focus:ring-1 focus:ring-[#89A6A7]"
+                    placeholder="Enter hourly rate"
+                    value={teacherData.consultationRate}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || parseFloat(value) >= 0) {
+                        setTeacherData({
+                          ...teacherData,
+                          consultationRate: value,
+                        });
+                      }
+                    }}
+                  />
                   <span className="text-neutral-500 text-sm font-normal arimo-font">
                     /hour
                   </span>
@@ -749,9 +839,8 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
                   Note:
                 </span>
                 <p className="text-blue-800 text-sm font-normal arimo-font leading-5">
-                  These rates are automatically displayed on the instructor's
-                  dashboard. They can view their earnings and dues based on
-                  these hourly rates.
+                  When rate is 0, consultations will be disabled. When rate is
+                  greater than 0, consultations will be enabled automatically.
                 </p>
               </div>
             </div>
@@ -762,15 +851,17 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 h-10 border border-black/10 rounded-lg text-sm font-normal text-neutral-950 hover:bg-gray-50 flex items-center justify-center"
+              className="px-6 h-10 border border-black/10 rounded-lg text-sm font-normal text-neutral-950 hover:bg-gray-50 flex items-center justify-center disabled:opacity-50"
+              disabled={isAddingTeacher}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-8 h-10 bg-[#89A6A7] hover:bg-[#729394] text-white rounded-lg text-sm font-semibold transition-all shadow-md active:scale-[0.98] inter-font"
+              disabled={isAddingTeacher}
+              className="px-8 h-10 bg-[#89A6A7] hover:bg-[#729394] text-white rounded-lg text-sm font-semibold transition-all shadow-md active:scale-[0.98] inter-font disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Teacher
+              {isAddingTeacher ? "Creating..." : "Create Teacher"}
             </button>
           </div>
         </form>
