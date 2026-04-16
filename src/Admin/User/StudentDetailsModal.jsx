@@ -46,7 +46,7 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
               <div className="px-3 py-3.5 bg-gray-50 rounded-lg text-neutral-950 text-base arimo-font border border-black/5">
                 {studentDetails
                   ? `${studentDetails.user.first_name} ${studentDetails.user.last_name}`.trim() ||
-                    studentDetails.user.email.split("@")[0]
+                  studentDetails.user.email.split("@")[0]
                   : student.name}
               </div>
             </div>
@@ -58,7 +58,7 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                 {studentDetails?.user.email || student.email}
               </div>
             </div>
-          
+
           </div>
 
           {/* Enrolled Courses Section */}
@@ -88,10 +88,10 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                   {courses.map((enrollment) => (
                     <tr key={enrollment.id} className="hover:bg-gray-50/50">
                       <td className="py-3 px-4 text-neutral-950">
-                        {enrollment.course.title}
+                        {enrollment?.course?.title}
                       </td>
                       <td className="py-3 px-4 text-neutral-950">
-                        {`${enrollment.course.teacher.user.first_name} ${enrollment.course.teacher.user.last_name}`.trim()}
+                        {`${enrollment?.course?.teacher?.user?.first_name} ${enrollment?.course?.teacher?.user?.last_name}`.trim()}
                       </td>
                     </tr>
                   ))}

@@ -1,4 +1,3 @@
-import React from "react";
 import { Eye, Trash2 } from "lucide-react";
 
 const TeacherTable = ({ data, onView, onDelete }) => {
@@ -22,10 +21,10 @@ const TeacherTable = ({ data, onView, onDelete }) => {
               className="hover:bg-gray-50/50 transition-colors group"
             >
               <td className="py-4 px-2 text-neutral-950 whitespace-nowrap text-left">
-                {user.name}
+                {user?.name}
               </td>
               <td className="py-4 px-2 text-neutral-950 whitespace-nowrap text-left">
-                {user.email}
+                {user?.email}
               </td>
               <td className="py-4 px-2 text-neutral-950 whitespace-nowrap text-left">
                 {user.department}
