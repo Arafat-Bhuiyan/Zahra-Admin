@@ -41,7 +41,9 @@ const User = () => {
             student.user.email.split("@")[0],
           email: student.user.email,
           courses: 0,
-          joined: "N/A",
+          joined: student.user.joined_at
+            ? new Date(student.user.joined_at).toLocaleDateString()
+            : "N/A",
         })),
       );
     }
@@ -57,7 +59,7 @@ const User = () => {
             teacher.user.email.split("@")[0],
           email: teacher.user.email,
           department: teacher.professional_title || "N/A",
-          courses: 0,
+          courses: teacher.courses ? teacher.courses.length : 0,
           students: 0,
           raw: teacher,
         })),
@@ -67,6 +69,7 @@ const User = () => {
 
   const currentData = activeTab === "students" ? students : teachers;
 
+  console.log(currentData);
   const filteredData = currentData.filter(
     (user) =>
       (user.name &&

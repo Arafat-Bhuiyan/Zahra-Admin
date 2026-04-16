@@ -20,6 +20,7 @@ import {
 import {
   useAddStudentProfileMutation,
   useAddTeacherProfileMutation,
+  useUpdateTeacherProfileMutation,
 } from "../../Api/adminApi";
 import toast from "react-hot-toast";
 
@@ -28,6 +29,8 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
     useAddStudentProfileMutation();
   const [addTeacherProfile, { isLoading: isAddingTeacher }] =
     useAddTeacherProfileMutation();
+  const [updateTeacherProfile, { isLoading: isUpdatingTeacher }] =
+    useUpdateTeacherProfileMutation();
 
   // --- Student Specific State ---
   const [studentData, setStudentData] = useState({
@@ -128,84 +131,77 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
     }
 
     try {
-      const formData = new FormData();
-
-      // Add user info
-      formData.append(
-        "user",
-        JSON.stringify({
+      // Step 1: Create teacher profile with JSON data (no image)
+      const teacherJsonData = {
+        user: {
           email: teacherData.email,
           password: teacherData.password,
           first_name: teacherData.first_name,
           last_name: teacherData.last_name,
-        }),
-      );
+        },
+        professional_title: teacherData.professionalTitle,
+        location: teacherData.location,
+        about: teacherData.about,
+        education:
+          teacherData.education.degree && teacherData.education.institution
+            ? `${teacherData.education.degree} — ${teacherData.education.institution}`
+            : "",
+        achievements: teacherData.achievements,
+        consultation_rate: rate,
+        offers_consultations: rate > 0,
+      };
 
-      // Add teacher profile fields
-      formData.append("professional_title", teacherData.professionalTitle);
-      formData.append("location", teacherData.location);
-      formData.append("about", teacherData.about);
+      console.log("=== Step 1: Creating teacher with JSON data ===");
+      console.log("JSON Data:", teacherJsonData);
 
-      // Convert education object to string
-      formData.append("education", JSON.stringify(teacherData.education));
+      const createResult = await addTeacherProfile(teacherJsonData).unwrap();
+      console.log("Teacher created successfully:", createResult);
 
-      // Convert achievements array to string
-      formData.append("achievements", JSON.stringify(teacherData.achievements));
-
-      formData.append("consultation_rate", rate);
-
-      // Set offers_consultations based on consultation_rate
-      const offersConsultations = rate > 0;
-      formData.append("offers_consultations", offersConsultations);
-
-      // Add profile picture if available
+      // Step 2: If there's an image, update the profile with the image
       if (
         teacherData.profileImage &&
-        teacherData.profileImage.startsWith("data:")
+        teacherData.profileImage !== createResult.profile_picture
       ) {
-        // Convert base64 to file
-        const response = await fetch(teacherData.profileImage);
-        const blob = await response.blob();
-        formData.append("profile_picture", blob, "profile.jpg");
-      } else if (teacherData.profileImage instanceof File) {
-        formData.append("profile_picture", teacherData.profileImage);
-      }
+        console.log("=== Step 2: Uploading profile image ===");
 
-      // ==================== DEBUG: Console Log FormData ====================
-      console.log("=== FormData Contents ===");
+        const imageFormData = new FormData();
 
-      for (const [key, value] of formData.entries()) {
-        if (value instanceof File || value instanceof Blob) {
-          console.log(
-            `${key}:`,
-            value.name || "Blob/File",
-            `(size: ${value.size} bytes)`,
-          );
-        } else if (
-          typeof value === "string" &&
-          (value.startsWith("{") || value.startsWith("["))
-        ) {
-          // Pretty print JSON strings
-          try {
-            console.log(`${key}:`, JSON.parse(value));
-          } catch {
-            console.log(`${key}:`, value);
-          }
-        } else {
-          console.log(`${key}:`, value);
+        if (teacherData.profileImage.startsWith("data:")) {
+          // Convert base64 to file
+          const response = await fetch(teacherData.profileImage);
+          const blob = await response.blob();
+          imageFormData.append("profile_picture", blob, "profile.jpg");
+        } else if (teacherData.profileImage instanceof File) {
+          imageFormData.append("profile_picture", teacherData.profileImage);
         }
+
+        console.log("Image FormData:", imageFormData.get("profile_picture"));
+
+        const updateResult = await updateTeacherProfile({
+          id: createResult.id,
+          body: imageFormData,
+        }).unwrap();
+
+        console.log("Image uploaded successfully:", updateResult);
+
+        // Use the updated result for onAdd
+        onAdd({
+          ...updateResult,
+          role: "teacher",
+          courses: 0,
+          students: 0,
+          joined: new Date().toISOString().split("T")[0],
+        });
+      } else {
+        // No image to upload, use the create result
+        onAdd({
+          ...createResult,
+          role: "teacher",
+          courses: 0,
+          students: 0,
+          joined: new Date().toISOString().split("T")[0],
+        });
       }
-      console.log("=========================");
-
-      const result = await addTeacherProfile(formData).unwrap();
-
-      onAdd({
-        ...result,
-        role: "teacher",
-        courses: 0,
-        students: 0,
-        joined: new Date().toISOString().split("T")[0],
-      });
 
       // Reset teacher data
       setTeacherData({
@@ -852,16 +848,18 @@ const AddUserModal = ({ isOpen, onClose, type, onAdd }) => {
               type="button"
               onClick={onClose}
               className="px-6 h-10 border border-black/10 rounded-lg text-sm font-normal text-neutral-950 hover:bg-gray-50 flex items-center justify-center disabled:opacity-50"
-              disabled={isAddingTeacher}
+              disabled={isAddingTeacher || isUpdatingTeacher}
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isAddingTeacher}
+              disabled={isAddingTeacher || isUpdatingTeacher}
               className="px-8 h-10 bg-[#89A6A7] hover:bg-[#729394] text-white rounded-lg text-sm font-semibold transition-all shadow-md active:scale-[0.98] inter-font disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isAddingTeacher ? "Creating..." : "Create Teacher"}
+              {isAddingTeacher || isUpdatingTeacher
+                ? "Creating..."
+                : "Create Teacher"}
             </button>
           </div>
         </form>

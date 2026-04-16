@@ -10,7 +10,7 @@ const TeacherTable = ({ data, onView, onDelete }) => {
             <th className="py-3 px-2 font-normal w-48 text-left">Email</th>
             <th className="py-3 px-2 font-normal w-28 text-left">Department</th>
             <th className="py-3 px-2 font-normal w-20">Courses</th>
-            <th className="py-3 px-2 font-normal w-20">Students</th>
+            {/* <th className="py-3 px-2 font-normal w-20">Students</th> */}
             <th className="py-3 px-2 font-normal w-48">Actions</th>
           </tr>
         </thead>
@@ -30,7 +30,7 @@ const TeacherTable = ({ data, onView, onDelete }) => {
                 {user.department}
               </td>
               <td className="py-4 px-2 text-neutral-950">{user.courses}</td>
-              <td className="py-4 px-2 text-neutral-950">{user.students}</td>
+              {/* <td className="py-4 px-2 text-neutral-950">{user.students}</td> */}
 
               <td className="py-4 px-2">
                 <div className="flex justify-center items-center gap-2">

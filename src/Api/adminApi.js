@@ -333,6 +333,16 @@ export const adminApi = api.injectEndpoints({
       invalidatesTags: ["teachers"],
     }),
 
+    // Update Teacher Profile
+    updateTeacherProfile: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/teacher-profiles/${id}/`,
+        method: "PATCH",
+        body: body,
+      }),
+      invalidatesTags: ["teachers"],
+    }),
+
     // Delete Student Profile
     deleteStudentProfile: builder.mutation({
       query: (id) => ({
@@ -398,6 +408,7 @@ export const {
   useGetEnrollmentsQuery,
   useAddStudentProfileMutation,
   useAddTeacherProfileMutation,
+  useUpdateTeacherProfileMutation,
   useDeleteStudentProfileMutation,
   useDeleteTeacherProfileMutation,
 } = adminApi;

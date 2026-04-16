@@ -153,27 +153,6 @@ const Courses = () => {
 
   return (
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
-      {/* Stats Quick View */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-        <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-            Total Courses
-          </p>
-          <h4 className="text-2xl font-bold text-neutral-900">48</h4>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-            Enrollments
-          </p>
-          <h4 className="text-2xl font-bold text-neutral-900">12.5k</h4>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-            Completion Rate
-          </p>
-          <h4 className="text-2xl font-bold text-neutral-900">86%</h4>
-        </div>
-      </div>
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
         <button
@@ -260,9 +239,7 @@ const Courses = () => {
                     placeholder="Add category..."
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && handleAddCategory()
-                    }
+                    onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
                     className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
                   />
                   <button
