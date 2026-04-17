@@ -38,6 +38,7 @@ const UploadBookModal = ({ onClose, onSave }) => {
     coverImage: null,
     otherImages: [null, null, null],
     bookFile: null,
+    sampleFile: null,
     is_visible: true,
   });
 
@@ -58,6 +59,7 @@ const UploadBookModal = ({ onClose, onSave }) => {
   const isLoading = isCreating || isUploadingGallery;
 
   const fileInputRef = useRef(null);
+  const sampleInputRef = useRef(null);
   const coverInputRef = useRef(null);
   const otherInputRefs = [useRef(null), useRef(null), useRef(null)];
 
@@ -78,6 +80,8 @@ const UploadBookModal = ({ onClose, onSave }) => {
       setFormData((prev) => ({ ...prev, otherImages: newOtherImages }));
     } else if (type === "book") {
       setFormData((prev) => ({ ...prev, bookFile: file }));
+    } else if (type === "sample") {
+      setFormData((prev) => ({ ...prev, sampleFile: file }));
     }
   };
 
@@ -104,7 +108,8 @@ const UploadBookModal = ({ onClose, onSave }) => {
       formData.publishDate || new Date().toISOString().split("T")[0],
     );
     data.append("number_of_pages", formData.pages);
-    if (formData.bookFile) data.append("sample_file", formData.bookFile);
+    if (formData.bookFile) data.append("book_file", formData.bookFile);
+    if (formData.sampleFile) data.append("sample_file", formData.sampleFile);
     data.append("video_url", formData.video_url || "");
     data.append("has_physical", has_physical);
     data.append("physical_price", has_physical ? formData.physicalPrice : "0");
@@ -617,7 +622,7 @@ const UploadBookModal = ({ onClose, onSave }) => {
                 {/* Book File */}
                 <div className="space-y-2">
                   <label className="text-neutral-950 text-sm font-normal">
-                    Book File (PDF/ePub) *
+                    Book File (PDF) *
                   </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
@@ -627,7 +632,7 @@ const UploadBookModal = ({ onClose, onSave }) => {
                       type="file"
                       className="hidden"
                       ref={fileInputRef}
-                      accept=".pdf,.epub"
+                      accept=".pdf"
                       onChange={(e) => handleFileChange(e, "book")}
                     />
                     {formData.bookFile ? (
@@ -646,7 +651,52 @@ const UploadBookModal = ({ onClose, onSave }) => {
                           Click to upload or drag and drop
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
-                          PDF, ePub up to 50MB
+                          PDF up to 50MB
+                        </p>
+                        <button
+                          type="button"
+                          className="mt-4 px-4 py-2 bg-white border border-black/10 rounded-lg text-sm font-medium"
+                        >
+                          Select File
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sample File */}
+                <div className="space-y-2">
+                  <label className="text-neutral-950 text-sm font-normal">
+                    Sample File (PDF)
+                  </label>
+                  <div
+                    onClick={() => sampleInputRef.current?.click()}
+                    className="h-40 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-6 cursor-pointer hover:border-teal-400 transition-colors bg-gray-50/50"
+                  >
+                    <input
+                      type="file"
+                      className="hidden"
+                      ref={sampleInputRef}
+                      accept=".pdf"
+                      onChange={(e) => handleFileChange(e, "sample")}
+                    />
+                    {formData.sampleFile ? (
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-8 h-8 text-teal-600" />
+                        <span className="text-sm font-medium text-neutral-950">
+                          {formData.sampleFile.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3">
+                          <FileText className="w-6 h-6 text-gray-400" />
+                        </div>
+                        <p className="text-sm text-gray-600 font-medium">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          PDF up to 10MB (preview pages)
                         </p>
                         <button
                           type="button"

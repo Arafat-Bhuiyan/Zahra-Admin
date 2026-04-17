@@ -16,6 +16,22 @@ const CourseDetailsContent = ({ course }) => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("");
 
+  const getDisplayValue = (value) => {
+    if (value == null) return "N/A";
+    if (typeof value === "string" || typeof value === "number") {
+      return value;
+    }
+    if (Array.isArray(value)) {
+      return value.length > 0 ? value.join(", ") : "N/A";
+    }
+    if (typeof value === "object") {
+      return (
+        value.name || value.title || value.description || JSON.stringify(value)
+      );
+    }
+    return String(value);
+  };
+
   const students = [
     {
       id: 1,
@@ -99,13 +115,24 @@ const CourseDetailsContent = ({ course }) => {
           <div className="col-span-2">
             <DetailItem label="Level" value={course.level || "Beginner"} />
           </div>
-          <DetailItem label="Instructor" value={course.instructor} />
-          <DetailItem label="Category" value={course.category} />
-          <DetailItem label="Price" value={course.price} />
-          <DetailItem label="Duration" value={course.duration} />
+          <DetailItem
+            label="Instructor"
+            value={getDisplayValue(course.instructor)}
+          />
+          <DetailItem
+            label="Category"
+            value={getDisplayValue(course.category)}
+          />
+          <DetailItem label="Price" value={getDisplayValue(course.price)} />
+          <DetailItem
+            label="Duration"
+            value={getDisplayValue(course.duration)}
+          />
           <DetailItem
             label="Total Lessons"
-            value={`${course.lessons} lessons`}
+            value={getDisplayValue(
+              course.lessons ? `${course.lessons} lessons` : course.lessons,
+            )}
           />
           <div className="col-span-2">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3 block">
@@ -304,9 +331,9 @@ const CourseDetailsContent = ({ course }) => {
 
 const DetailItem = ({ label, value }) => (
   <div className="space-y-2">
-    <label className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1">
+    <div className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1">
       {label}
-    </label>
+    </div>
     <div className="px-5 py-3.5 bg-stone-50 rounded-2xl border border-stone-100 font-bold text-stone-800">
       {value}
     </div>
