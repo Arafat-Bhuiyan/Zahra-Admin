@@ -13,10 +13,14 @@ const SetDiscountModal = ({ isOpen, onClose, application, onApprove }) => {
   if (!isOpen || !application) return null;
 
   const parsePrice = (priceStr) => {
-    return parseFloat(priceStr.replace(/[^0-9.]/g, ""));
+    if (typeof priceStr === "number") return priceStr;
+    if (!priceStr) return 0;
+    return parseFloat(priceStr.toString().replace(/[^0-9.]/g, ""));
   };
 
-  const originalPrice = parsePrice(application.price);
+  const originalPrice = parsePrice(application.course_detail?.price);
+  const appName = application.name || `${application.user_detail?.first_name || ""} ${application.user_detail?.last_name || ""}`.trim();
+  const courseName = application.course_detail?.title || "Unknown Course";
   const discountValue =
     discountPercent === ""
       ? 0
@@ -43,7 +47,7 @@ const SetDiscountModal = ({ isOpen, onClose, application, onApprove }) => {
                 Set Scholarship Discount
               </div>
               <div className="text-white/90 text-base font-normal arimo-font leading-6">
-                {application.name}
+                {appName}
               </div>
             </div>
             <button
@@ -64,7 +68,7 @@ const SetDiscountModal = ({ isOpen, onClose, application, onApprove }) => {
                 Course
               </span>
               <span className="text-neutral-800 text-lg font-bold arimo-font leading-7">
-                {application.course}
+                {courseName}
               </span>
             </div>
             <div className="flex flex-col items-end gap-1">
@@ -72,7 +76,7 @@ const SetDiscountModal = ({ isOpen, onClose, application, onApprove }) => {
                 Original Price
               </span>
               <span className="text-neutral-800 text-2xl font-bold arimo-font leading-8">
-                {application.price}
+                ${originalPrice.toFixed(2)}
               </span>
             </div>
           </div>

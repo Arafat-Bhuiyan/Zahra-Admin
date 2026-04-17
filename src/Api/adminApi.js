@@ -313,6 +313,35 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["enrollments"],
     }),
 
+    // Scholarships
+    getScholarships: builder.query({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append("page", params.page);
+        if (params?.status) queryParams.append("status", params.status);
+        if (params?.course) queryParams.append("course", params.course);
+        const q = queryParams.toString();
+        return `/scholarships/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["scholarships"],
+    }),
+    approveScholarship: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/scholarships/${id}/approve/`,
+        method: "POST",
+        body: body,
+      }),
+      invalidatesTags: ["scholarships"],
+    }),
+    rejectScholarship: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/scholarships/${id}/reject/`,
+        method: "POST",
+        body: body, // e.g. optional rejection note
+      }),
+      invalidatesTags: ["scholarships"],
+    }),
+
     // Add Student Profile
     addStudentProfile: builder.mutation({
       query: (data) => ({
@@ -406,6 +435,9 @@ export const {
   useGetTeacherProfileQuery,
   useGetStudentProfileQuery,
   useGetEnrollmentsQuery,
+  useGetScholarshipsQuery,
+  useApproveScholarshipMutation,
+  useRejectScholarshipMutation,
   useAddStudentProfileMutation,
   useAddTeacherProfileMutation,
   useUpdateTeacherProfileMutation,

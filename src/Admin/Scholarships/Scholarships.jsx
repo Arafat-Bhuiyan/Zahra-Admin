@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useGetScholarshipsQuery, useApproveScholarshipMutation, useRejectScholarshipMutation } from "../../Api/adminApi";
+import Pagination from "../../components/Pagination";
 import {
   Search,
   FileText,
@@ -63,19 +65,19 @@ const StatsCard = ({ icon: Icon, color, label, value }) => {
 
 const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
   const statusColors = {
-    Pending: {
+    pending: {
       bg: "bg-yellow-100",
       text: "text-yellow-700",
       border: "outline-yellow-200",
       dot: "outline-yellow-700",
     },
-    Approved: {
+    approved: {
       bg: "bg-green-100",
       text: "text-green-700",
       border: "outline-green-200",
       dot: "outline-green-700",
     },
-    Rejected: {
+    rejected: {
       bg: "bg-red-100",
       text: "text-red-700",
       border: "outline-red-200",
@@ -83,7 +85,30 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
     },
   };
 
-  const statusStyle = statusColors[app.status] || statusColors.Pending;
+  const statusFormat = app.status ? app.status.toLowerCase() : "pending";
+  const statusStyle = statusColors[statusFormat] || statusColors.pending;
+
+  const getInitials = (nameStr) => {
+    if (!nameStr) return "?";
+    return nameStr.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase();
+  };
+  const appName = app.name || `${app.user_detail?.first_name || ""} ${app.user_detail?.last_name || ""}`.trim();
+  const initials = getInitials(appName);
+
+  const discountDisplay = app.discount_percent ? `${app.discount_percent}% Discount` : null;
+  const originalPrice = parseFloat(app.course_detail?.price || 0);
+  const discountPriceDisplay = app.discount_percent
+    ? `$${(originalPrice - (originalPrice * app.discount_percent) / 100).toFixed(2)}`
+    : null;
+
+  const appliedDateStr = app.created_at
+    ? new Date(app.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    : "";
+  const documentCount = app.documents ? app.documents.length : 0;
+  const educationDisplay = `${app.current_level_of_study || "N/A"} • ${app.field_of_study || "N/A"}`;
+  const courseName = app.course_detail?.title || "Unknown Course";
+  const emailDisplay = app.email || app.user_detail?.email || "";
+  const phoneDisplay = app.phone_number || "N/A";
 
   return (
     <div className="w-full px-6 pt-6 pb-px bg-white rounded-2xl shadow-sm border border-neutral-200 flex flex-col justify-start items-start gap-4 hover:shadow-md transition-all">
@@ -92,14 +117,14 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
         <div className="flex gap-4">
           <div className="w-14 h-14 bg-greenTeal rounded-full flex justify-center items-center">
             <span className="text-white text-xl font-bold arimo-font">
-              {app.initials}
+              {initials}
             </span>
           </div>
           <div className="flex flex-col gap-2">
             {/* Name & Status */}
             <div className="flex items-center gap-3">
               <h3 className="text-neutral-800 text-lg font-bold arimo-font">
-                {app.name}
+                {appName}
               </h3>
               <div
                 className={`px-2.5 py-0.5 rounded-full flex items-center gap-1.5 outline outline-1 outline-offset-[-1px] ${statusStyle.bg} ${statusStyle.border}`}
@@ -112,14 +137,14 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
                 <span
                   className={`text-xs font-bold arimo-font ${statusStyle.text}`}
                 >
-                  {app.status === "Approved" ? "Approved" : app.status}
+                  {statusFormat.charAt(0).toUpperCase() + statusFormat.slice(1)}
                 </span>
               </div>
-              {app.discount && (
+              {discountDisplay && (
                 <div className="px-2.5 py-0.5 rounded-full flex items-center gap-1.5 outline outline-1 outline-offset-[-1px] bg-purple-100 outline-purple-200">
                   <Percent size={12} className="text-purple-700" />
                   <span className="text-xs font-bold arimo-font text-purple-700">
-                    {app.discount}
+                    {discountDisplay}
                   </span>
                 </div>
               )}
@@ -129,23 +154,23 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 mt-1">
               <div className="flex items-center gap-2 text-neutral-600 text-sm arimo-font">
                 <Mail size={14} className="text-neutral-400" />
-                {app.email}
+                {emailDisplay}
               </div>
               <div className="flex items-center gap-2 text-neutral-600 text-sm arimo-font">
                 <Phone size={14} className="text-neutral-400" />
-                {app.phone}
+                {phoneDisplay}
               </div>
               <div className="flex items-center gap-2 text-neutral-600 text-sm arimo-font">
                 <BookOpen size={14} className="text-neutral-400" />
-                {app.course}
+                {courseName}
               </div>
               <div className="flex items-center gap-2 text-neutral-600 text-sm arimo-font">
                 <DollarSign size={14} className="text-neutral-400" />
                 <span className="flex items-center gap-2">
-                  Price: {app.price}
-                  {app.discountPrice && (
+                  Price: ${originalPrice.toFixed(2)}
+                  {discountPriceDisplay && (
                     <span className="text-green-600 font-bold">
-                      → {app.discountPrice}
+                      → {discountPriceDisplay}
                     </span>
                   )}
                 </span>
@@ -180,11 +205,11 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
       {/* Footer */}
       <div className="self-stretch h-10 border-t border-neutral-200 flex justify-between items-center text-xs text-neutral-500 arimo-font">
         <div className="flex items-center gap-1">
-          <span>Applied: {app.appliedDate}</span>
+          <span>Applied: {appliedDateStr}</span>
           <span className="mx-1">•</span>
-          <span>{app.documentCount} documents</span>
+          <span>{documentCount} documents</span>
         </div>
-        <div>{app.education}</div>
+        <div>{educationDisplay}</div>
       </div>
     </div>
   );
@@ -192,65 +217,15 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
 
 const Scholarships = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedAppDetails, setSelectedAppDetails] = useState(null);
   const [selectedAppDiscount, setSelectedAppDiscount] = useState(null);
 
-  const [applications, setApplications] = useState([
-    {
-      id: 1,
-      name: "Emily Rodriguez",
-      initials: "ER",
-      email: "emily.r@email.com",
-      phone: "+1 (555) 234-5678",
-      course: "Advanced React Patterns",
-      price: "$299",
-      status: "Pending",
-      appliedDate: "January 10, 2026",
-      documentCount: 2,
-      education: "Undergraduate • Computer Science",
-    },
-    {
-      id: 2,
-      name: "Sarah Chen",
-      initials: "SC",
-      email: "sarah.chen@email.com",
-      phone: "+1 (555) 345-6789",
-      course: "UI/UX Design Masterclass",
-      price: "$449",
-      discount: "75% Discount",
-      discountPrice: "$112.25",
-      status: "Approved",
-      appliedDate: "January 8, 2026",
-      documentCount: 3,
-      education: "Graduate • Information Technology",
-    },
-    {
-      id: 3,
-      name: "Michael Chang",
-      initials: "MC",
-      email: "m.chang@email.com",
-      phone: "+1 (555) 987-6543",
-      course: "Full Stack Web Development",
-      price: "$599",
-      status: "Pending",
-      appliedDate: "January 12, 2026",
-      documentCount: 1,
-      education: "Undergraduate • Software Engineering",
-    },
-    {
-      id: 4,
-      name: "Jessica Williams",
-      initials: "JW",
-      email: "jess.williams@email.com",
-      phone: "+1 (555) 111-2222",
-      course: "Data Science Fundamentals",
-      price: "$399",
-      status: "Approved",
-      appliedDate: "January 5, 2026",
-      documentCount: 4,
-      education: "Ph.D. • Statistics",
-    },
-  ]);
+  const { data, isLoading } = useGetScholarshipsQuery({ page: currentPage });
+  const [rejectScholarship] = useRejectScholarshipMutation();
+  const [approveScholarship] = useApproveScholarshipMutation();
+
+  const applications = data?.results || [];
 
   const stats = [
     {
@@ -279,12 +254,16 @@ const Scholarships = () => {
     },
   ];
 
-  const filteredApplications = applications.filter(
-    (app) =>
-      app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.course.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredApplications = applications.filter((app) => {
+    const appName = app.name || `${app.user_detail?.first_name || ""} ${app.user_detail?.last_name || ""}`;
+    const email = app.email || app.user_detail?.email || "";
+    const course = app.course_detail?.title || "";
+    return (
+      appName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   const handleReject = (id) => {
     toast(
@@ -306,20 +285,20 @@ const Scholarships = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
-                setApplications((prev) =>
-                  prev.map((app) =>
-                    app.id === id ? { ...app, status: "Rejected" } : app,
-                  ),
-                );
+              onClick={async () => {
                 toast.dismiss(t.id);
-                toast.success("Application rejected", {
-                  style: {
-                    borderRadius: "12px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+                try {
+                  await rejectScholarship({ id, body: {} }).unwrap();
+                  toast.success("Application rejected", {
+                    style: {
+                      borderRadius: "12px",
+                      background: "#333",
+                      color: "#fff",
+                    },
+                  });
+                } catch (err) {
+                  toast.error("Failed to reject application");
+                }
               }}
               className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
             >
@@ -342,21 +321,14 @@ const Scholarships = () => {
     );
   };
 
-  const handleApproveDiscount = (id, discountPercent, finalPrice) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === id
-          ? {
-              ...app,
-              status: "Approved",
-              discount: `${discountPercent}% Discount`,
-              discountPrice: `$${finalPrice.toFixed(2)}`,
-            }
-          : app,
-      ),
-    );
-    toast.success("Application approved with discount!");
-    setSelectedAppDiscount(null);
+  const handleApproveDiscount = async (id, discountPercent, finalPrice) => {
+    try {
+      await approveScholarship({ id, body: { discount_percent: parseInt(discountPercent) || 0 } }).unwrap();
+      toast.success("Application approved with discount!");
+      setSelectedAppDiscount(null);
+    } catch (err) {
+      toast.error("Failed to approve scholarship");
+    }
   };
 
   return (
@@ -407,22 +379,36 @@ const Scholarships = () => {
 
         {/* Applications List */}
         <div className="flex flex-col gap-4">
-          {filteredApplications.map((app) => (
-            <ApplicationCard
-              key={app.id}
-              app={app}
-              onReject={handleReject}
-              onViewDetails={setSelectedAppDetails}
-              onOpenDiscount={setSelectedAppDiscount}
-            />
-          ))}
+          {isLoading ? (
+            <div className="text-center py-12 text-neutral-400">Loading...</div>
+          ) : (
+            <>
+              {filteredApplications.map((app) => (
+                <ApplicationCard
+                  key={app.id}
+                  app={app}
+                  onReject={handleReject}
+                  onViewDetails={setSelectedAppDetails}
+                  onOpenDiscount={setSelectedAppDiscount}
+                />
+              ))}
 
-          {filteredApplications.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-neutral-400 text-lg">
-                No applications found matching your search.
-              </p>
-            </div>
+              {filteredApplications.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-neutral-400 text-lg">
+                    No applications found matching your search.
+                  </p>
+                </div>
+              )}
+              
+              {data?.total_pages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={data.total_pages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

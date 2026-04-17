@@ -10,6 +10,31 @@ const ScholarshipDetailsModal = ({
 }) => {
   if (!isOpen || !application) return null;
 
+  const appName = application.name || `${application.user_detail?.first_name || ""} ${application.user_detail?.last_name || ""}`.trim();
+  const getInitials = (nameStr) => {
+    if (!nameStr) return "?";
+    return nameStr.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase();
+  };
+  const initials = getInitials(appName);
+
+  const statusFormat = application.status ? application.status.toLowerCase() : "pending";
+  const statusDisplay = statusFormat.charAt(0).toUpperCase() + statusFormat.slice(1);
+  const discountDisplay = application.discount_percent ? `${application.discount_percent}% Discount` : null;
+  const appliedDateStr = application.created_at
+    ? new Date(application.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    : "Unknown Date";
+
+  const emailDisplay = application.email || application.user_detail?.email || "N/A";
+  const phoneDisplay = application.phone_number || "N/A";
+  const addressDisplay = application.address || "N/A";
+  const levelDisplay = application.current_level_of_study || "N/A";
+  const fieldDisplay = application.field_of_study || "N/A";
+  const courseName = application.course_detail?.title || "Unknown Course";
+  const originalPrice = parseFloat(application.course_detail?.price || 0);
+  const whyApplying = application.why_applying || "N/A";
+  const howHelps = application.how_will_it_help || "N/A";
+  const documents = application.documents || [];
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-[881px] max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
@@ -19,12 +44,12 @@ const ScholarshipDetailsModal = ({
             <div className="flex justify-start items-center gap-4">
               <div className="w-16 h-16 bg-white rounded-full flex justify-center items-center">
                 <div className="justify-start text-slate-400 text-2xl font-bold arimo-font leading-8">
-                  {application.initials}
+                  {initials}
                 </div>
               </div>
               <div className="flex flex-col justify-start items-start gap-1">
                 <div className="text-white text-2xl font-bold arimo-font leading-8">
-                  {application.name}
+                  {appName}
                 </div>
                 <div className="text-white/90 text-base font-normal arimo-font leading-6">
                   Scholarship Application Details
@@ -47,39 +72,39 @@ const ScholarshipDetailsModal = ({
             <div className="flex items-center gap-2">
               <div
                 className={`px-4 py-2 rounded-[10px] border flex items-center gap-2 ${
-                  application.status === "Approved"
+                  statusFormat === "approved"
                     ? "bg-green-100 border-green-200 text-green-700"
-                    : application.status === "Pending"
+                    : statusFormat === "pending"
                       ? "bg-yellow-100 border-yellow-200 text-yellow-700"
                       : "bg-red-100 border-red-200 text-red-700"
                 }`}
               >
                 <div
                   className={`w-3.5 h-3.5 border-2 rounded-full ${
-                    application.status === "Approved"
+                    statusFormat === "approved"
                       ? "border-green-700"
-                      : application.status === "Pending"
+                      : statusFormat === "pending"
                         ? "border-yellow-700"
                         : "border-red-700"
                   }`}
                 ></div>
                 <span className="font-bold arimo-font text-sm">
-                  {application.status}
+                  {statusDisplay}
                 </span>
               </div>
               <div>
-                {application.discount && (
+                {discountDisplay && (
                   <div className="px-4 py-2 rounded-[10px] flex items-center gap-1.5 outline outline-1 outline-offset-[-1px] bg-purple-100 outline-purple-200">
                     <Percent size={12} className="text-purple-700" />
                     <span className="text-sm font-bold arimo-font text-purple-700">
-                      {application.discount}
+                      {discountDisplay}
                     </span>
                   </div>
                 )}
               </div>
             </div>
             <div className="text-neutral-500 text-sm font-normal arimo-font">
-              Applied: {application.appliedDate}
+              Applied: {appliedDateStr}
             </div>
           </div>
 
@@ -99,7 +124,7 @@ const ScholarshipDetailsModal = ({
                   Email
                 </p>
                 <p className="text-neutral-800 text-sm arimo-font">
-                  {application.email}
+                  {emailDisplay}
                 </p>
               </div>
               <div>
@@ -107,23 +132,23 @@ const ScholarshipDetailsModal = ({
                   Phone
                 </p>
                 <p className="text-neutral-800 text-sm arimo-font">
-                  {application.phone}
+                  {phoneDisplay}
                 </p>
               </div>
               <div>
                 <p className="text-neutral-500 text-sm arimo-font mb-1">
                   Address
                 </p>
-                <p className="text-neutral-800 text-sm arimo-font">
-                  Los Angeles, California
+                <p className="text-neutral-800 text-sm arimo-font hover:opacity-80">
+                  {addressDisplay}
                 </p>
               </div>
               <div>
                 <p className="text-neutral-500 text-sm arimo-font mb-1">
                   Current Level
                 </p>
-                <p className="text-neutral-800 text-sm arimo-font">
-                  Undergraduate
+                <p className="text-neutral-800 text-sm arimo-font capitalize">
+                  {levelDisplay}
                 </p>
               </div>
               <div>
@@ -131,7 +156,7 @@ const ScholarshipDetailsModal = ({
                   Field of Study
                 </p>
                 <p className="text-neutral-800 text-sm arimo-font">
-                  Computer Science
+                  {fieldDisplay}
                 </p>
               </div>
             </div>
@@ -148,7 +173,7 @@ const ScholarshipDetailsModal = ({
                   Course
                 </p>
                 <p className="text-neutral-800 text-base font-bold arimo-font">
-                  {application.course}
+                  {courseName}
                 </p>
               </div>
               <div>
@@ -156,7 +181,7 @@ const ScholarshipDetailsModal = ({
                   Original Price
                 </p>
                 <p className="text-slate-400 text-2xl font-bold arimo-font">
-                  {application.price}
+                  ${originalPrice.toFixed(2)}
                 </p>
               </div>
             </div>
@@ -168,12 +193,7 @@ const ScholarshipDetailsModal = ({
               Why applying for scholarship?
             </h3>
             <p className="text-neutral-700 text-sm arimo-font leading-6">
-              I am a single mother working part-time while studying to provide a
-              better future for my daughter. This course would significantly
-              enhance my job prospects in web development. I have been
-              struggling to afford quality education while managing basic
-              expenses, and this scholarship would be life-changing for my
-              family.
+              {whyApplying}
             </p>
           </div>
 
@@ -183,11 +203,7 @@ const ScholarshipDetailsModal = ({
               How will this help achieve goals?
             </h3>
             <p className="text-neutral-700 text-sm arimo-font leading-6">
-              This scholarship will allow me to focus more on learning advanced
-              web development skills, reduce my work hours to dedicate time to
-              studying, and ultimately secure a better-paying job to support my
-              family. I plan to use these skills to work remotely and have more
-              flexibility with my daughter.
+              {howHelps}
             </p>
           </div>
 
@@ -200,24 +216,30 @@ const ScholarshipDetailsModal = ({
               </h3>
             </div>
             <div className="flex flex-col gap-2">
-              {["Motivation_Letter.pdf", "Income_Statement.pdf"].map(
-                (doc, idx) => (
+              {documents.length > 0 ? (
+                documents.map((doc, idx) => (
                   <div
                     key={idx}
                     className="flex justify-between items-center bg-white p-3 rounded-[10px] border border-neutral-200"
                   >
                     <div className="flex items-center gap-2">
                       <FileText size={16} className="text-slate-400" />
-                      <span className="text-neutral-800 text-sm arimo-font">
-                        {doc}
+                      <span className="text-neutral-800 text-sm arimo-font truncate max-w-xs">
+                        {doc.name || `Document_${idx + 1}`}
                       </span>
                     </div>
-                    <button className="text-slate-400 text-sm arimo-font hover:text-slate-600 flex items-center gap-1">
-                      <Download size={14} />
-                      Download
-                    </button>
+                    {doc.file && (
+                      <a href={doc.file} target="_blank" rel="noopener noreferrer" className="text-slate-400 text-sm arimo-font hover:text-slate-600 flex items-center gap-1 cursor-pointer">
+                        <Download size={14} />
+                        Download
+                      </a>
+                    )}
                   </div>
-                ),
+                ))
+              ) : (
+                <div className="text-sm text-neutral-500 arimo-font italic">
+                  No documents attached.
+                </div>
               )}
             </div>
           </div>
@@ -232,8 +254,7 @@ const ScholarshipDetailsModal = ({
             Close
           </button>
           {/* Modify Discount */}
-          {(application.status === "Approved" ||
-            application.status === "Rejected") && (
+          {(statusFormat === "approved" || statusFormat === "rejected") && (
             <div className="flex items-center gap-3">
               <button
                 onClick={() => onOpenDiscountModal(application)}
@@ -244,7 +265,7 @@ const ScholarshipDetailsModal = ({
             </div>
           )}
 
-          {application.status === "Pending" && (
+          {statusFormat === "pending" && (
             <div className="flex items-center gap-3">
               <button
                 onClick={() => {
