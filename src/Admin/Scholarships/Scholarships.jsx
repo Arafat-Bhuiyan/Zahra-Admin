@@ -380,11 +380,11 @@ const Scholarships = () => {
         onApprove={handleApproveDiscount}
       />
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
           <StatsCard key={idx} {...stat} />
         ))}
-      </div>
+      </div> */}
 
       {/* Main Content */}
       <div className="space-y-6">

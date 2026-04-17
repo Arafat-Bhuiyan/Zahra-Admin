@@ -270,7 +270,7 @@ const BookSales = () => {
   return (
     <div className="pt-2 flex flex-col gap-8 animate-in fade-in duration-500 pb-10 arimo-font">
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div
             key={index}
@@ -287,7 +287,7 @@ const BookSales = () => {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Filter & Search Section */}
       <div className="bg-white p-4 rounded-2xl border border-black/10 flex flex-col md:flex-row gap-4 items-center">
