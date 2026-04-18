@@ -113,6 +113,13 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: ["books"],
     }),
+
+    // Get Book Sales
+    getBookSalesData: builder.query({
+      query: (page = 1) => `/orders/book-sales/?page=${page}`,
+      providesTags: ["book-sales"],
+    }),
+
     // Get Blogs
     getBlogsData: builder.query({
       query: () => "/blogs/",
@@ -407,6 +414,7 @@ export const {
   useGetBookCategoriesQuery,
   useAddBookCategoryMutation,
   useDeleteBookCategoryMutation,
+  useGetBookSalesDataQuery,
   useGetBlogsDataQuery,
   useAddBlogMutation,
   useDeleteBlogMutation,

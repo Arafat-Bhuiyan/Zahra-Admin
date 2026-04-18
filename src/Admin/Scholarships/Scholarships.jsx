@@ -1,5 +1,9 @@
 import React, { useState } from "react";
-import { useGetScholarshipsQuery, useApproveScholarshipMutation, useRejectScholarshipMutation } from "../../Api/adminApi";
+import {
+  useGetScholarshipsQuery,
+  useApproveScholarshipMutation,
+  useRejectScholarshipMutation,
+} from "../../Api/adminApi";
 import Pagination from "../../components/Pagination";
 import {
   Search,
@@ -90,19 +94,32 @@ const ApplicationCard = ({ app, onReject, onViewDetails, onOpenDiscount }) => {
 
   const getInitials = (nameStr) => {
     if (!nameStr) return "?";
-    return nameStr.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase();
+    return nameStr
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase();
   };
-  const appName = app.name || `${app.user_detail?.first_name || ""} ${app.user_detail?.last_name || ""}`.trim();
+  const appName =
+    app.name ||
+    `${app.user_detail?.first_name || ""} ${app.user_detail?.last_name || ""}`.trim();
   const initials = getInitials(appName);
 
-  const discountDisplay = app.discount_percent ? `${app.discount_percent}% Discount` : null;
+  const discountDisplay = app.discount_percent
+    ? `${app.discount_percent}% Discount`
+    : null;
   const originalPrice = parseFloat(app.course_detail?.price || 0);
   const discountPriceDisplay = app.discount_percent
     ? `$${(originalPrice - (originalPrice * app.discount_percent) / 100).toFixed(2)}`
     : null;
 
   const appliedDateStr = app.created_at
-    ? new Date(app.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    ? new Date(app.created_at).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
     : "";
   const documentCount = app.documents ? app.documents.length : 0;
   const educationDisplay = `${app.current_level_of_study || "N/A"} • ${app.field_of_study || "N/A"}`;
@@ -255,7 +272,9 @@ const Scholarships = () => {
   ];
 
   const filteredApplications = applications.filter((app) => {
-    const appName = app.name || `${app.user_detail?.first_name || ""} ${app.user_detail?.last_name || ""}`;
+    const appName =
+      app.name ||
+      `${app.user_detail?.first_name || ""} ${app.user_detail?.last_name || ""}`;
     const email = app.email || app.user_detail?.email || "";
     const course = app.course_detail?.title || "";
     return (
@@ -323,11 +342,15 @@ const Scholarships = () => {
 
   const handleApproveDiscount = async (id, discountPercent, finalPrice) => {
     try {
-      await approveScholarship({ id, body: { discount_percent: parseInt(discountPercent) || 0 } }).unwrap();
+      await approveScholarship({
+        id,
+        body: { discount_percent: parseInt(discountPercent) || 0 },
+      }).unwrap();
       toast.success("Application approved with discount!");
       setSelectedAppDiscount(null);
     } catch (err) {
-      toast.error("Failed to approve scholarship");
+      // console.log(err);
+      toast.error(err.data.error || "Failed to approve scholarship");
     }
   };
 
@@ -400,7 +423,7 @@ const Scholarships = () => {
                   </p>
                 </div>
               )}
-              
+
               {data?.total_pages > 1 && (
                 <Pagination
                   currentPage={currentPage}

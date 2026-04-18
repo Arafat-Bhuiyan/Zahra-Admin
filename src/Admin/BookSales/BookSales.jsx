@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Search,
   Filter,
@@ -11,13 +11,120 @@ import {
   ClipboardList,
   ChevronDown,
 } from "lucide-react";
+import { useGetBookSalesDataQuery } from "../../Api/adminApi";
+import Pagination from "../../components/Pagination";
 
 const BookSales = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("All Types");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const {
+    data: apiResponse,
+    isLoading,
+    isError,
+  } = useGetBookSalesDataQuery(currentPage);
+
+  // Transform API data to component format
+  const transformedSalesData = useMemo(() => {
+    if (!apiResponse?.results) return [];
+
+    return apiResponse.results.map((order) => {
+      const dateObj = new Date(order.date);
+      const dateStr = dateObj.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      const timeStr = dateObj.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      // Map type from API format
+      const typeMap = {
+        physical_book: "Physical",
+        digital_book: "Digital",
+        both: "Both",
+      };
+
+      // Map payment status to display values
+      const paymentStatusMap = {
+        completed: "Paid",
+        pending: "Pending",
+        failed: "Failed",
+      };
+
+      return {
+        id: `#ORD-${order.order_id}`,
+        student: {
+          name: order.student_name,
+          email: order.student_email,
+          phone: order.shipping_address?.phone || "N/A",
+        },
+        book: {
+          title: order.book_title,
+          author: "Author Unknown",
+          image: order.cover_image || "https://placehold.co/133x200",
+        },
+        type: typeMap[order.type] || "Unknown",
+        quantity: order.quantity,
+        amount: parseFloat(order.amount),
+        address: {
+          line1: order.shipping_address?.address_line || "N/A",
+          city: order.shipping_address?.city || "N/A",
+          country: order.shipping_address?.country || "N/A",
+        },
+        payment: paymentStatusMap[order.payment_status] || "Unknown",
+        status:
+          order.payment_status === "completed"
+            ? "Delivered"
+            : order.payment_status === "pending"
+              ? "Pending"
+              : "Failed",
+        date: dateStr,
+        time: timeStr,
+      };
+    });
+  }, [apiResponse?.results]);
 
   const stats = [
+    {
+      label: "Total Orders",
+      value: apiResponse?.count || "0",
+      icon: ShoppingBag,
+      color: "bg-teal-600",
+      textColor: "text-teal-600",
+    },
+    {
+      label: "Total Revenue",
+      value: `$${(apiResponse?.results?.reduce((sum, order) => sum + parseFloat(order.amount), 0) || 0).toFixed(2)}`,
+      icon: DollarSign,
+      color: "bg-green-600",
+      textColor: "text-green-600",
+    },
+    {
+      label: "Digital Sales",
+      value:
+        apiResponse?.results?.filter((o) => o.type === "digital_book").length ||
+        "0",
+      icon: Download,
+      color: "bg-blue-600",
+      textColor: "text-blue-600",
+    },
+    {
+      label: "Physical Sales",
+      value:
+        apiResponse?.results?.filter((o) => o.type === "physical_book")
+          .length || "0",
+      icon: Package,
+      color: "bg-purple-600",
+      textColor: "text-purple-600",
+    },
+  ];
+
+  const stats_old = [
     {
       label: "Total Orders",
       value: "7",
@@ -48,189 +155,6 @@ const BookSales = () => {
     },
   ];
 
-  const salesData = [
-    {
-      id: "ORD-2024-002",
-      trackId: "TRK9876543210",
-      student: {
-        name: "Michael Chen",
-        email: "michael.c@email.com",
-        phone: "+1 (555) 234-5678",
-      },
-      book: {
-        title: "Islamic Psychology Guide",
-        author: "Dr. Sarah Ahmed",
-        image: "https://placehold.co/133x200",
-      },
-      type: "Physical",
-      quantity: 1,
-      amount: 99.0,
-      address: {
-        line1: "456 Oak Avenue, Suite 200",
-        city: "Los Angeles, CA 90001",
-        country: "United States",
-      },
-      payment: "Paid",
-      status: "Delivered",
-      date: "Feb 16, 2024",
-      time: "2:45 PM",
-    },
-    {
-      id: "ORD-2024-004",
-      student: {
-        name: "Sarah Parker",
-        email: "sarah.p@email.com",
-        phone: "+1 (555) 345-6789",
-      },
-      book: {
-        title: "Peace Movements in Islam",
-        author: "Dr. Sarah Ahmed",
-        image: "https://placehold.co/133x200",
-      },
-      type: "Digital",
-      quantity: 1,
-      amount: 99.0,
-      address: {
-        line1: "N/A - Digital Purchase",
-        city: "Chicago, IL 60601",
-        country: "United States",
-      },
-      payment: "Paid",
-      status: "Pending",
-      date: "Jan 30, 2024",
-      time: "3:15 PM",
-    },
-    {
-      id: "ORD-2024-003",
-      student: {
-        name: "Sarah Parker",
-        email: "sarah.p@email.com",
-        phone: "+1 (555) 345-6789",
-      },
-      book: {
-        title: "Healing the Anxious Heart",
-        author: "Dr. Sarah Ahmed",
-        image: "https://placehold.co/133x200",
-      },
-      type: "Digital",
-      quantity: 1,
-      amount: 99.0,
-      address: {
-        line1: "N/A - Digital Purchase",
-        city: "Chicago, IL 60601",
-        country: "United States",
-      },
-      payment: "Paid",
-      status: "Delivered",
-      date: "Jan 16, 2024",
-      time: "11:20 AM",
-    },
-    {
-      id: "ORD-2024-001",
-      trackId: "TRK1234567890",
-      student: {
-        name: "Emma Wilson",
-        email: "emma.w@email.com",
-        phone: "+1 (555) 123-4567",
-      },
-      book: {
-        title: "Islamic Psychology Guide",
-        author: "Dr. Sarah Ahmed",
-        image: "https://placehold.co/133x200",
-      },
-      type: "Both",
-      quantity: 1,
-      amount: 99.0,
-      address: {
-        line1: "123 Maple Street, Apt 4B",
-        city: "New York, NY 10001",
-        country: "United States",
-      },
-      payment: "Paid",
-      status: "Delivered",
-      date: "Jan 15, 2024",
-      time: "10:30 AM",
-    },
-    {
-      id: "ORD-2024-007",
-      trackId: "TRK1111222333",
-      student: {
-        name: "Emma Wilson",
-        email: "emma.w@email.com",
-        phone: "+1 (555) 123-4567",
-      },
-      book: {
-        title: "Islamic Psychology Guide",
-        author: "Dr. Sarah Ahmed",
-        image: "https://placehold.co/133x200",
-      },
-      type: "Both",
-      quantity: 1,
-      amount: 99.0,
-      address: {
-        line1: "123 Maple Street, Apt 4B",
-        city: "New York, NY 10001",
-        country: "United States",
-      },
-      payment: "Paid",
-      status: "Pending",
-      date: "Dec 25, 2023",
-      time: "4:00 PM",
-    },
-    {
-      id: "ORD-2024-005",
-      trackId: "TRK5555666777",
-      student: {
-        name: "Sarah Parker",
-        email: "sarah.p@email.com",
-        phone: "+1 (555) 345-6789",
-      },
-      book: {
-        title: "Islamic Psychology Guide",
-        author: "Dr. Sarah Ahmed",
-        image: "https://placehold.co/133x200",
-      },
-      type: "Both",
-      quantity: 2,
-      amount: 198.0,
-      address: {
-        line1: "789 Pine Road",
-        city: "Chicago, IL 60601",
-        country: "United States",
-      },
-      payment: "Paid",
-      status: "Delivered",
-      date: "Oct 10, 2023",
-      time: "9:00 AM",
-    },
-    {
-      id: "ORD-2024-006",
-      trackId: "TRK8888999000",
-      student: {
-        name: "David Kim",
-        email: "david.k@email.com",
-        phone: "+1 (555) 456-7890",
-      },
-      book: {
-        title: "Islamic Psychology Guide",
-        author: "Dr. Sarah Ahmed",
-        image: "https://placehold.co/133x200",
-      },
-      type: "Both",
-      quantity: 1,
-      amount: 99.0,
-      address: {
-        line1: "321 Elm Street",
-        city: "Houston, TX 77001",
-        country: "United States",
-      },
-      payment: "Paid",
-      status: "Pending",
-      date: "Aug 15, 2023",
-      time: "1:30 PM",
-    },
-  ];
-
   const getTypeStyle = (type) => {
     switch (type) {
       case "Physical":
@@ -250,22 +174,26 @@ const BookSales = () => {
         return "bg-green-100 text-green-700";
       case "Pending":
         return "bg-amber-100 text-amber-700";
+      case "Failed":
+        return "bg-red-100 text-red-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
   };
 
-  const filteredData = salesData.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.book.title.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredData = useMemo(() => {
+    return transformedSalesData.filter((order) => {
+      const matchesSearch =
+        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.book.title.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesFilter =
-      filterType === "All Types" || order.type === filterType;
+      const matchesFilter =
+        filterType === "All Types" || order.type === filterType;
 
-    return matchesSearch && matchesFilter;
-  });
+      return matchesSearch && matchesFilter;
+    });
+  }, [transformedSalesData, searchQuery, filterType]);
 
   return (
     <div className="pt-2 flex flex-col gap-8 animate-in fade-in duration-500 pb-10 arimo-font">
@@ -325,7 +253,7 @@ const BookSales = () => {
                   onClick={() => setShowFilterDropdown(false)}
                 ></div>
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-black/10 rounded-xl shadow-xl z-20 py-1 overflow-hidden animate-in fade-in zoom-in duration-200">
-                  {["All Types", "Physical", "Digital", "Both"].map((type) => (
+                  {["All Types", "Physical", "Digital"].map((type) => (
                     <div
                       key={type}
                       onClick={() => {
@@ -511,6 +439,15 @@ const BookSales = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="border-t border-black/10 bg-white">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={apiResponse?.total_pages || 1}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>
