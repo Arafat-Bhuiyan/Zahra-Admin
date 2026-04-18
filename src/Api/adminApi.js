@@ -297,7 +297,21 @@ export const adminApi = api.injectEndpoints({
 
     // Add more admin-specific endpoints here as needed...
     getTeacherProfiles: builder.query({
-      query: (page = 1) => `/teacher-profiles/?page=${page}`,
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        const page = typeof params === "number" ? params : params.page;
+        if (page) queryParams.append("page", page);
+        if (params && typeof params !== "number") {
+          if (params.offers_consultations !== undefined) {
+            queryParams.append(
+              "offers_consultations",
+              String(params.offers_consultations),
+            );
+          }
+        }
+        const queryString = queryParams.toString();
+        return `/teacher-profiles/${queryString ? `?${queryString}` : ""}`;
+      },
       providesTags: ["teachers"],
     }),
     getStudentProfiles: builder.query({
@@ -313,6 +327,43 @@ export const adminApi = api.injectEndpoints({
     getTeacherProfile: builder.query({
       query: (id) => `/teacher-profiles/${id}/`,
       providesTags: ["teachers"],
+    }),
+
+    getConsultations: builder.query({
+      query: () => "/consultations/",
+      providesTags: ["consultations"],
+    }),
+
+    getConsultation: builder.query({
+      query: (id) => `/consultations/${id}/`,
+      providesTags: ["consultations"],
+    }),
+
+    createConsultation: builder.mutation({
+      query: (body) => ({
+        url: "/consultations/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["consultations"],
+    }),
+
+    createConsultationRecurring: builder.mutation({
+      query: ({ consultationId, body }) => ({
+        url: `/consultations/${consultationId}/recurring/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["consultations"],
+    }),
+
+    createConsultationBundle: builder.mutation({
+      query: ({ consultationId, body }) => ({
+        url: `/consultations/${consultationId}/bundles/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["consultations"],
     }),
 
     getEnrollments: builder.query({
@@ -442,6 +493,11 @@ export const {
   useGetStudentProfilesQuery,
   useGetTeacherProfileQuery,
   useGetStudentProfileQuery,
+  useGetConsultationsQuery,
+  useGetConsultationQuery,
+  useCreateConsultationMutation,
+  useCreateConsultationRecurringMutation,
+  useCreateConsultationBundleMutation,
   useGetEnrollmentsQuery,
   useGetScholarshipsQuery,
   useApproveScholarshipMutation,

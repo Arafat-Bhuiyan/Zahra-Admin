@@ -1,33 +1,44 @@
-import React, { useState } from "react";
+﻿import React, { useMemo, useState } from "react";
+import { X, Video, User, Package, DollarSign, CircleAlert } from "lucide-react";
+import toast from "react-hot-toast";
 import {
-  X,
-  Video,
-  Calendar,
-  Clock,
-  User,
-  Mail,
-  Link as LinkIcon,
-  Plus,
-  Package,
-  DollarSign,
-  CircleAlert,
-} from "lucide-react";
+  useGetTeacherProfilesQuery,
+  useCreateConsultationMutation,
+  useCreateConsultationRecurringMutation,
+  useCreateConsultationBundleMutation,
+} from "../../Api/adminApi";
 
 const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
   const [formData, setFormData] = useState({
-    teacher: "",
+    teacherId: "",
+    teacherName: "",
     teacherEmail: "",
+    standardPrice: "",
     day: "",
     startTime: "",
     endTime: "",
-    zoomLink: "",
-    isBundle: false,
+    validFrom: "",
+    validUntil: "",
     bundleSessions: "",
-    originalPrice: "",
     discount: "",
   });
 
-  const [slots, setSlots] = useState([]);
+  const { data: teacherData, isError: isTeacherError } =
+    useGetTeacherProfilesQuery({ page: 1, offers_consultations: true });
+
+  const [createConsultation, { isLoading: isCreatingConsultation }] =
+    useCreateConsultationMutation();
+  const [createConsultationRecurring, { isLoading: isCreatingRecurring }] =
+    useCreateConsultationRecurringMutation();
+  const [createConsultationBundle, { isLoading: isCreatingBundle }] =
+    useCreateConsultationBundleMutation();
+  const isSaving =
+    isCreatingConsultation || isCreatingRecurring || isCreatingBundle;
+
+  const teacherProfiles = useMemo(
+    () => teacherData?.results || [],
+    [teacherData],
+  );
 
   const days = [
     "Monday",
@@ -39,99 +50,137 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
     "Sunday",
   ];
 
-  const teachers = [
-    { name: "Fatima Ara", email: "fatimaara10@gmail.com" },
-    { name: "Dr. Jannat Ara", email: "jannatara10@gmail.com" },
-    { name: "Zaid Al-Habib", email: "zaid.alhabib@example.com" },
-    { name: "Maryam Siddiqua", email: "maryam.s@example.com" },
-  ];
+  const weekdayMap = {
+    Monday: 0,
+    Tuesday: 1,
+    Wednesday: 2,
+    Thursday: 3,
+    Friday: 4,
+    Saturday: 5,
+    Sunday: 6,
+  };
 
   const formatTime = (time) => {
     if (!time) return "";
     const [hours, minutes] = time.split(":");
-    const h = parseInt(hours);
+    const h = parseInt(hours, 10);
     const ampm = h >= 12 ? "PM" : "AM";
     const h12 = h % 12 || 12;
     return `${h12}:${minutes} ${ampm}`;
   };
 
+  const calculateDurationMinutes = (start, end) => {
+    if (!start || !end) return 0;
+    const [startH, startM] = start.split(":").map(Number);
+    const [endH, endM] = end.split(":").map(Number);
+    const startDate = new Date();
+    startDate.setHours(startH, startM, 0, 0);
+    const endDate = new Date();
+    endDate.setHours(endH, endM, 0, 0);
+    const diff = (endDate - startDate) / 60000;
+    return diff > 0 ? diff : 0;
+  };
+
   if (!isOpen) return null;
 
-  const handleAddSlot = () => {
-    const newSlot = {
-      id: Date.now(),
-      day: formData.day,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      zoomLink: formData.zoomLink,
-    };
-
-    setSlots([...slots, newSlot]);
-    // Reset slot fields
+  const handleTeacherChange = (teacherId) => {
+    const selectedTeacher = teacherProfiles.find(
+      (teacher) => String(teacher.id) === String(teacherId),
+    );
     setFormData({
       ...formData,
-      day: "",
-      startTime: "",
-      endTime: "",
-      zoomLink: "",
+      teacherId,
+      teacherName: selectedTeacher
+        ? `${selectedTeacher.first_name || ""} ${selectedTeacher.last_name || ""}`.trim()
+        : "",
+      teacherEmail: selectedTeacher?.email || "",
     });
-  };
-
-  const removeSlot = (id) => {
-    setSlots(slots.filter((s) => s.id !== id));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (slots.length === 0 && (!formData.day || !formData.startTime)) {
-      alert("Please add at least one slot");
-      return;
-    }
-
-    const finalSlots =
-      slots.length > 0
-        ? slots
-        : [
-            {
-              id: Date.now(),
-              day: formData.day,
-              startTime: formData.startTime,
-              endTime: formData.endTime,
-              zoomLink: formData.zoomLink,
-            },
-          ];
-
-    onSchedule({
-      ...formData,
-      id: Date.now(),
-      status: "Scheduled",
-      students: 28, // Demo default
-      slots: finalSlots,
-    });
-    onClose();
-    resetForm();
-    setSlots([]);
   };
 
   const resetForm = () => {
     setFormData({
-      teacher: "",
+      teacherId: "",
+      teacherName: "",
       teacherEmail: "",
+      standardPrice: "",
       day: "",
       startTime: "",
       endTime: "",
-      zoomLink: "",
-      isBundle: false,
+      validFrom: "",
+      validUntil: "",
       bundleSessions: "",
-      originalPrice: "",
       discount: "",
     });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.teacherId) {
+      toast.error("Please select a teacher.");
+      return;
+    }
+
+    if (!formData.day || !formData.startTime || !formData.endTime) {
+      toast.error("Please select a recurring day and time.");
+      return;
+    }
+
+    try {
+      const consultationBody = {
+        teacher_id: Number(formData.teacherId),
+      };
+      if (formData.standardPrice) {
+        consultationBody.standard_price = formData.standardPrice;
+      }
+
+      const consultation = await createConsultation(consultationBody).unwrap();
+      const recurringPayload = {
+        weekday: weekdayMap[formData.day],
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        session_duration_minutes: calculateDurationMinutes(
+          formData.startTime,
+          formData.endTime,
+        ),
+        valid_from:
+          formData.validFrom || new Date().toISOString().split("T")[0],
+      };
+      if (formData.validUntil) {
+        recurringPayload.valid_until = formData.validUntil;
+      }
+
+      const recurring = await createConsultationRecurring({
+        consultationId: consultation.id,
+        body: recurringPayload,
+      }).unwrap();
+
+      let bundle = null;
+      if (formData.bundleSessions) {
+        const bundleBody = {
+          num_sessions: Number(formData.bundleSessions),
+        };
+        if (formData.discount) {
+          bundleBody.discount_percentage = Number(formData.discount);
+        }
+        bundle = await createConsultationBundle({
+          consultationId: consultation.id,
+          body: bundleBody,
+        }).unwrap();
+      }
+
+      onSchedule({ consultation, recurring, bundle });
+      onClose();
+      resetForm();
+    } catch (error) {
+      console.error("Failed to schedule consultation:", error);
+      toast.error("Unable to schedule consultation. Please try again.");
+    }
   };
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="w-full max-w-2xl bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-stone-200/20 animate-in zoom-in-95 duration-300">
-        {/* Header */}
         <div className="px-8 py-6 border-b border-stone-100 flex justify-between items-center bg-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center">
@@ -149,7 +198,6 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
           </button>
         </div>
 
-        {/* Form Body */}
         <form
           onSubmit={handleSubmit}
           className="p-8 space-y-6 max-h-[75vh] overflow-y-auto no-scrollbar"
@@ -161,76 +209,60 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
             </label>
             <select
               required
-              value={formData.teacherEmail}
-              onChange={(e) => {
-                const selectedTeacher = teachers.find(
-                  (t) => t.email === e.target.value,
-                );
-                setFormData({
-                  ...formData,
-                  teacher: selectedTeacher ? selectedTeacher.name : "",
-                  teacherEmail: e.target.value,
-                });
-              }}
+              value={formData.teacherId}
+              onChange={(e) => handleTeacherChange(e.target.value)}
               className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font appearance-none"
             >
               <option value="">Choose a teacher...</option>
-              {teachers.map((t) => (
-                <option key={t.email} value={t.email}>
-                  {t.name} ({t.email})
+              {isTeacherError && (
+                <option value="" disabled>
+                  Failed to load teachers
+                </option>
+              )}
+              {teacherProfiles.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {`${teacher.user.first_name || ""} ${teacher.user.last_name || ""}`.trim()}{" "}
+                  ({teacher.user.email})
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Slots List */}
-          {slots.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-bold text-stone-500 uppercase tracking-widest inter-font">
-                Added Slots ({slots.length})
-              </h3>
-              <div className="grid grid-cols-1 gap-2">
-                {slots.map((slot) => (
-                  <div
-                    key={slot.id}
-                    className="flex items-center justify-between bg-teal-50/50 p-4 rounded-xl border border-teal-100"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-bold text-teal-700 inter-font">
-                        {slot.day}
-                      </span>
-                      <span className="text-sm text-stone-500 inter-font">
-                        {formatTime(slot.startTime)} -{" "}
-                        {formatTime(slot.endTime)}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeSlot(slot.id)}
-                      className="text-red-400 hover:text-red-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
+                <DollarSign className="w-4 h-4 text-stone-400" />
+                Standard Price
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 45.00"
+                value={formData.standardPrice}
+                onChange={(e) =>
+                  setFormData({ ...formData, standardPrice: e.target.value })
+                }
+                className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
+              />
+              <p className="text-[11px] text-stone-400">
+                Optional. Leave empty to use the default teacher rate.
+              </p>
             </div>
-          )}
+            {/* <div className="space-y-2">
+              <label className="text-sm font-bold text-stone-700 inter-font">
+                Teacher Email
+              </label>
+              <input
+                type="email"
+                value={formData.teacherEmail}
+                readOnly
+                className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none text-stone-600 inter-font"
+              />
+            </div> */}
+          </div>
 
-          {/* Slot Header */}
-          <button
-            type="button"
-            onClick={handleAddSlot}
-            className="w-full bg-teal-600 hover:bg-teal-700 text-white p-1 rounded-2xl transition-all active:scale-95 group"
-          >
-            <span className="text-sm font-bold text-white arimo-font flex items-center justify-center gap-2">
-              <Plus className="w-4 h-4" />
-              Create Slot
-            </span>
-          </button>
-
-          {/* Slot Details Box */}
-          <div className="p-6 bg-teal-50/20 rounded-2xl border-2 border-teal-500/30 space-y-6 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="p-6 bg-teal-50/20 rounded-2xl border-2 border-teal-500/30 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-stone-700 inter-font">
@@ -282,36 +314,46 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
-                <Video className="w-4 h-4 text-stone-400" />
-                Zoom Meeting Link
-              </label>
-              <input
-                type="url"
-                value={formData.zoomLink}
-                onChange={(e) =>
-                  setFormData({ ...formData, zoomLink: e.target.value })
-                }
-                placeholder="https://zoom.us/j/1234567890"
-                className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
-              />
-              <p className="text-[10px] text-stone-400 inter-font">
-                Create a Zoom meeting and paste the link here. Students will use
-                this to join.
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-stone-700 inter-font">
+                  Valid From <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={formData.validFrom}
+                  onChange={(e) =>
+                    setFormData({ ...formData, validFrom: e.target.value })
+                  }
+                  className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-stone-700 inter-font">
+                  Valid Until
+                </label>
+                <input
+                  type="date"
+                  value={formData.validUntil}
+                  onChange={(e) =>
+                    setFormData({ ...formData, validUntil: e.target.value })
+                  }
+                  className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Bundle Section */}
           <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-600/20 space-y-6">
-            <div className="flex flex-col gap-6 py-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-stone-700 inter-font">
-                  Number of Sessions <span className="text-red-500">*</span>
+                  Bundle Sessions
                 </label>
                 <input
                   type="number"
+                  min="0"
                   placeholder="e.g. 5"
                   value={formData.bundleSessions}
                   onChange={(e) =>
@@ -320,78 +362,55 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
                   className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-stone-800 inter-font"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-stone-700 inter-font">
-                    Original Rate Hourly ($){" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400">
-                      <DollarSign className="w-4 h-4" />
-                    </div>
-                    <input
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.originalPrice}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          originalPrice: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white border border-stone-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-stone-800 inter-font"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-stone-700 inter-font">
-                    Discount (%) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 10"
-                    value={formData.discount}
-                    onChange={(e) =>
-                      setFormData({ ...formData, discount: e.target.value })
-                    }
-                    className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-stone-800 inter-font"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 bg-white/60 p-3 rounded-xl border border-amber-600/10">
-                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                  <Package className="w-6 h-6 text-amber-600" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-bold text-amber-800 tracking-wider uppercase">
-                    Final Rate Hourly
-                  </span>
-                  <span className="text-lg font-black text-stone-800 arimo-font">
-                    $
-                    {formData.originalPrice && formData.discount
-                      ? (
-                          formData.originalPrice -
-                          (formData.originalPrice * formData.discount) / 100
-                        ).toFixed(2)
-                      : "0.00"}{" "}
-                    /hr
-                  </span>
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-stone-700 inter-font">
+                  Discount (%)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="e.g. 10"
+                  value={formData.discount}
+                  onChange={(e) =>
+                    setFormData({ ...formData, discount: e.target.value })
+                  }
+                  className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-stone-800 inter-font"
+                />
               </div>
             </div>
+
+            <div className="flex items-center gap-4 bg-white/60 p-3 rounded-xl border border-amber-600/10">
+              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                <Package className="w-6 h-6 text-amber-600" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-amber-800 tracking-wider uppercase">
+                  Expected Bundle Rate
+                </span>
+                <span className="text-lg font-black text-stone-800 arimo-font">
+                  $
+                  {formData.standardPrice
+                    ? (
+                        Number(formData.standardPrice) -
+                        (Number(formData.standardPrice) *
+                          Number(formData.discount || 0)) /
+                          100
+                      ).toFixed(2)
+                    : "0.00"}{" "}
+                  /hr
+                </span>
+              </div>
+            </div>
+
             <div className="flex items-center justify-center gap-2 text-amber-600/60">
               <CircleAlert className="w-4 h-4" />
               <span className="text-[11px] font-bold inter-font uppercase tracking-wider">
-                This will be shown to the user
+                Optional bundle settings for recurring consultations
               </span>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-4 pt-4 border-t border-stone-100">
             <button
               type="button"

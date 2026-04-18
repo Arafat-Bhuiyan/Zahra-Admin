@@ -2,51 +2,42 @@ import React, { useState } from "react";
 import { User, Mail, Calendar, Video, Plus } from "lucide-react";
 import ScheduleConsultationModal from "./ScheduleConsultationModal";
 import ConsultationDetailsModal from "./ConsultationDetailsModal";
+import { useGetConsultationsQuery } from "../../Api/adminApi";
 
 const Consultants = () => {
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedConsultation, setSelectedConsultation] = useState(null);
 
-  const [consultations, setConsultations] = useState([
-    {
-      id: 1,
-      title: "Islamic Family Counseling",
-      instructor: "Dr. Jannat Ara",
-      email: "jannatara10@gmail.com",
-      date: "Today",
-      time: "2:00 PM",
-      students: 28,
-      status: "Scheduled",
-    },
-    {
-      id: 2,
-      title: "Islamic Family Counseling",
-      instructor: "Dr. Jannat Ara",
-      email: "jannatara10@gmail.com",
-      date: "Today",
-      time: "2:00 PM",
-      students: 28,
-      status: "Scheduled",
-    },
-  ]);
+  const {
+    data: consultationsData,
+    isLoading,
+    isError,
+  } = useGetConsultationsQuery();
+  const consultations = consultationsData?.results || [];
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return "N/A";
+    const [hours, minutes] = timeString.split(":");
+    const h = parseInt(hours, 10);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const h12 = h % 12 || 12;
+    return `${h12}:${minutes} ${ampm}`;
+  };
 
   const handleAddConsultation = (newConsultation) => {
-    const formattedConsultation = {
-      id: newConsultation.id,
-      title: "Private Consultation",
-      instructor: newConsultation.teacher,
-      email: newConsultation.teacherEmail,
-      date: newConsultation.date || newConsultation.day || "Today",
-      time: newConsultation.startTime,
-      students: 1,
-      status: "Scheduled",
-      slots: newConsultation.slots,
-      bundleSessions: newConsultation.bundleSessions,
-      originalPrice: newConsultation.originalPrice,
-      discount: newConsultation.discount,
-    };
-    setConsultations((prev) => [formattedConsultation, ...prev]);
+    // Since the mutation invalidates tags, the query will refetch automatically
+    // No need to manually update local state
   };
 
   return (
@@ -71,7 +62,30 @@ const Consultants = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          {consultations.length > 0 ? (
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
+                <Calendar className="w-10 h-10 text-stone-300 animate-spin" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-stone-900">
+                  Loading consultations...
+                </h3>
+              </div>
+            </div>
+          ) : isError ? (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
+              <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
+                <Calendar className="w-10 h-10 text-stone-300" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-stone-900">
+                  Failed to load consultations
+                </h3>
+                <p className="text-stone-500">Please try again later.</p>
+              </div>
+            </div>
+          ) : consultations.length > 0 ? (
             consultations.map((consultation) => (
               <div
                 key={consultation.id}
@@ -82,16 +96,20 @@ const Consultants = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-stone-900 inter-font group-hover:text-amber-700 transition-colors">
-                    {consultation.instructor}
+                    {consultation.teacher?.user?.first_name +
+                      " " +
+                      consultation.teacher?.user?.last_name || "N/A"}
                   </h3>
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-1">
                     <p className="text-sm font-medium text-stone-400 inter-font flex items-center gap-2">
                       <Mail className="w-3.5 h-3.5" />
-                      {consultation.email}
+                      {consultation.teacher?.user?.email || "N/A"}
                     </p>
                     <p className="text-sm font-medium text-amber-600 inter-font flex items-center gap-2">
                       <Calendar className="w-3.5 h-3.5" />
-                      {consultation.date} at {consultation.time}
+                      {consultation.timeslots?.length > 0
+                        ? `${formatDate(consultation.timeslots[0].day)} at ${formatTime(consultation.timeslots[0].start_time)} - ${formatTime(consultation.timeslots[consultation.timeslots.length - 1].end_time)}`
+                        : "No timeslots"}
                     </p>
                   </div>
                 </div>
