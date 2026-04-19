@@ -58,6 +58,11 @@ export const api = createApi({
     "email-templates",
     "sendgrid-api",
     "purposes",
+    "membership",
+    "bundles",
+    "siteAnnouncements",
+    "assignmentSubmissions",
+    "courseAnnouncements",
   ],
   endpoints: (builder) => ({
     login: builder.mutation({

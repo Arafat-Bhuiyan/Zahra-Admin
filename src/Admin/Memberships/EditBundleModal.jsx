@@ -1,46 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { X, Package, Check, Save } from "lucide-react";
+import { useGetCoursesDataQuery, useUpdateBundleMutation } from "../../Api/adminApi";
+import toast from "react-hot-toast";
 
-// In a real app, this would likely come from an API or shared context
-const availableCourses = [
-  {
-    id: 1,
-    title: "Advanced React Patterns",
-    category: "Web Development",
-    price: 299,
-  },
-  {
-    id: 2,
-    title: "Data Science Fundamentals",
-    category: "Data Science",
-    price: 299,
-  },
-  {
-    id: 3,
-    title: "UI/UX Design Masterclass",
-    category: "Design",
-    price: 299,
-  },
-  { id: 4, title: "JavaScript ES6+", category: "Web Development", price: 299 },
-  { id: 5, title: "Python for Beginners", category: "Programming", price: 299 },
-  {
-    id: 6,
-    title: "Node.js Backend Development",
-    category: "Web Development",
-    price: 299,
-  },
-  {
-    id: 7,
-    title: "Machine Learning Basics",
-    category: "Data Science",
-    price: 299,
-  },
-  { id: 8, title: "Figma Design Course", category: "Design", price: 299 },
-  { id: 9, title: "CSS Masterclass", category: "Web Development", price: 299 },
-  { id: 10, title: "MongoDB Database", category: "Database", price: 299 },
-];
+const EditBundleModal = ({ isOpen, onClose, bundle }) => {
+  const { data: coursesData } = useGetCoursesDataQuery();
+  const availableCourses = coursesData?.results || [];
+  const [updateBundle, { isLoading }] = useUpdateBundleMutation();
 
-const EditBundleModal = ({ isOpen, onClose, bundle, onUpdate }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -52,20 +19,12 @@ const EditBundleModal = ({ isOpen, onClose, bundle, onUpdate }) => {
   useEffect(() => {
     if (isOpen && bundle) {
       setFormData({
-        title: bundle.title,
-        description: bundle.description,
-        price: bundle.price,
-        selectedCourses: bundle.courses
-          .map((c) => {
-            // In a real app we might match by ID. Here we match by Title since the bundle's courses
-            // might not have the original availableCourse ID attached in this mock data structure if it was just static data.
-            // However, for consistency with CreateBundleModal logic which uses IDs, let's try to map back to IDs if possible,
-            // or fallback to using titles/categories to find the matching availableCourse.
-            // For simplicity, we'll try to find the matching course in availableCourses by title.
-            const found = availableCourses.find((ac) => ac.title === c.title);
-            return found ? found.id : null;
-          })
-          .filter((id) => id !== null),
+        title: bundle.name || "",
+        description: bundle.description || "",
+        price: bundle.price || "",
+        selectedCourses: bundle.courses_detail
+          ? bundle.courses_detail.map((c) => c.id).filter((id) => id !== null)
+          : [],
       });
     }
   }, [isOpen, bundle]);
@@ -92,11 +51,11 @@ const EditBundleModal = ({ isOpen, onClose, bundle, onUpdate }) => {
   const calculateOriginalValue = () => {
     return formData.selectedCourses.reduce((total, id) => {
       const course = availableCourses.find((c) => c.id === id);
-      return total + (course ? course.price : 0);
+      return total + (course ? parseFloat(course.price || 0) : 0);
     }, 0);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
       !formData.title ||
       !formData.price ||
@@ -105,31 +64,21 @@ const EditBundleModal = ({ isOpen, onClose, bundle, onUpdate }) => {
       return;
     }
 
-    // Get full course objects
-    const courses = formData.selectedCourses.map((id) =>
-      availableCourses.find((c) => c.id === id),
-    );
-    const originalPrice = calculateOriginalValue();
-    const discount =
-      originalPrice > 0
-        ? Math.round(
-            ((originalPrice - parseFloat(formData.price)) / originalPrice) *
-              100,
-          )
-        : 0;
-
-    const updatedBundle = {
-      ...bundle,
-      title: formData.title,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      originalPrice,
-      discount: discount > 0 ? discount : 0,
-      courses: courses,
-    };
-
-    onUpdate(updatedBundle);
-    onClose();
+    try {
+      const payload = {
+        name: formData.title,
+        description: formData.description,
+        price: formData.price.toString(),
+        course_ids: formData.selectedCourses,
+        is_active: bundle.is_active || false
+      };
+      
+      await updateBundle({ id: bundle.id, body: payload }).unwrap();
+      toast.success("Bundle updated successfully!");
+      onClose();
+    } catch (err) {
+      toast.error(err?.data?.error || "Failed to update bundle");
+    }
   };
 
   const isFormValid =
@@ -239,7 +188,7 @@ const EditBundleModal = ({ isOpen, onClose, bundle, onUpdate }) => {
                           {course.title}
                         </span>
                         <span className="text-neutral-500 text-sm font-normal arimo-font">
-                          {course.category}
+                          {course.category?.name || "Uncategorized"}
                         </span>
                       </div>
                       <span className="text-slate-400 text-sm font-bold arimo-font">
@@ -287,16 +236,16 @@ const EditBundleModal = ({ isOpen, onClose, bundle, onUpdate }) => {
             Cancel
           </button>
           <button
-            disabled={!isFormValid}
+            disabled={!isFormValid || isLoading}
             onClick={handleSubmit}
             className={`w-44 h-10 rounded-[10px] text-white text-base font-normal arimo-font flex items-center justify-center gap-2 transition-colors ${
-              isFormValid
+              isFormValid && !isLoading
                 ? "bg-greenTeal hover:bg-opacity-80 shadow-md"
                 : "bg-greenTeal opacity-50 cursor-not-allowed"
             }`}
           >
             <Save size={18} />
-            Update Bundle
+            {isLoading ? "Updating..." : "Update Bundle"}
           </button>
         </div>
       </div>

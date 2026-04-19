@@ -329,6 +329,39 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["teachers"],
     }),
 
+    getAssignmentSubmissions: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        const page = typeof params === "number" ? params : params.page;
+        if (page) queryParams.append("page", page);
+        if (params.assignment)
+          queryParams.append("assignment", params.assignment);
+        if (params.status) queryParams.append("status", params.status);
+        if (params.user) queryParams.append("user", params.user);
+        const queryString = queryParams.toString();
+        return {
+          url: `/assignment-submissions/${queryString ? `?${queryString}` : ""}`,
+          method: "GET",
+        };
+      },
+      transformResponse: (response) => response?.results || [],
+      providesTags: ["assignmentSubmissions"],
+    }),
+
+    getAssignmentSubmission: builder.query({
+      query: (id) => `/assignment-submissions/${id}/`,
+      providesTags: ["assignmentSubmissions"],
+    }),
+
+    reviewAssignmentSubmission: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/assignment-submissions/${id}/review/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["assignmentSubmissions"],
+    }),
+
     getConsultations: builder.query({
       query: () => "/consultations/",
       providesTags: ["consultations"],
@@ -439,13 +472,132 @@ export const adminApi = api.injectEndpoints({
       invalidatesTags: ["students"],
     }),
 
-    // Delete Teacher Profile
     deleteTeacherProfile: builder.mutation({
       query: (id) => ({
         url: `/teacher-profiles/${id}/`,
         method: "DELETE",
       }),
       invalidatesTags: ["teachers"],
+    }),
+
+    // Site Announcements (Popups)
+    getSiteAnnouncements: builder.query({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append("page", params.page);
+        const q = queryParams.toString();
+        return `/announcements/site/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["siteAnnouncements"],
+    }),
+    createSiteAnnouncement: builder.mutation({
+      query: (body) => ({
+        url: "/announcements/site/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["siteAnnouncements"],
+    }),
+    updateSiteAnnouncement: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/announcements/site/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["siteAnnouncements"],
+    }),
+    deleteSiteAnnouncement: builder.mutation({
+      query: (id) => ({
+        url: `/announcements/site/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["siteAnnouncements"],
+    }),
+
+    // Course Announcements
+    getCourseAnnouncements: builder.query({
+      query: ({ course_pk, page }) => {
+        const queryParams = new URLSearchParams();
+        if (page) queryParams.append("page", page);
+        const q = queryParams.toString();
+        return `/courses/${course_pk}/announcements/${q ? `?${q}` : ""}`;
+      },
+      providesTags: (result, error, { course_pk }) => [{ type: "courseAnnouncements", id: course_pk }],
+    }),
+    createCourseAnnouncement: builder.mutation({
+      query: ({ course_pk, body }) => ({
+        url: `/courses/${course_pk}/announcements/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "courseAnnouncements", id: course_pk }],
+    }),
+    deleteCourseAnnouncement: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/announcements/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "courseAnnouncements", id: course_pk }],
+    }),
+
+    // Memberships and Bundles
+    getMembershipPlan: builder.query({
+      query: () => "/membership/plan/",
+      providesTags: ["membership"],
+    }),
+    createMembershipPlan: builder.mutation({
+      query: (body) => ({
+        url: "/membership/plan/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["membership"],
+    }),
+    updateMembershipPlan: builder.mutation({
+      query: (body) => ({
+        url: "/membership/plan/",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["membership"],
+    }),
+    getBundles: builder.query({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append("page", params.page);
+        if (params?.is_active !== undefined)
+          queryParams.append("is_active", params.is_active);
+        const q = queryParams.toString();
+        return `/bundles/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["bundles"],
+    }),
+    getBundleDetails: builder.query({
+      query: (id) => `/bundles/${id}/`,
+      providesTags: ["bundles"],
+    }),
+    createBundle: builder.mutation({
+      query: (body) => ({
+        url: "/bundles/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["bundles"],
+    }),
+    updateBundle: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/bundles/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["bundles"],
+    }),
+    deleteBundle: builder.mutation({
+      query: (id) => ({
+        url: `/bundles/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["bundles"],
     }),
   }),
   overrideExisting: false,
@@ -493,6 +645,9 @@ export const {
   useGetStudentProfilesQuery,
   useGetTeacherProfileQuery,
   useGetStudentProfileQuery,
+  useGetAssignmentSubmissionsQuery,
+  useGetAssignmentSubmissionQuery,
+  useReviewAssignmentSubmissionMutation,
   useGetConsultationsQuery,
   useGetConsultationQuery,
   useCreateConsultationMutation,
@@ -507,4 +662,18 @@ export const {
   useUpdateTeacherProfileMutation,
   useDeleteStudentProfileMutation,
   useDeleteTeacherProfileMutation,
+  useGetMembershipPlanQuery,
+  useCreateMembershipPlanMutation,
+  useUpdateMembershipPlanMutation,
+  useGetBundlesQuery,
+  useCreateBundleMutation,
+  useUpdateBundleMutation,
+  useDeleteBundleMutation,
+  useGetSiteAnnouncementsQuery,
+  useCreateSiteAnnouncementMutation,
+  useUpdateSiteAnnouncementMutation,
+  useDeleteSiteAnnouncementMutation,
+  useGetCourseAnnouncementsQuery,
+  useCreateCourseAnnouncementMutation,
+  useDeleteCourseAnnouncementMutation,
 } = adminApi;

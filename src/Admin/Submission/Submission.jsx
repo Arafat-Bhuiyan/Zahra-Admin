@@ -2,50 +2,85 @@ import React, { useState } from "react";
 import { Search, Filter } from "lucide-react";
 import AssignmentSection from "./AssignmentSection";
 import QuizSection from "./QuizSection";
+import { useGetAssignmentSubmissionsQuery } from "../../Api/adminApi";
 
 const Submission = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState("Assignment");
+  const [selectedStatus, setSelectedStatus] = useState("");
 
-  // Mock data for assignments
-  const assignmentSubmissions = [
-    {
-      id: 1,
-      studentName: "Ahmed Hassan",
-      email: "ahmed.h@email.com",
-      date: "Jan 12, 2026",
-      time: "04:45 PM",
-      score: "45/50 pts",
-      percentage: "90%",
-      status: "Graded",
+  const formatDate = (isoString) => {
+    if (!isoString) return "N/A";
+    const date = new Date(isoString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (isoString) => {
+    if (!isoString) return "N/A";
+    const date = new Date(isoString);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const queryParams = selectedStatus ? { status: selectedStatus } : {};
+
+  const {
+    data: assignmentSubmissionsData = [],
+    isLoading: isAssignmentsLoading,
+    isError: assignmentError,
+  } = useGetAssignmentSubmissionsQuery(queryParams);
+
+  const assignmentSubmissions = assignmentSubmissionsData.map((submission) => {
+    const studentName =
+      `${submission.user_detail?.first_name || ""} ${submission.user_detail?.last_name || ""}`.trim();
+    const email = submission.user_detail?.email || "Unknown email";
+    const createdAt = submission.created_at;
+    const markValue = submission.mark != null ? Number(submission.mark) : null;
+    const totalPoints = 50;
+
+    const isGraded =
+      markValue != null ||
+      Boolean(submission.teacher_feedback) ||
+      submission.status === "approved" ||
+      submission.status === "rejected";
+
+    return {
+      id: submission.id,
+      studentName: studentName || email,
+      email,
+      date: formatDate(createdAt),
+      time: formatTime(createdAt),
+      score:
+        markValue != null && !Number.isNaN(markValue)
+          ? `${markValue}/${totalPoints} pts`
+          : "—",
+      percentage:
+        markValue != null && !Number.isNaN(markValue)
+          ? `${Math.round((markValue / totalPoints) * 100)}%`
+          : "Pending",
+      status:
+        submission.status === "pending"
+          ? "Pending Review"
+          : submission.status === "approved"
+            ? "Approved"
+            : submission.status === "rejected"
+              ? "Rejected"
+              : submission.status,
       type: "Assignment",
-      assignmentTitle: "01 Assignment Title Here",
-    },
-    {
-      id: 2,
-      studentName: "Ahmed Hassan",
-      email: "ahmed.h@email.com",
-      date: "Jan 12, 2026",
-      time: "04:45 PM",
-      score: "00/50 pts",
-      percentage: "0%",
-      status: "Pending Review",
-      type: "Assignment",
-      assignmentTitle: "01 Assignment Title Here",
-    },
-    {
-      id: 3,
-      studentName: "Ahmed Hassan",
-      email: "ahmed.h@email.com",
-      date: "Jan 12, 2026",
-      time: "04:45 PM",
-      score: "45/50 pts",
-      percentage: "90%",
-      status: "Graded",
-      type: "Assignment",
-      assignmentTitle: "02 Assignment Title Here",
-    },
-  ];
+      assignmentTitle: submission.assignment_title || "Untitled Assignment",
+      submissionText: submission.submission_text,
+      submissionFile: submission.submission_file,
+      teacherFeedback: submission.teacher_feedback,
+      reviewedAt: submission.reviewed_at,
+      isGraded,
+      rawSubmission: submission,
+    };
+  });
 
   // Mock data for quizzes
   const quizSubmissions = [
@@ -159,59 +194,15 @@ const Submission = () => {
           </button>
 
           <div className="relative">
-            <select className="px-4 py-2.5 w-[160px] rounded-[10px] border border-neutral-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none pr-10 text-neutral-950/50">
-              <option>Select course</option>
-              <option>Advanced React Patterns</option>
-              <option>Data Science Fundamentals</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
-
-          <div className="relative">
-            <select className="px-4 py-2.5 w-[160px] rounded-[10px] border border-neutral-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none pr-10 text-neutral-950/50">
-              <option>Select Module</option>
-              <option>Module 01</option>
-              <option>Module 02</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
-
-          <div className="relative">
             <select
-              className="px-4 py-2.5 w-[140px] rounded-[10px] border border-neutral-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none pr-10 text-neutral-950/50"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
+              className="px-4 py-2.5 w-[180px] rounded-[10px] border border-neutral-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-orange-500/20 appearance-none pr-10 text-neutral-950/50"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
             >
-              <option value="Assignment">Assignment</option>
-              <option value="Quiz">Quiz</option>
+              <option value="">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
               <svg
@@ -232,28 +223,30 @@ const Submission = () => {
         </div>
       </div>
 
+      <div className="mb-4 text-sm text-stone-500">
+        {isAssignmentsLoading && "Loading assignment submissions..."}
+        {assignmentError && (
+          <span className="text-red-500">
+            Unable to load assignment submissions. Please refresh.
+          </span>
+        )}
+      </div>
+
       {/* Course Header */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <h1 className="text-[32px] font-bold text-neutral-800 leading-[32px]">
           Advanced React Patterns
         </h1>
         <p className="text-sm text-neutral-500 mt-2">
           Instructor: Dr. Sarah Johnson
         </p>
-      </div>
+      </div> */}
 
       {/* Conditional Rendering of Sections */}
-      {selectedType === "Assignment" ? (
-        <AssignmentSection
-          categories={assignmentCategories}
-          submissions={filteredAssignments}
-        />
-      ) : (
-        <QuizSection
-          categories={quizCategories}
-          submissions={filteredQuizzes}
-        />
-      )}
+      <AssignmentSection
+        categories={assignmentCategories}
+        submissions={filteredAssignments}
+      />
     </div>
   );
 };

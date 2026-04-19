@@ -68,8 +68,9 @@ const AssignmentDetailsModal = ({ isOpen, onClose, submission, onGrade }) => {
               Student Comments
             </h3>
             <p className="text-sm font-normal text-neutral-700 leading-relaxed font-['Arimo']">
-              {submission.comments ||
-                "I have created a custom useFetch hook that handles loading states, error handling, and automatic retries. The hook accepts a URL and optional configuration. Please find the implementation and example usage in the attached files."}
+              {submission.submissionText ||
+                submission.rawSubmission?.submission_text ||
+                "No student comments were provided."}
             </p>
           </div>
 
@@ -78,37 +79,50 @@ const AssignmentDetailsModal = ({ isOpen, onClose, submission, onGrade }) => {
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-[#7AA4A5]" />
               <h3 className="text-lg font-bold text-neutral-800 font-['Arimo']">
-                Submitted Files (2)
+                Submitted File
               </h3>
             </div>
 
             <div className="space-y-3">
-              {[
-                { name: "useFetch.js", size: "2.4 KB", type: "JS" },
-                { name: "example.jsx", size: "1.8 KB", type: "JSX" },
-              ].map((file, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-xl hover:border-[#7AA4A5] transition-colors group"
-                >
+              {submission.submissionFile ||
+              submission.rawSubmission?.submission_file ? (
+                <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-xl hover:border-[#7AA4A5] transition-colors group">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-[#7AA4A5]/10 rounded-lg flex items-center justify-center">
                       <FileText className="w-5 h-5 text-[#7AA4A5]" />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-neutral-800">
-                        {file.name}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-neutral-800 truncate">
+                        {submission.submissionFile?.split("/").pop() ||
+                          submission.rawSubmission?.submission_file
+                            ?.split("/")
+                            .pop()}
                       </p>
-                      <p className="text-xs text-neutral-500">
-                        {file.size} • {file.type}
+                      <p className="text-xs text-neutral-500 truncate">
+                        {submission.submissionFile ||
+                          submission.rawSubmission?.submission_file}
                       </p>
                     </div>
                   </div>
-                  <button className="p-2 text-neutral-400 hover:text-[#7AA4A5] transition-colors">
-                    <Download className="w-5 h-5" />
-                  </button>
+                  <a
+                    href={
+                      submission.submissionFile ||
+                      submission.rawSubmission?.submission_file
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 rounded-xl bg-[#7AA4A5] text-white text-sm font-medium hover:bg-[#6b9192] transition-colors"
+                  >
+                    Download
+                  </a>
                 </div>
-              ))}
+              ) : (
+                <div className="p-4 bg-white border border-neutral-200 rounded-xl">
+                  <p className="text-sm text-neutral-500">
+                    No submitted file attached.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

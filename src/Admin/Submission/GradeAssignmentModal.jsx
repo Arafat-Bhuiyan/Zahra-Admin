@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { X, CheckCircle2 } from "lucide-react";
+import { useReviewAssignmentSubmissionMutation } from "../../Api/adminApi";
 
 const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
   const [score, setScore] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [reviewAssignmentSubmission, { isLoading: isSaving }] =
+    useReviewAssignmentSubmissionMutation();
   const totalPoints = 50;
 
   useEffect(() => {
@@ -16,7 +19,11 @@ const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
       } else if (submission.score) {
         setScore(submission.score);
       }
-      setFeedback(submission.feedback || "");
+      setFeedback(
+        submission.teacherFeedback ||
+          submission.rawSubmission?.teacher_feedback ||
+          "",
+      );
     }
   }, [submission, isOpen]);
 
@@ -26,14 +33,19 @@ const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
     ? Math.round((Number(score) / totalPoints) * 100)
     : 0;
 
-  const handleSave = () => {
-    // Logic to save the grade
-    console.log("Saving grade:", {
-      score,
-      feedback,
-      submissionId: submission.id,
-    });
-    onClose();
+  const handleSave = async () => {
+    const body = {
+      status: "approved",
+      teacher_feedback: feedback,
+      mark: Number(score),
+    };
+
+    try {
+      await reviewAssignmentSubmission({ id: submission.id, body }).unwrap();
+      onClose();
+    } catch (error) {
+      console.error("Failed to save grade:", error);
+    }
   };
 
   const getInitials = (name) => {

@@ -1,47 +1,58 @@
 import React, { useState } from "react";
 import CreateAnnouncementModal from "./CreateAnnouncementModal";
-import EditAnnouncementModal from "./EditAnnouncementModal";
 import CreatePopupAnnouncementModal from "./CreatePopupAnnouncementModal";
-import PopupAnnouncement from "./PopupAnnouncement";
+import EditPopupAnnouncementModal from "./EditPopupAnnouncementModal";
+import { 
+  useGetSiteAnnouncementsQuery, 
+  useDeleteSiteAnnouncementMutation,
+  useGetCoursesDataQuery,
+  useGetCourseAnnouncementsQuery,
+  useDeleteCourseAnnouncementMutation,
+} from "../../Api/adminApi";
+import Pagination from "../../components/Pagination";
 import toast from "react-hot-toast";
 
 import {
   Plus,
   Bell,
-  AlertCircle,
-  BookOpen,
-  Edit2,
   Trash2,
   Calendar,
   User,
   ExternalLink,
   CheckCircle2,
-  Tag,
   Image as ImageIcon,
+  ChevronLeft,
+  BookOpen,
+  Edit2
 } from "lucide-react";
 
-const StatCard = ({ icon: Icon, title, count, bgColor, iconColor }) => (
-  <div className="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-neutral-200 flex items-center gap-4">
-    <div
-      className={`w-12 h-12 ${bgColor} rounded-full flex justify-center items-center`}
-    >
-      <Icon className={`w-6 h-6 ${iconColor}`} />
-    </div>
-    <div>
-      <p className="text-neutral-500 text-sm font-medium">{title}</p>
-      <h3 className="text-neutral-800 text-2xl font-bold">{count}</h3>
-    </div>
-  </div>
-);
-
 const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
+  const parseList = (data) => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (typeof data === "string") {
+      try {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        // Not a JSON array, treat as single string
+      }
+      return [data];
+    }
+    return [];
+  };
+
+  const badgeList = parseList(announcement.badges);
+  const highlightList = parseList(announcement.checklist || announcement.highlights);
+  const formattedDate = announcement.publishedDate || (announcement.created_at ? new Date(announcement.created_at).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric' }) : "Recently");
+
   return (
     <div
-      className={`w-full bg-white rounded-[2.5rem] shadow-sm border border-black/5 flex flex-col md:flex-row overflow-hidden transition-all hover:shadow-xl group relative ${!announcement.isActive ? "opacity-75 grayscale-[0.5]" : ""}`}
+      className={`w-full bg-white rounded-[2.5rem] shadow-sm border border-black/5 flex flex-col md:flex-row overflow-hidden transition-all hover:shadow-xl group relative ${!announcement.isActive && announcement.is_active !== undefined && !announcement.is_active ? "opacity-75 grayscale-[0.5]" : ""}`}
     >
       {/* Badge Overlay */}
       <div className="absolute top-6 left-4 z-10 flex flex-wrap gap-2">
-        {announcement.badges?.map((badge, idx) => (
+        {badgeList.map((badge, idx) => (
           <span
             key={idx}
             className="px-3 py-1 bg-white/90 backdrop-blur-md text-[#7AA4A5] text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm border border-black/5"
@@ -52,11 +63,11 @@ const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
       </div>
 
       {/* Image Section */}
-      <div className="w-full md:w-72 h-48 md:h-auto relative overflow-hidden shrink-0">
-        {announcement.imagePath ? (
+      <div className="w-full md:w-72 h-48 md:h-auto relative overflow-hidden shrink-0 bg-gray-50 border-r border-black/5">
+        {announcement.imagePath || announcement.image ? (
           <img
-            src={announcement.imagePath}
-            alt={announcement.titleScript}
+            src={announcement.imagePath || announcement.image}
+            alt={announcement.titleScript || announcement.main_title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
         ) : (
@@ -72,20 +83,23 @@ const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
         <div className="space-y-4">
           <div className="flex justify-between items-start">
             <div className="space-y-1">
-              <p className="text-[#7AA4A5] text-xs font-bold uppercase tracking-[0.2em]">
-                {announcement.titlePrefix}
+              {/* Force minimum height/content so it never looks blank */}
+              <p className="text-[#7AA4A5] text-xs font-bold uppercase tracking-[0.2em] min-h-[16px]">
+                {announcement.titlePrefix || announcement.title_prefix || "Announcement"}
               </p>
               <h2 className="text-3xl font-black text-neutral-900 leading-tight arimo-font">
-                {announcement.titleScript}
+                {announcement.titleScript || announcement.main_title}
               </h2>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => onEdit(announcement)}
-                className="p-2.5 text-neutral-400 hover:text-[#7AA4A5] hover:bg-[#7AA4A5]/5 rounded-xl transition-all"
-              >
-                <Edit2 size={18} />
-              </button>
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(announcement)}
+                  className="p-2.5 text-neutral-400 hover:text-[#7AA4A5] hover:bg-[#7AA4A5]/5 rounded-xl transition-all"
+                >
+                  <Edit2 size={18} />
+                </button>
+              )}
               <button
                 onClick={() => onDelete(announcement.id)}
                 className="p-2.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
@@ -99,16 +113,16 @@ const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
             {announcement.message}
           </p>
 
-          {/* Checklist */}
-          {announcement.checklist?.length > 0 && (
+          {/* Highlights */}
+          {highlightList.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 py-2">
-              {announcement.checklist.map((item, idx) => (
+              {highlightList.map((item, idx) => (
                 <div
                   key={idx}
                   className="flex items-center gap-2 text-neutral-600 text-xs font-bold"
                 >
-                  <CheckCircle2 size={14} className="text-[#7AA4A5]" />
-                  <span>{item}</span>
+                  <CheckCircle2 size={14} className="text-[#7AA4A5] shrink-0" />
+                  <span className="truncate">{item}</span>
                 </div>
               ))}
             </div>
@@ -120,24 +134,26 @@ const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
           <div className="flex items-center gap-6 text-neutral-400 text-[10px] font-bold uppercase tracking-widest">
             <div className="flex items-center gap-2">
               <Calendar size={14} className="text-[#7AA4A5]" />
-              <span>{announcement.publishedDate}</span>
+              <span>{formattedDate}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <User size={14} className="text-[#7AA4A5]" />
-              <span>{announcement.author}</span>
-            </div>
-            {!announcement.isActive && (
+            {(announcement.author || announcement.created_at) && (
+              <div className="flex items-center gap-2">
+                <User size={14} className="text-[#7AA4A5]" />
+                <span>{announcement.author || "Admin"}</span>
+              </div>
+            )}
+            {announcement.isActive === false || announcement.is_active === false ? (
               <span className="px-3 py-1 bg-gray-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm">
                 Inactive
               </span>
-            )}
+            ) : null}
           </div>
 
           <a
-            href={announcement.ctaLink}
+            href={announcement.ctaLink || announcement.cta_link || "#"}
             className="px-6 py-2.5 bg-[#7AA4A5] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#7AA4A5]/20 hover:bg-[#6A9495] transition-all active:scale-95 flex items-center gap-2"
           >
-            {announcement.ctaText}
+            {announcement.ctaText || announcement.cta_text || "Learn More"}
             <ExternalLink size={12} />
           </a>
         </div>
@@ -146,46 +162,75 @@ const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
   );
 };
 
+const CourseAnnouncementCard = ({ announcement, onDelete }) => {
+  const formattedDate = announcement.created_at ? new Date(announcement.created_at).toLocaleDateString("en-US", { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Recently";
+
+  return (
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-black/5 p-6 hover:shadow-lg transition-all relative group">
+      <div className="flex justify-between items-start gap-4 mb-4">
+        <div>
+          <h3 className="text-xl font-bold text-neutral-900 arimo-font">{announcement.title}</h3>
+          <div className="flex items-center gap-4 mt-2 text-xs font-bold uppercase tracking-wider text-neutral-400">
+            <div className="flex items-center gap-1.5">
+              <User size={12} className="text-[#7AA4A5]" />
+              <span>{announcement.created_by_name || "Admin"}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Calendar size={12} className="text-[#7AA4A5]" />
+              <span>{formattedDate}</span>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => onDelete(announcement.id)}
+          className="p-2 text-neutral-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+      <p className="text-neutral-600 text-sm font-medium leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-black/5 whitespace-pre-wrap">
+        {announcement.body}
+      </p>
+    </div>
+  );
+};
+
 const Announcement = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
   const [activeTab, setActiveTab] = useState("announcements");
-  const [popups, setPopups] = useState([]);
+  
+  const [isModalOpen, setIsModalOpen] = useState(false); // For Course Announcement Creates
   const [isCreatePopupOpen, setIsCreatePopupOpen] = useState(false);
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const [currentPopup, setCurrentPopup] = useState(null);
+  
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [announcements, setAnnouncements] = useState([
-    {
-      id: 1,
-      titlePrefix: "Discover our new",
-      titleScript: "Islamic Psychology",
-      message:
-        "Master the intersection of faith and science in our latest certified course module.",
-      checklist: [
-        "Certified Curriculum",
-        "Lifetime Access",
-        "Expert Instructors",
-      ],
-      badges: ["Certified", "New", "Educational"],
-      ctaText: "Explore Course",
-      ctaLink: "/admin/courses-management",
-      imagePath:
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop",
-      isActive: true,
-      publishedDate: "2026-02-20",
-      author: "Admin User",
-    },
-  ]);
+  // Popups Data
+  const { data: popupsData, isLoading: isPopupsLoading } = useGetSiteAnnouncementsQuery({ page: currentPage });
+  const [deleteSiteAnnouncement] = useDeleteSiteAnnouncementMutation();
+  const popups = popupsData?.results || [];
 
-  const handleAddAnnouncement = (newAnnouncement) => {
-    setAnnouncements((prev) => [newAnnouncement, ...prev]);
+  // Course Announcements Data
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [coursePage, setCoursePage] = useState(1);
+  const [courseAnnouncementPage, setCourseAnnouncementPage] = useState(1);
+
+  const { data: coursesData, isLoading: isCoursesLoading } = useGetCoursesDataQuery({ page: coursePage });
+  const { data: courseAnnsData, isLoading: isCourseAnnsLoading } = useGetCourseAnnouncementsQuery(
+    { course_pk: selectedCourse?.id, page: courseAnnouncementPage },
+    { skip: !selectedCourse }
+  );
+  const [deleteCourseAnnouncement] = useDeleteCourseAnnouncementMutation();
+  
+  const coursesList = coursesData?.results || [];
+  const courseAnnouncementsList = courseAnnsData?.results || [];
+
+  const handleEditPopupTrigger = (popup) => {
+    setCurrentPopup(popup);
+    setIsEditPopupOpen(true);
   };
 
-  const handleCreatePopup = (popup) => {
-    setPopups((prev) => [popup, ...prev]);
-  };
-
-  const handleRemoveAnnouncement = (id) => {
+  const handleRemove = (id, type) => {
     toast(
       (t) => (
         <div className="flex items-center gap-4 p-1 arimo-font">
@@ -194,7 +239,7 @@ const Announcement = () => {
               Confirm Delete
             </p>
             <p className="text-xs text-neutral-500 mt-0.5">
-              Are you sure you want to remove this campaign?
+              Are you sure you want to remove this {type}?
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -205,10 +250,23 @@ const Announcement = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
-                setAnnouncements((prev) => prev.filter((ann) => ann.id !== id));
+              onClick={async () => {
+                if (type === "popup") {
+                  try {
+                    await deleteSiteAnnouncement(id).unwrap();
+                    toast.success("Site popup removed successfully");
+                  } catch (err) {
+                    toast.error("Failed to delete popup");
+                  }
+                } else if (type === "course_announcement") {
+                  try {
+                    await deleteCourseAnnouncement({ course_pk: selectedCourse.id, id }).unwrap();
+                    toast.success("Course announcement removed successfully");
+                  } catch (err) {
+                    toast.error("Failed to delete announcement");
+                  }
+                }
                 toast.dismiss(t.id);
-                toast.success("Campaign removed successfully");
               }}
               className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
             >
@@ -229,52 +287,16 @@ const Announcement = () => {
     );
   };
 
-  const handleUpdateAnnouncement = (updatedAnnouncement) => {
-    setAnnouncements((prev) =>
-      prev.map((ann) =>
-        ann.id === updatedAnnouncement.id ? updatedAnnouncement : ann,
-      ),
-    );
-  };
+  // Prevent user from clicking "New Campaign" if they haven't picked a course when on course tab
+  const canShowNewButton = activeTab === "popups" || (activeTab === "announcements" && selectedCourse);
 
-  const handleEditTrigger = (announcement) => {
-    setCurrentAnnouncement(announcement);
-    setIsEditModalOpen(true);
+  const handleNewButtonClick = () => {
+    if (activeTab === "announcements") {
+      setIsModalOpen(true);
+    } else {
+      setIsCreatePopupOpen(true);
+    }
   };
-
-  const getStats = () => [
-    {
-      icon: Bell,
-      title: "Total Campaigns",
-      count: announcements.length,
-      bgColor: "bg-[#7AA4A5]/10",
-      iconColor: "text-[#7AA4A5]",
-    },
-    {
-      icon: CheckCircle2,
-      title: "Active Now",
-      count: announcements.filter((a) => a.isActive).length,
-      bgColor: "bg-emerald-50",
-      iconColor: "text-emerald-600",
-    },
-    {
-      icon: BookOpen,
-      title: "Course Promos",
-      count: announcements.length,
-      bgColor: "bg-amber-50",
-      iconColor: "text-amber-600",
-    },
-    {
-      icon: Tag,
-      title: "Total Badges",
-      count: announcements.reduce(
-        (acc, curr) => acc + (curr.badges?.length || 0),
-        0,
-      ),
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600",
-    },
-  ];
 
   return (
     <div className="p-8 space-y-8 min-h-screen arimo-font bg-gray-50/30">
@@ -285,7 +307,7 @@ const Announcement = () => {
             onClick={() => setActiveTab("announcements")}
             className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === "announcements" ? "bg-[#7AA4A5] text-white shadow-lg" : "text-neutral-400 hover:text-neutral-600"}`}
           >
-            Campaigns
+            Course Announcements
           </button>
           <button
             onClick={() => setActiveTab("popups")}
@@ -295,65 +317,157 @@ const Announcement = () => {
           </button>
         </div>
 
-        <button
-          onClick={() =>
-            activeTab === "announcements"
-              ? setIsModalOpen(true)
-              : setIsCreatePopupOpen(true)
-          }
-          className="flex items-center gap-2 bg-[#7AA4A5] hover:bg-[#6A8F8F] text-white px-8 py-3.5 rounded-2xl shadow-xl shadow-[#7AA4A5]/20 transition-all active:scale-95 text-xs font-black uppercase tracking-widest"
-        >
-          <Plus size={18} />
-          {activeTab === "announcements" ? "New Campaign" : "New Popup"}
-        </button>
+        {canShowNewButton && (
+          <button
+            onClick={handleNewButtonClick}
+            className="flex items-center gap-2 bg-[#7AA4A5] hover:bg-[#6A8F8F] text-white px-8 py-3.5 rounded-2xl shadow-xl shadow-[#7AA4A5]/20 transition-all active:scale-95 text-xs font-black uppercase tracking-widest"
+          >
+            <Plus size={18} />
+            {activeTab === "announcements" ? "New Course Notice" : "New Popup"}
+          </button>
+        )}
       </div>
 
       <CreateAnnouncementModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAdd={handleAddAnnouncement}
-      />
-
-      <EditAnnouncementModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setCurrentAnnouncement(null);
-        }}
-        announcement={currentAnnouncement}
-        onUpdate={handleUpdateAnnouncement}
+        coursePk={selectedCourse?.id}
       />
 
       <CreatePopupAnnouncementModal
         isOpen={isCreatePopupOpen}
         onClose={() => setIsCreatePopupOpen(false)}
-        onCreate={handleCreatePopup}
       />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {getStats().map((stat, index) => (
-          <StatCard key={index} {...stat} />
-        ))}
-      </div>
+      <EditPopupAnnouncementModal
+        isOpen={isEditPopupOpen}
+        onClose={() => {
+          setIsEditPopupOpen(false);
+          setCurrentPopup(null);
+        }}
+        announcement={currentPopup}
+      />
 
       {/* Content */}
       {activeTab === "announcements" && (
-        <div className="grid grid-cols-1 gap-8 animate-in fade-in duration-700">
-          {announcements.map((announcement) => (
-            <AnnouncementCard
-              key={announcement.id}
-              announcement={announcement}
-              onEdit={handleEditTrigger}
-              onDelete={handleRemoveAnnouncement}
-            />
-          ))}
+        <div className="animate-in fade-in duration-500">
+          {!selectedCourse ? (
+             <div className="space-y-6">
+               <h2 className="text-xl font-bold text-neutral-800">Select a Course to Manage Announcements</h2>
+               
+               {isCoursesLoading ? (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {[1,2,3,4].map(skele => (
+                       <div key={skele} className="h-64 bg-white rounded-2xl border border-black/5 animate-pulse"></div>
+                    ))}
+                 </div>
+               ) : coursesList.length === 0 ? (
+                  <div className="py-24 flex flex-col items-center justify-center text-center bg-white rounded-[2.5rem] border border-black/5">
+                    <BookOpen className="w-16 h-16 text-gray-200 mb-4" />
+                    <p className="text-neutral-400 font-bold">
+                      No courses found.
+                    </p>
+                  </div>
+               ) : (
+                 <>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+                      {coursesList.map((course) => (
+                         <div 
+                           key={course.id}
+                           onClick={() => {
+                             setSelectedCourse(course);
+                             setCourseAnnouncementPage(1);
+                           }}
+                           className="bg-white rounded-3xl p-6 border border-black/5 hover:border-[#7AA4A5] hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between min-h-[220px]"
+                         >
+                            <div>
+                               <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                                  <BookOpen size={24} />
+                               </div>
+                               <h3 className="font-bold text-lg text-neutral-800 line-clamp-2 leading-tight mb-2 group-hover:text-[#7AA4A5] transition-colors">{course.title}</h3>
+                               {course.category && (
+                                  <span className="text-xs font-bold bg-neutral-100 text-neutral-500 px-3 py-1 rounded-full uppercase tracking-wider">
+                                    {course.category.name}
+                                  </span>
+                               )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-5 text-sm text-neutral-500 font-medium border-t border-black/5 pt-4">
+                               <img src={course.teacher?.profile_picture} alt="" className="w-6 h-6 rounded-full object-cover" onError={(e) => e.target.style.display='none'}/>
+                               <span className="truncate">{course.teacher?.user?.first_name} {course.teacher?.user?.last_name}</span>
+                            </div>
+                         </div>
+                      ))}
+                   </div>
+                   {coursesData?.total_pages > 1 && (
+                      <Pagination
+                        currentPage={coursePage}
+                        totalPages={coursesData.total_pages}
+                        onPageChange={setCoursePage}
+                      />
+                   )}
+                 </>
+               )}
+             </div>
+          ) : (
+             <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => setSelectedCourse(null)}
+                    className="p-2 bg-white hover:bg-gray-100 border border-black/5 rounded-xl transition-colors"
+                  >
+                     <ChevronLeft size={20} className="text-neutral-600" />
+                  </button>
+                  <div>
+                    <p className="text-xs font-bold text-[#7AA4A5] uppercase tracking-widest">Managing Announcements For</p>
+                    <h2 className="text-2xl font-black text-neutral-900 arimo-font">{selectedCourse.title}</h2>
+                  </div>
+                </div>
+
+                {isCourseAnnsLoading ? (
+                  <div className="space-y-4">
+                    {[1,2].map((s) => <div key={s} className="h-32 bg-white rounded-2xl border border-black/5 animate-pulse"></div>)}
+                  </div>
+                ) : courseAnnouncementsList.length === 0 ? (
+                  <div className="py-24 flex flex-col items-center justify-center text-center bg-white rounded-[2.5rem] border border-black/5 shadow-sm">
+                    <Bell className="w-16 h-16 text-gray-200 mb-4" />
+                    <p className="text-neutral-400 font-bold mb-6">
+                      No notices have been posted for this course yet.
+                    </p>
+                    <button 
+                      onClick={() => setIsModalOpen(true)}
+                      className="px-6 py-2.5 bg-[#7AA4A5]/10 text-[#7AA4A5] text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-[#7AA4A5]/20 transition-colors"
+                    >
+                      Create First Notice
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                     {courseAnnouncementsList.map((ann) => (
+                        <CourseAnnouncementCard 
+                          key={ann.id}
+                          announcement={ann}
+                          onDelete={(id) => handleRemove(id, "course_announcement")}
+                        />
+                     ))}
+                  </div>
+                )}
+                {courseAnnsData?.total_pages > 1 && (
+                  <Pagination 
+                     currentPage={courseAnnouncementPage}
+                     totalPages={courseAnnsData.total_pages}
+                     onPageChange={setCourseAnnouncementPage}
+                  />
+                )}
+             </div>
+          )}
         </div>
       )}
 
       {activeTab === "popups" && (
-        <div className="space-y-6">
-          {popups.length === 0 ? (
+        <div className="grid grid-cols-1 gap-8 animate-in fade-in duration-700">
+          {isPopupsLoading ? (
+            <div className="h-[200px] w-full bg-neutral-100 rounded-[2.5rem] animate-pulse"></div>
+          ) : popups.length === 0 ? (
             <div className="py-24 flex flex-col items-center justify-center text-center bg-white rounded-[2.5rem] border border-black/5">
               <Bell className="w-16 h-16 text-gray-200 mb-4" />
               <p className="text-neutral-400 font-bold">
@@ -361,22 +475,23 @@ const Announcement = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {popups.map((p) => (
-                <div
-                  key={p.id}
-                  className="p-6 bg-white rounded-[2.5rem] border border-black/5 shadow-sm"
-                >
-                  <PopupAnnouncement
-                    {...p}
-                    onClose={() =>
-                      setPopups((prev) => prev.filter((x) => x.id !== p.id))
-                    }
-                    showClose={false}
-                  />
-                </div>
+            <>
+              {popups.map((popup) => (
+                <AnnouncementCard
+                  key={popup.id}
+                  announcement={popup}
+                  onEdit={(p) => handleEditPopupTrigger(p)}
+                  onDelete={(id) => handleRemove(id, "popup")}
+                />
               ))}
-            </div>
+              {popupsData?.total_pages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={popupsData.total_pages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </>
           )}
         </div>
       )}

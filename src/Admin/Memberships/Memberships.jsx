@@ -16,8 +16,45 @@ import toast from "react-hot-toast";
 import EditMembershipModal from "./EditMembershipModal";
 import CreateBundleModal from "./CreateBundleModal";
 import EditBundleModal from "./EditBundleModal";
+import { 
+  useGetMembershipPlanQuery, 
+  useGetBundlesQuery,
+  useUpdateBundleMutation,
+  useDeleteBundleMutation
+} from "../../Api/adminApi";
+import Pagination from "../../components/Pagination";
 
-const MembershipCard = ({ settings, onEdit }) => {
+const MembershipCard = ({ plan, onEdit }) => {
+  if (!plan) {
+    return (
+      <div className="w-full bg-neutral-100 rounded-2xl p-8 flex flex-col items-center justify-center gap-4 text-neutral-500 border-2 border-dashed border-neutral-300">
+        <Crown size={48} className="text-neutral-400" />
+        <p className="text-lg">No active membership plan found.</p>
+        <button
+          onClick={onEdit}
+          className="bg-greenTeal text-white px-6 py-2.5 rounded-[10px] font-bold text-base flex items-center gap-2 transition-colors hover:bg-opacity-90 shadow-sm"
+        >
+          <Plus size={18} />
+          Create Membership
+        </button>
+      </div>
+    );
+  }
+
+  const getDurationString = (days) => {
+    if (!days) return "lifetime";
+    if (days >= 9223372036854776000 || days > 36500) return "lifetime";
+    if (days % 30 === 0) {
+      const months = days / 30;
+      return months === 1 ? "/month" : `/${months} months`;
+    }
+    return `/${days} days`;
+  };
+
+  const benefits = plan.description
+    ? plan.description.split("\n").filter((line) => line.trim() !== "")
+    : [];
+
   return (
     <div className="w-full bg-gradient-to-b from-[#7AA4A5] to-[#6A9495] rounded-2xl shadow-lg text-white overflow-hidden relative">
       <div className="p-8">
@@ -31,38 +68,44 @@ const MembershipCard = ({ settings, onEdit }) => {
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-3">
                   <h2 className="text-2xl font-bold arimo-font">
-                    Full Membership Subscription
+                    {plan.name || "Membership Subscription"}
                   </h2>
                 </div>
-                <p className="text-white/90 text-base arimo-font">
-                  {settings.description}
-                </p>
+                {benefits.length === 0 && (
+                  <p className="text-white/90 text-base arimo-font whitespace-pre-wrap">
+                    {plan.description}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Price */}
             <div className="flex items-baseline gap-1">
               <span className="text-5xl font-bold arimo-font">
-                ${settings.price}
+                ${plan.price}
               </span>
-              <span className="text-white/80 text-base">/month</span>
+              <span className="text-white/80 text-base">
+                {getDurationString(plan.duration_days)}
+              </span>
             </div>
 
             {/* Benefits Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-              {settings.benefits.map((benefit, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-transparent border border-green-300 flex items-center justify-center shrink-0">
-                    <Check
-                      size={12}
-                      className="text-green-300"
-                      strokeWidth={3}
-                    />
+            {benefits.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 mt-6">
+                {benefits.map((benefit, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-transparent border border-green-300 flex items-center justify-center shrink-0">
+                      <Check
+                        size={12}
+                        className="text-green-300"
+                        strokeWidth={3}
+                      />
+                    </div>
+                    <span className="text-white/90 text-sm">{benefit}</span>
                   </div>
-                  <span className="text-white/90 text-sm">{benefit}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Edit Button */}
@@ -75,14 +118,6 @@ const MembershipCard = ({ settings, onEdit }) => {
           </button>
         </div>
       </div>
-
-      {/* Footer Stats */}
-      <div className="bg-black/10 px-8 py-4 backdrop-blur-sm">
-        <div className="flex flex-col">
-          <span className="text-white/70 text-sm">Active Subscribers</span>
-          <span className="text-3xl font-bold">1,247</span>
-        </div>
-      </div>
     </div>
   );
 };
@@ -93,9 +128,14 @@ const BundleWebCard = ({
   onRemoveBundle,
   onEditBundle,
 }) => {
-  const isPublished = bundle.status === "Published";
+  const isPublished = bundle.is_active;
   const borderColor = isPublished ? "outline-green-200" : "outline-neutral-200";
   const shadowColor = isPublished ? "shadow-green-100" : "shadow-neutral-100";
+
+  const originalPrice = parseFloat(bundle.original_price || 0);
+  const currentPrice = parseFloat(bundle.price || 0);
+  const discount = originalPrice > 0 ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) : 0;
+  const creationDate = new Date(bundle.created_at).toLocaleDateString();
 
   return (
     <div
@@ -105,7 +145,7 @@ const BundleWebCard = ({
       <div className="mb-6 space-y-2">
         <div className="flex justify-between items-start">
           <h3 className="text-xl font-bold text-neutral-800 arimo-font leading-tight pr-4">
-            {bundle.title}
+            {bundle.name}
           </h3>
           {isPublished ? (
             <div className="flex items-center gap-1.5 bg-green-100 px-3 py-1 rounded-full shrink-0">
@@ -130,16 +170,16 @@ const BundleWebCard = ({
       <div className="mb-6 space-y-1">
         <div className="flex items-center gap-3">
           <span className="text-greenTeal text-3xl font-bold arimo-font">
-            ${bundle.price}
+            ${currentPrice.toFixed(2)}
           </span>
-          {bundle.discount > 0 && (
+          {discount > 0 && (
             <span className="text-greenTeal text-sm font-normal">
-              Save {bundle.discount}%
+              Save {discount}%
             </span>
           )}
         </div>
         <div className="text-neutral-500 text-sm line-through">
-          Original value: ${bundle.originalPrice}
+          Original value: ${originalPrice.toFixed(2)}
         </div>
         <div className="text-neutral-500 text-xs">One-time lifetime access</div>
       </div>
@@ -147,11 +187,11 @@ const BundleWebCard = ({
       {/* Includes List */}
       <div className="mb-6 flex-1">
         <p className="text-neutral-700 text-sm mb-3">
-          Includes {bundle.courses.length} Courses:
+          Includes {bundle.courses_detail?.length || 0} Courses:
         </p>
         <div className="space-y-3">
-          {bundle.courses.map((course, idx) => (
-            <div key={idx} className="flex items-start gap-3">
+          {bundle.courses_detail?.map((course) => (
+            <div key={course.id} className="flex items-start gap-3">
               <div className="w-4 h-4 mt-0.5 shrink-0">
                 <div
                   className={`w-3 h-3 rounded-sm border ${isPublished ? "border-green-500" : "border-neutral-400"} flex items-center justify-center`}
@@ -169,7 +209,7 @@ const BundleWebCard = ({
                   {course.title}
                 </p>
                 <p className="text-neutral-500 text-xs mt-0.5">
-                  {course.category}
+                  {course.category?.name || "Uncategorized"}
                 </p>
               </div>
             </div>
@@ -178,26 +218,21 @@ const BundleWebCard = ({
       </div>
 
       {/* Stats Divider */}
-      <div className="border-t border-neutral-200 pt-4 mb-4 grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-neutral-500 text-sm">Sales</p>
-          <p className="text-neutral-800 text-sm font-bold">{bundle.sales}</p>
-        </div>
+      <div className="border-t border-neutral-200 pt-4 mb-4 grid grid-cols-1 gap-4">
         <div>
           <p className="text-neutral-500 text-sm">Created</p>
-          <p className="text-neutral-800 text-sm font-bold">{bundle.date}</p>
+          <p className="text-neutral-800 text-sm font-bold">{creationDate}</p>
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex items-center gap-2 mt-auto">
         <button
-          onClick={() => onToggleStatus(bundle.id)}
-          className={`flex-1 h-10 rounded-[10px] flex items-center justify-center gap-2 font-normal text-base transition-colors ${
-            isPublished
+          onClick={() => onToggleStatus(bundle)}
+          className={`flex-1 h-10 rounded-[10px] flex items-center justify-center gap-2 font-normal text-base transition-colors ${isPublished
               ? "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               : "bg-green-100 text-green-700 hover:bg-green-200"
-          }`}
+            }`}
         >
           {isPublished ? (
             <>
@@ -243,87 +278,31 @@ const StatCard = ({ icon: Icon, label, value, colorClass, bgClass }) => {
 };
 
 const Memberships = () => {
-  const [membershipSettings, setMembershipSettings] = useState({
-    active: true,
-    price: 49,
-    description: "Get unlimited access to all current and future courses",
-    benefits: [
-      "Access to all existing courses",
-      "All upcoming courses included",
-      "New content added monthly",
-      "Cancel anytime",
-      "Certificate of completion",
-      "Community forum access",
-    ],
-  });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateBundleModalOpen, setIsCreateBundleModalOpen] = useState(false);
   const [editingBundle, setEditingBundle] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [bundles, setBundles] = useState([
-    {
-      id: 1,
-      title: "Web Development Mastery Bundle",
-      description: "Complete web development stack from frontend to backend",
-      price: 599,
-      originalPrice: 1344,
-      discount: 55,
-      status: "Published",
-      sales: 47,
-      date: "1/10/2026",
-      courses: [
-        { title: "Data Science Fundamentals", category: "Data Science" },
-        { title: "Node.js Backend Development", category: "Web Development" },
-        { title: "CSS Masterclass", category: "Web Development" },
-        { title: "Advanced React Patterns", category: "Web Development" },
-      ],
-    },
-    {
-      id: 2,
-      title: "UI/UX Design Masterclass Bundle",
-      description: "Learn to design beautiful interfaces and user experiences",
-      price: 399,
-      originalPrice: 899,
-      discount: 45,
-      status: "Draft",
-      sales: 12,
-      date: "2/15/2026",
-      courses: [
-        { title: "Figma Fundamentals", category: "Design" },
-        { title: "User Research Mastery", category: "UX Research" },
-        { title: "Design Systems", category: "UI Design" },
-      ],
-    },
-    {
-      id: 3,
-      title: "Full Stack Python Bundle",
-      description: "Master Python from basics to advanced web frameworks",
-      price: 499,
-      originalPrice: 999,
-      discount: 50,
-      status: "Draft",
-      sales: 8,
-      date: "3/01/2026",
-      courses: [
-        { title: "Python for Beginners", category: "Programming" },
-        { title: "Django Framework", category: "Web Development" },
-        { title: "FastAPI & Microservices", category: "Backend" },
-      ],
-    },
-  ]);
+  // Queries
+  const { data: membershipPlanData, isLoading: isPlanLoading } = useGetMembershipPlanQuery();
+  const { data: bundlesData, isLoading: isBundlesLoading } = useGetBundlesQuery({ page: currentPage });
+  
+  // Mutations
+  const [updateBundle] = useUpdateBundleMutation();
+  const [deleteBundle] = useDeleteBundleMutation();
 
-  const handleToggleStatus = (id) => {
-    setBundles((prevBundles) =>
-      prevBundles.map((bundle) => {
-        if (bundle.id === id) {
-          return {
-            ...bundle,
-            status: bundle.status === "Published" ? "Draft" : "Published",
-          };
-        }
-        return bundle;
-      }),
-    );
+  const bundles = bundlesData?.results || [];
+
+  const handleToggleStatus = async (bundle) => {
+    try {
+      await updateBundle({
+        id: bundle.id,
+        body: { is_active: !bundle.is_active }
+      }).unwrap();
+      toast.success(bundle.is_active ? "Bundle unpublished" : "Bundle published");
+    } catch (err) {
+      toast.error(err.data?.error || "Failed to toggle status");
+    }
   };
 
   const handleRemoveBundle = (id) => {
@@ -346,17 +325,21 @@ const Memberships = () => {
               Cancel
             </button>
             <button
-              onClick={() => {
-                setBundles((prev) => prev.filter((bundle) => bundle.id !== id));
-                toast.dismiss(t.id);
-                toast.success("Bundle removed successfully", {
-                  icon: "🗑️",
-                  style: {
-                    borderRadius: "12px",
-                    background: "#333",
-                    color: "#fff",
-                  },
-                });
+              onClick={async () => {
+                try {
+                  await deleteBundle(id).unwrap();
+                  toast.dismiss(t.id);
+                  toast.success("Bundle removed successfully", {
+                    icon: "🗑️",
+                    style: {
+                      borderRadius: "12px",
+                      background: "#333",
+                      color: "#fff",
+                    },
+                  });
+                } catch (err) {
+                  toast.error("Failed to delete bundle");
+                }
               }}
               className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm arimo-font"
             >
@@ -379,35 +362,20 @@ const Memberships = () => {
     );
   };
 
-  const handleCreateBundle = (newBundle) => {
-    setBundles((prev) => [newBundle, ...prev]);
-    toast.success("Bundle created successfully!");
-  };
 
-  const handleUpdateBundle = (updatedBundle) => {
-    setBundles((prev) =>
-      prev.map((bundle) =>
-        bundle.id === updatedBundle.id ? updatedBundle : bundle,
-      ),
-    );
-    toast.success("Bundle updated successfully!");
-    setEditingBundle(null);
-  };
-
-  const totalBundles = bundles.length;
-  const publishedCount = bundles.filter((b) => b.status === "Published").length;
-  const unpublishedCount = bundles.filter(
-    (b) => b.status !== "Published",
-  ).length;
 
   return (
     <div className="p-8 space-y-10 min-h-screen bg-white animate-in fade-in duration-500">
       {/* Subscription Card */}
       <div className="w-full">
-        <MembershipCard
-          settings={membershipSettings}
-          onEdit={() => setIsEditModalOpen(true)}
-        />
+        {isPlanLoading ? (
+          <div className="h-64 bg-neutral-100 rounded-2xl animate-pulse"></div>
+        ) : (
+          <MembershipCard
+            plan={membershipPlanData}
+            onEdit={() => setIsEditModalOpen(true)}
+          />
+        )}
       </div>
 
       {/* Course Bundles Section */}
@@ -432,7 +400,7 @@ const Memberships = () => {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
             icon={Package}
             label="Total Bundles"
@@ -454,44 +422,53 @@ const Memberships = () => {
             bgClass="bg-neutral-100"
             colorClass="text-neutral-600"
           />
-        </div>
+        </div> */}
 
         {/* Bundles Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {bundles.map((bundle) => (
-            <BundleWebCard
-              key={bundle.id}
-              bundle={bundle}
-              onToggleStatus={handleToggleStatus}
-              onRemoveBundle={handleRemoveBundle}
-              onEditBundle={(bundle) => setEditingBundle(bundle)}
-            />
-          ))}
+          {isBundlesLoading ? (
+            Array.from({ length: 3 }).map((_, idx) => (
+              <div key={idx} className="h-96 bg-neutral-100 rounded-2xl animate-pulse"></div>
+            ))
+          ) : (
+            bundles.map((bundle) => (
+              <BundleWebCard
+                key={bundle.id}
+                bundle={bundle}
+                onToggleStatus={handleToggleStatus}
+                onRemoveBundle={handleRemoveBundle}
+                onEditBundle={(bundle) => setEditingBundle(bundle)}
+              />
+            ))
+          )}
         </div>
+        {bundlesData?.total_pages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={bundlesData.total_pages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
 
       <EditMembershipModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        initialSettings={membershipSettings}
-        onSave={(newSettings) => {
-          setMembershipSettings(newSettings);
-          toast.success("Membership settings updated successfully");
-        }}
+        plan={membershipPlanData}
       />
 
       <CreateBundleModal
         isOpen={isCreateBundleModalOpen}
         onClose={() => setIsCreateBundleModalOpen(false)}
-        onCreate={handleCreateBundle}
       />
 
-      <EditBundleModal
-        isOpen={!!editingBundle}
-        onClose={() => setEditingBundle(null)}
-        bundle={editingBundle}
-        onUpdate={handleUpdateBundle}
-      />
+      {editingBundle && (
+        <EditBundleModal
+          isOpen={!!editingBundle}
+          onClose={() => setEditingBundle(null)}
+          bundle={editingBundle}
+        />
+      )}
     </div>
   );
 };
