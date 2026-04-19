@@ -61,6 +61,7 @@ export const api = createApi({
     "membership",
     "bundles",
     "siteAnnouncements",
+    "siteSettings",
     "assignmentSubmissions",
     "courseAnnouncements",
   ],

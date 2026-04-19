@@ -329,6 +329,23 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["teachers"],
     }),
 
+    getSiteSettings: builder.query({
+      query: () => ({
+        url: "/site-settings/",
+        method: "GET",
+      }),
+      providesTags: ["siteSettings"],
+    }),
+
+    updateSiteSettings: builder.mutation({
+      query: (body) => ({
+        url: "/site-settings/update/",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["siteSettings"],
+    }),
+
     getAssignmentSubmissions: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams();
@@ -398,10 +415,61 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: ["consultations"],
     }),
+    getConsultationCalendar: builder.query({
+      query: ({ id, month }) => `/consultations/${id}/calendar/?month=${month}`,
+      providesTags: ["consultations"],
+    }),
+    getConsultationTimeslots: builder.query({
+      query: ({ id, date, page }) => {
+        const queryParams = new URLSearchParams();
+        if (date) queryParams.append("date", date);
+        if (page) queryParams.append("page", page);
+        // page_size omitted, let backend handle default pagination
+        const q = queryParams.toString();
+        return `/consultations/${id}/timeslots/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["consultations"],
+    }),
 
     getEnrollments: builder.query({
-      query: (userId) => `/enrollments/?user=${userId}`,
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.user) queryParams.append("user", params.user);
+        if (params?.course) queryParams.append("course", params.course);
+        if (params?.page) queryParams.append("page", params.page);
+        const q = queryParams.toString();
+        return `/enrollments/${q ? `?${q}` : ""}`;
+      },
       providesTags: ["enrollments"],
+    }),
+
+    getCertificateTemplates: builder.query({
+      query: () => "/certificate-templates/",
+      providesTags: ["certificate-templates"],
+    }),
+    getCertificateTemplatePreview: builder.query({
+      query: (id) => ({
+        url: `/certificate-templates/${id}/preview/`,
+        responseHandler: (response) => response.text(),
+      }),
+    }),
+    getCompletedStudents: builder.query({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.course) queryParams.append("course", params.course);
+        // if (params?.page) queryParams.append("page", params.page);
+        const q = queryParams.toString();
+        return `/certificates/completed-students/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["completed-students"],
+    }),
+    issueCertificates: builder.mutation({
+      query: (body) => ({
+        url: "/certificates/issue/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["completed-students"],
     }),
 
     // Scholarships
@@ -522,7 +590,9 @@ export const adminApi = api.injectEndpoints({
         const q = queryParams.toString();
         return `/courses/${course_pk}/announcements/${q ? `?${q}` : ""}`;
       },
-      providesTags: (result, error, { course_pk }) => [{ type: "courseAnnouncements", id: course_pk }],
+      providesTags: (result, error, { course_pk }) => [
+        { type: "courseAnnouncements", id: course_pk },
+      ],
     }),
     createCourseAnnouncement: builder.mutation({
       query: ({ course_pk, body }) => ({
@@ -530,14 +600,18 @@ export const adminApi = api.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: (result, error, { course_pk }) => [{ type: "courseAnnouncements", id: course_pk }],
+      invalidatesTags: (result, error, { course_pk }) => [
+        { type: "courseAnnouncements", id: course_pk },
+      ],
     }),
     deleteCourseAnnouncement: builder.mutation({
       query: ({ course_pk, id }) => ({
         url: `/courses/${course_pk}/announcements/${id}/`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, { course_pk }) => [{ type: "courseAnnouncements", id: course_pk }],
+      invalidatesTags: (result, error, { course_pk }) => [
+        { type: "courseAnnouncements", id: course_pk },
+      ],
     }),
 
     // Memberships and Bundles
@@ -645,6 +719,8 @@ export const {
   useGetStudentProfilesQuery,
   useGetTeacherProfileQuery,
   useGetStudentProfileQuery,
+  useGetSiteSettingsQuery,
+  useUpdateSiteSettingsMutation,
   useGetAssignmentSubmissionsQuery,
   useGetAssignmentSubmissionQuery,
   useReviewAssignmentSubmissionMutation,
@@ -653,6 +729,8 @@ export const {
   useCreateConsultationMutation,
   useCreateConsultationRecurringMutation,
   useCreateConsultationBundleMutation,
+  useGetConsultationCalendarQuery,
+  useGetConsultationTimeslotsQuery,
   useGetEnrollmentsQuery,
   useGetScholarshipsQuery,
   useApproveScholarshipMutation,
@@ -662,6 +740,10 @@ export const {
   useUpdateTeacherProfileMutation,
   useDeleteStudentProfileMutation,
   useDeleteTeacherProfileMutation,
+  useGetCertificateTemplatesQuery,
+  useGetCompletedStudentsQuery,
+  useLazyGetCertificateTemplatePreviewQuery,
+  useIssueCertificatesMutation,
   useGetMembershipPlanQuery,
   useCreateMembershipPlanMutation,
   useUpdateMembershipPlanMutation,

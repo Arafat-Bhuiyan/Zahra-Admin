@@ -42,7 +42,7 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
       };
 
       await addEmailTemplate(payload).unwrap();
-      
+
       toast.success("Email template created successfully!", {
         icon: "🚀",
         style: {
@@ -242,15 +242,15 @@ const CreateTemplateModal = ({ isOpen, onClose, onSave }) => {
             <div className="space-y-2.5 flex flex-col">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-[12px] font-bold text-neutral-500 uppercase tracking-widest">
-                  Email Body
+                  Email Description
                 </label>
                 <span className="text-[10px] text-neutral-400 font-medium bg-neutral-100 px-2 py-0.5 rounded italic">
                   {purposes.find((p) => p.value === formData.type)?.variables
                     ?.length > 0
                     ? `Supports: ${purposes
-                        .find((p) => p.value === formData.type)
-                        .variables.map((v) => `{{${v}}}`)
-                        .join(", ")}`
+                      .find((p) => p.value === formData.type)
+                      .variables.map((v) => `{{${v}}}`)
+                      .join(", ")}`
                     : "Markdown & Placeholders supported"}
                 </span>
               </div>
@@ -281,13 +281,12 @@ The Team`}
             </button>
             <button
               type="submit"
-              className={`px-10 py-3.5 rounded-2xl flex items-center justify-center gap-2.5 font-bold transition-all shadow-lg active:scale-95 text-sm min-w-[200px] ${
-                formData.type &&
-                formData.sendgrid_template_id &&
-                formData.content
+              className={`px-10 py-3.5 rounded-2xl flex items-center justify-center gap-2.5 font-bold transition-all shadow-lg active:scale-95 text-sm min-w-[200px] ${formData.type &&
+                  formData.sendgrid_template_id &&
+                  formData.content
                   ? "bg-[#7BA0A0] text-white hover:bg-[#6A8F8F] shadow-[#7BA0A0]/20"
                   : "bg-neutral-100 text-neutral-400 cursor-not-allowed shadow-none"
-              }`}
+                }`}
               disabled={
                 !formData.type ||
                 !formData.sendgrid_template_id ||

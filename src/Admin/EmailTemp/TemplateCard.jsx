@@ -34,7 +34,7 @@ const TemplateCard = ({ template, onEdit, onDelete }) => {
 
         <div className="space-y-2">
           <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-            Body
+            Description
           </label>
           <div className="bg-white rounded-xl p-4 text-xs text-neutral-500 leading-relaxed line-clamp-4 min-h-[100px] border border-neutral-100 shadow-inner italic relative">
             "{template.preview}"
