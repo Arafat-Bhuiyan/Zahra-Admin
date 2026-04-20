@@ -7,8 +7,11 @@ const normalizeListResponse = (response) => {
 };
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://10.10.13.8:8000/",
+  baseUrl: "http://10.10.13.8:8000/", // https://api.sakeenapress.org/ // https://clashingly-nonlicensable-tennille.ngrok-free.dev/ // http://10.10.13.8:8000/
   prepareHeaders: (headers, { getState, endpoint }) => {
+    // Skip ngrok browser warning
+    // headers.set("ngrok-skip-browser-warning", "true");
+
     // Skip auth token for public endpoints
     const publicEndpoints = [
       "signup",
