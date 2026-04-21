@@ -54,6 +54,8 @@ export default function Submissions() {
   const [submissionType, setSubmissionType] = useState("assignment");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [courseId, setCourseId] = useState("");
+  const [moduleId, setModuleId] = useState("");
 
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [modalType, setModalType] = useState(null);
@@ -63,7 +65,11 @@ export default function Submissions() {
     isLoading,
     isError,
   } = useGetAssignmentSubmissionsQuery(
-    { status: statusFilter || undefined },
+    {
+      status: statusFilter || undefined,
+      courseId: courseId || undefined,
+      moduleId: moduleId || undefined,
+    },
     { skip: submissionType !== "assignment" }
   );
 
@@ -161,8 +167,8 @@ export default function Submissions() {
       <SubmissionsHeader
         onTypeChange={setSubmissionType}
         onSearchChange={setSearchQuery}
-        onCourseChange={() => {}}
-        onModuleChange={() => {}}
+        onCourseChange={(id) => { setCourseId(id); setModuleId(""); }}
+        onModuleChange={setModuleId}
       />
 
       <div className="p-8">

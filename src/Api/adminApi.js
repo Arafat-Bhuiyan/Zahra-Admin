@@ -358,10 +358,12 @@ export const adminApi = api.injectEndpoints({
     }),
 
     getAssignmentSubmissions: builder.query({
-      query: ({ status, assignment, page = 1 } = {}) => {
+      query: ({ status, assignment, courseId, moduleId, page = 1 } = {}) => {
         const params = new URLSearchParams({ page });
         if (status) params.append("status", status);
         if (assignment) params.append("assignment", assignment);
+        if (courseId) params.append("assignment__lesson__module__course", courseId);
+        if (moduleId) params.append("assignment__lesson__module", moduleId);
         return `/assignment-submissions/?${params.toString()}`;
       },
       providesTags: ["assignmentSubmissions"],
