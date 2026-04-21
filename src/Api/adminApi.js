@@ -378,6 +378,26 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: ["assignmentSubmissions"],
     }),
+
+    getConsultations: builder.query({
+      query: () => "/consultations/",
+      providesTags: ["consultations"],
+    }),
+
+    getConsultationCalendar: builder.query({
+      query: ({ id, month }) => `/consultations/${id}/calendar/?month=${month}`,
+      providesTags: ["consultationCalendar"],
+    }),
+
+    getConsultationTimeslots: builder.query({
+      query: ({ id, date }) => `/consultations/${id}/timeslots/?date=${date}`,
+      providesTags: ["consultationTimeslots"],
+    }),
+
+    getTeacherUpcomingSessions: builder.query({
+      query: () => "/teacher/consultations/",
+      providesTags: ["teacherSessions"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -432,4 +452,8 @@ export const {
   useGetCourseReviewsQuery,
   useGetAssignmentSubmissionsQuery,
   useReviewAssignmentSubmissionMutation,
+  useGetConsultationsQuery,
+  useGetConsultationCalendarQuery,
+  useGetConsultationTimeslotsQuery,
+  useGetTeacherUpcomingSessionsQuery,
 } = adminApi;
