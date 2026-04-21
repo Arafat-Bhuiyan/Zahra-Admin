@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Eye, FileText, AlertCircle, Loader2 } from "lucide-react";
 import SubmissionsHeader from "../components/SubmissionsHeader";
 import AssignmentDetailsModal from "../components/Modal/AssignmentDetailsModal";
@@ -53,12 +53,21 @@ function toModalShape(sub) {
 export default function Submissions() {
   const [submissionType, setSubmissionType] = useState("assignment");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [courseId, setCourseId] = useState("");
   const [moduleId, setModuleId] = useState("");
 
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [modalType, setModalType] = useState(null);
+
+  // Debounce search — wait 400 ms after the user stops typing
+  const debounceTimer = useRef(null);
+  useEffect(() => {
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(searchQuery), 400);
+    return () => clearTimeout(debounceTimer.current);
+  }, [searchQuery]);
 
   const {
     data: submissionsData,
@@ -69,6 +78,7 @@ export default function Submissions() {
       status: statusFilter || undefined,
       courseId: courseId || undefined,
       moduleId: moduleId || undefined,
+      search: debouncedSearch || undefined,
     },
     { skip: submissionType !== "assignment" }
   );
@@ -79,16 +89,9 @@ export default function Submissions() {
   // Group submissions by assignment_title
   const groupedAssignments = useMemo(() => {
     const results = submissionsData?.results ?? submissionsData ?? [];
-    const filtered = results.filter((sub) => {
-      if (!searchQuery) return true;
-      const name = `${sub.user_detail?.first_name ?? ""} ${sub.user_detail?.last_name ?? ""}`.toLowerCase();
-      const email = (sub.user_detail?.email ?? "").toLowerCase();
-      const q = searchQuery.toLowerCase();
-      return name.includes(q) || email.includes(q);
-    });
 
     const grouped = {};
-    filtered.forEach((sub) => {
+    results.forEach((sub) => {
       const title = sub.assignment_title || "Untitled Assignment";
       if (!grouped[title]) grouped[title] = [];
       grouped[title].push(toModalShape(sub));
@@ -99,7 +102,7 @@ export default function Submissions() {
       title,
       submissions,
     }));
-  }, [submissionsData, searchQuery]);
+  }, [submissionsData]);
 
   // --- Quiz data (kept as mock for now) ---
   const quizData = [
