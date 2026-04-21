@@ -327,6 +327,35 @@ export const adminApi = api.injectEndpoints({
       query: () => "/teacher-profiles/me/",
       providesTags: ["teacher"],
     }),
+
+    getCourseById: builder.query({
+      query: (id) => `/courses/${id}/`,
+      providesTags: (result, error, id) => [{ type: "courses", id }],
+    }),
+
+    getCourseEnrollments: builder.query({
+      query: ({ courseId, page = 1, pageSize = 20 } = {}) =>
+        `/enrollments/?course=${courseId}&page=${page}&page_size=${pageSize}`,
+      providesTags: ["enrollments"],
+    }),
+
+    getLessonQuizzes: builder.query({
+      query: ({ courseId, moduleId, lessonId }) =>
+        `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/quizzes/`,
+      providesTags: ["quizzes"],
+    }),
+
+    getLessonAssignments: builder.query({
+      query: ({ courseId, moduleId, lessonId }) =>
+        `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/assignments/`,
+      providesTags: ["assignments"],
+    }),
+
+    getCourseReviews: builder.query({
+      query: ({ courseId, page = 1 } = {}) =>
+        `/courses/${courseId}/reviews/?page=${page}`,
+      providesTags: ["reviews"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -374,4 +403,9 @@ export const {
   useGetStudentProfileQuery,
   useGetEnrollmentsQuery,
   useAddStudentProfileMutation,
+  useGetCourseByIdQuery,
+  useGetCourseEnrollmentsQuery,
+  useGetLessonQuizzesQuery,
+  useGetLessonAssignmentsQuery,
+  useGetCourseReviewsQuery,
 } = adminApi;
