@@ -64,6 +64,11 @@ export const api = createApi({
     "siteSettings",
     "assignmentSubmissions",
     "courseAnnouncements",
+    "donations",
+    "newsletterSubscribers",
+    "dashboard",
+    "courseModules",
+    "moduleLessons",
   ],
   endpoints: (builder) => ({
     login: builder.mutation({

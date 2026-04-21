@@ -19,7 +19,7 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     // We append noon so timezone drift doesn't accidentally shift the day back one step
-    const date = new Date(dateString + 'T12:00:00');
+    const date = new Date(dateString + "T12:00:00");
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -27,13 +27,19 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
     });
   };
 
-  const formatTime = (timeString) => {
-    if (!timeString) return "N/A";
-    const [hours, minutes] = timeString.split(":");
-    const h = parseInt(hours, 10);
-    const ampm = h >= 12 ? "PM" : "AM";
-    const h12 = h % 12 || 12;
-    return `${h12}:${minutes} ${ampm}`;
+  const formatTime = (dateOrTimeString) => {
+    if (!dateOrTimeString) return "N/A";
+    let date;
+    if (dateOrTimeString.includes("T")) {
+      date = new Date(dateOrTimeString);
+    } else {
+      date = new Date(`1970-01-01T${dateOrTimeString}`);
+    }
+    if (Number.isNaN(date.getTime())) return "N/A";
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
   };
 
   const [calendarDate, setCalendarDate] = useState(() => {
@@ -42,13 +48,13 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
   });
 
   const monthString = `${calendarDate.getFullYear()}-${String(
-    calendarDate.getMonth() + 1
+    calendarDate.getMonth() + 1,
   ).padStart(2, "0")}`;
 
   const { data: calendarData, isLoading: isCalendarLoading } =
     useGetConsultationCalendarQuery(
       { id: consultation.id, month: monthString },
-      { skip: !isOpen || !consultation }
+      { skip: !isOpen || !consultation },
     );
 
   const [selectedDate, setSelectedDate] = useState(null);
@@ -61,7 +67,7 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
     isFetching: isTimeslotsFetching,
   } = useGetConsultationTimeslotsQuery(
     { id: consultation.id, date: selectedDate, page: currentPage },
-    { skip: !isOpen || !consultation || !selectedDate }
+    { skip: !isOpen || !consultation || !selectedDate },
   );
 
   const slotsForSelectedDate = timeslotsPageData?.results || [];
@@ -72,14 +78,14 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
         month: "long",
         year: "numeric",
       }),
-    [calendarDate]
+    [calendarDate],
   );
 
   const startDay = calendarDate.getDay();
   const daysInMonth = new Date(
     calendarDate.getFullYear(),
     calendarDate.getMonth() + 1,
-    0
+    0,
   ).getDate();
 
   const calendarCells = useMemo(() => {
@@ -103,11 +109,11 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
 
   const previousMonth = () =>
     setCalendarDate(
-      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
     );
   const nextMonth = () =>
     setCalendarDate(
-      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
     );
 
   const getCellStatus = (iso) => {
@@ -183,7 +189,8 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
                   <div className="bg-white border border-stone-200 rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-center">
                     <Clock className="w-8 h-8 text-stone-200" />
                     <span className="text-sm font-medium text-stone-500 inter-font">
-                      Please select an available date from the calendar to view time slots.
+                      Please select an available date from the calendar to view
+                      time slots.
                     </span>
                   </div>
                 ) : isTimeslotsLoading || isTimeslotsFetching ? (
@@ -205,14 +212,16 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
                             isUnavailable
                               ? "opacity-50 grayscale bg-stone-50 border-stone-200 cursor-not-allowed"
                               : selectedSlotId === slot.id
-                              ? "border-teal-500 bg-teal-50 shadow-sm"
-                              : "border-stone-200 hover:border-teal-500 hover:bg-teal-50/30"
+                                ? "border-teal-500 bg-teal-50 shadow-sm"
+                                : "border-stone-200 hover:border-teal-500 hover:bg-teal-50/30"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <Clock
                               className={`w-4 h-4 ${
-                                isUnavailable ? "text-stone-300" : "text-teal-500"
+                                isUnavailable
+                                  ? "text-stone-300"
+                                  : "text-teal-500"
                               }`}
                             />
                             <span
@@ -222,8 +231,8 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
                                   : "text-stone-800"
                               }`}
                             >
-                              {formatTime(slot.start_time)} -{" "}
-                              {formatTime(slot.end_time)}
+                              {formatTime(slot.scheduled_start)} -{" "}
+                              {formatTime(slot.scheduled_end)}
                             </span>
                           </div>
                           {isUnavailable && (
@@ -237,10 +246,10 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
 
                     {timeslotsPageData?.total_pages > 1 && (
                       <div className="pt-2">
-                        <Pagination 
-                          currentPage={currentPage} 
-                          totalPages={timeslotsPageData.total_pages} 
-                          onPageChange={setCurrentPage} 
+                        <Pagination
+                          currentPage={currentPage}
+                          totalPages={timeslotsPageData.total_pages}
+                          onPageChange={setCurrentPage}
                         />
                       </div>
                     )}
@@ -261,7 +270,7 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
             <h4 className="text-sm font-bold text-stone-600 inter-font flex justify-between items-center">
               Select Date
               {isCalendarLoading && (
-                 <div className="animate-spin h-3 w-3 border-b-2 border-stone-600 rounded-full"></div>
+                <div className="animate-spin h-3 w-3 border-b-2 border-stone-600 rounded-full"></div>
               )}
             </h4>
             <div className="bg-white rounded-3xl border border-stone-200 p-4 shadow-sm relative">
@@ -300,7 +309,10 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
                 {calendarCells.map((cell, index) => {
                   if (!cell) {
                     return (
-                      <div key={`empty-${index}`} className="aspect-square rounded-lg" />
+                      <div
+                        key={`empty-${index}`}
+                        className="aspect-square rounded-lg"
+                      />
                     );
                   }
 
@@ -311,11 +323,14 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
 
                   let cellClasses = "text-stone-300 cursor-not-allowed"; // default unavailable
                   if (isSelected) {
-                    cellClasses = "bg-teal-600 text-white shadow-md shadow-teal-900/10 cursor-pointer";
+                    cellClasses =
+                      "bg-teal-600 text-white shadow-md shadow-teal-900/10 cursor-pointer";
                   } else if (isAvailable) {
-                    cellClasses = "text-teal-700 bg-teal-50 hover:bg-teal-100 cursor-pointer border border-teal-100";
+                    cellClasses =
+                      "text-teal-700 bg-teal-50 hover:bg-teal-100 cursor-pointer border border-teal-100";
                   } else if (isFullyBooked) {
-                    cellClasses = "text-stone-500 bg-stone-100 border border-stone-200 cursor-pointer hover:bg-stone-200";
+                    cellClasses =
+                      "text-stone-500 bg-stone-100 border border-stone-200 cursor-pointer hover:bg-stone-200";
                   }
 
                   return (
@@ -334,17 +349,21 @@ const ConsultationDetailsModal = ({ isOpen, onClose, consultation }) => {
                   );
                 })}
               </div>
-              
+
               {/* Legend */}
               <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
-                 <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-teal-50 border border-teal-200"></div>
-                    <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Available</span>
-                 </div>
-                 <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
-                    <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Full</span>
-                 </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-teal-50 border border-teal-200"></div>
+                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
+                    Available
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">
+                    Full
+                  </span>
+                </div>
               </div>
             </div>
           </div>

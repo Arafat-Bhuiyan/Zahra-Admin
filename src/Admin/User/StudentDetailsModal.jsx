@@ -91,7 +91,11 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                         {enrollment?.course?.title}
                       </td>
                       <td className="py-3 px-4 text-neutral-950">
-                        {`${enrollment?.course?.teacher?.user?.first_name} ${enrollment?.course?.teacher?.user?.last_name}`.trim()}
+                        {
+                          enrollment?.course?.teacher?.user?.first_name &&
+                            enrollment?.course?.teacher?.user?.last_name ?
+                            `${enrollment?.course?.teacher?.user?.first_name} ${enrollment?.course?.teacher?.user?.last_name}`.trim() : "No teacher assign yet"
+                        }
                       </td>
                     </tr>
                   ))}

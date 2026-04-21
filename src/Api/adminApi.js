@@ -227,6 +227,79 @@ export const adminApi = api.injectEndpoints({
       query: () => "/courses/",
       providesTags: ["courses"],
     }),
+    // Get Course Details
+    getCourseDetails: builder.query({
+      query: (id) => `/courses/${id}/`,
+      providesTags: (result, error, id) => [{ type: "courses", id }],
+    }),
+    // Create Course
+    createCourse: builder.mutation({
+      query: (data) => ({
+        url: "/courses/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["courses"],
+    }),
+    // Course Modules
+    getCourseModules: builder.query({
+      query: (course_pk) => `/courses/${course_pk}/modules/`,
+      providesTags: (result, error, course_pk) => [{ type: "courseModules", id: course_pk }],
+    }),
+    createCourseModule: builder.mutation({
+      query: ({ course_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "courseModules", id: course_pk }],
+    }),
+    deleteCourseModule: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/modules/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "courseModules", id: course_pk }],
+    }),
+    // Module Lessons
+    getModuleLessons: builder.query({
+      query: ({ course_pk, module_pk }) => `/courses/${course_pk}/modules/${module_pk}/lessons/`,
+      providesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    createModuleLesson: builder.mutation({
+      query: ({ course_pk, module_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    deleteModuleLesson: builder.mutation({
+      query: ({ course_pk, module_pk, id }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    getVideoStatus: builder.query({
+      query: ({ course_pk, module_pk, id }) => `/courses/${course_pk}/modules/${module_pk}/lessons/${id}/video/`,
+    }),
+    createLessonQuiz: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/quizzes/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    createLessonAssignment: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/assignments/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
     // Course Categories
     getCourseCategories: builder.query({
       query: () => "/course-categories/",
@@ -346,6 +419,14 @@ export const adminApi = api.injectEndpoints({
       invalidatesTags: ["siteSettings"],
     }),
 
+    getAdminDashboard: builder.query({
+      query: () => ({
+        url: "/dashboard/admin/",
+        method: "GET",
+      }),
+      providesTags: ["dashboard"],
+    }),
+
     getAssignmentSubmissions: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams();
@@ -429,6 +510,37 @@ export const adminApi = api.injectEndpoints({
         return `/consultations/${id}/timeslots/${q ? `?${q}` : ""}`;
       },
       providesTags: ["consultations"],
+    }),
+
+    getDonations: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page);
+        if (params.status) queryParams.append("status", params.status);
+        if (params.page_size) queryParams.append("page_size", params.page_size);
+        const q = queryParams.toString();
+        return `/donations/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["donations"],
+    }),
+
+    getNewsletterSubscribers: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page);
+        if (params.page_size) queryParams.append("page_size", params.page_size);
+        const q = queryParams.toString();
+        return `/newsletter/subscribers/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["newsletterSubscribers"],
+    }),
+
+    deleteNewsletterSubscriber: builder.mutation({
+      query: (id) => ({
+        url: `/newsletter/subscribers/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["newsletterSubscribers"],
     }),
 
     getEnrollments: builder.query({
@@ -706,6 +818,7 @@ export const {
   useDeleteVideoMutation,
   useGetVideoDetailsQuery,
   useGetCoursesDataQuery,
+  useGetCourseDetailsQuery,
   useGetCourseCategoriesQuery,
   useAddCourseCategoryMutation,
   useDeleteCourseCategoryMutation,
@@ -721,6 +834,7 @@ export const {
   useGetStudentProfileQuery,
   useGetSiteSettingsQuery,
   useUpdateSiteSettingsMutation,
+  useGetAdminDashboardQuery,
   useGetAssignmentSubmissionsQuery,
   useGetAssignmentSubmissionQuery,
   useReviewAssignmentSubmissionMutation,
@@ -758,4 +872,17 @@ export const {
   useGetCourseAnnouncementsQuery,
   useCreateCourseAnnouncementMutation,
   useDeleteCourseAnnouncementMutation,
+  useGetDonationsQuery,
+  useGetNewsletterSubscribersQuery,
+  useDeleteNewsletterSubscriberMutation,
+  useCreateCourseMutation,
+  useGetCourseModulesQuery,
+  useCreateCourseModuleMutation,
+  useDeleteCourseModuleMutation,
+  useGetModuleLessonsQuery,
+  useCreateModuleLessonMutation,
+  useDeleteModuleLessonMutation,
+  useLazyGetVideoStatusQuery,
+  useCreateLessonQuizMutation,
+  useCreateLessonAssignmentMutation,
 } = adminApi;

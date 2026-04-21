@@ -7,27 +7,8 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-const CommunityChat = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      role: "Teacher",
-      name: "Dr. Sarah Mitchell",
-      time: "09:30 AM",
-      text: "Welcome everyone! Feel free to ask questions anytime about the React Hooks module.",
-      avatar: "https://i.pravatar.cc/150?u=sarah",
-      isAdmin: false,
-    },
-    {
-      id: 2,
-      role: "Student",
-      name: "Alex Johnson",
-      time: "09:45 AM",
-      text: "Hi Dr. Sarah! Excited to start this course.",
-      avatar: "https://i.pravatar.cc/150?u=alex",
-      isAdmin: false,
-    },
-  ]);
+const CommunityChat = ({ courseTitle }) => {
+  const [messages, setMessages] = useState([]);
 
   const [inputMessage, setInputMessage] = useState("");
   const messagesEndRef = useRef(null);
@@ -134,45 +115,57 @@ const CommunityChat = () => {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-stone-50/30">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className="flex flex-col gap-2 max-w-[80%] animate-in slide-in-from-bottom-2 duration-300"
-          >
-            {/* Meta Info */}
-            <div className="flex items-center gap-2 mb-1">
-              <span
-                className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase arimo-font ${getRoleBadgeColor(msg.role)}`}
-              >
-                {msg.role}
-              </span>
-              <div className="w-6 h-6 rounded-full overflow-hidden border border-stone-200">
-                <img
-                  src={msg.avatar}
-                  alt={msg.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span className="text-xs font-bold text-stone-800 inter-font">
-                {msg.name}
-              </span>
-              <span className="text-[10px] font-medium text-stone-400">
-                {msg.time}
-              </span>
-            </div>
-
-            {/* Bubble */}
+        {messages.length > 0 ? (
+          messages.map((msg) => (
             <div
-              className={`p-4 rounded-2xl border arimo-font text-sm leading-relaxed ${
-                msg.isAdmin
-                  ? "bg-teal-50 border-teal-100/50 text-stone-900 rounded-tl-none"
-                  : "bg-white border-stone-100 text-stone-800 rounded-tl-none shadow-sm"
-              }`}
+              key={msg.id}
+              className="flex flex-col gap-2 max-w-[80%] animate-in slide-in-from-bottom-2 duration-300"
             >
-              {msg.text}
+              {/* Meta Info */}
+              <div className="flex items-center gap-2 mb-1">
+                <span
+                  className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase arimo-font ${getRoleBadgeColor(msg.role)}`}
+                >
+                  {msg.role}
+                </span>
+                <div className="w-6 h-6 rounded-full overflow-hidden border border-stone-200">
+                  <img
+                    src={msg.avatar}
+                    alt={msg.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-xs font-bold text-stone-800 inter-font">
+                  {msg.name}
+                </span>
+                <span className="text-[10px] font-medium text-stone-400">
+                  {msg.time}
+                </span>
+              </div>
+
+              {/* Bubble */}
+              <div
+                className={`p-4 rounded-2xl border arimo-font text-sm leading-relaxed ${
+                  msg.isAdmin
+                    ? "bg-teal-50 border-teal-100/50 text-stone-900 rounded-tl-none"
+                    : "bg-white border-stone-100 text-stone-800 rounded-tl-none shadow-sm"
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full gap-4 opacity-40 grayscale">
+            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-sm">
+              <MessageSquare className="w-10 h-10 text-stone-300" />
+            </div>
+            <div className="text-center space-y-1">
+              <p className="text-stone-500 font-bold arimo-font text-lg">No Messages Yet</p>
+              <p className="text-stone-400 text-sm inter-font">Be the first to say something in the community!</p>
             </div>
           </div>
-        ))}
+        )}
         <div ref={messagesEndRef} />
       </div>
 

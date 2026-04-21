@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   X,
   Video,
@@ -7,16 +7,38 @@ import {
   BookOpen,
   UploadCloud,
   Loader2,
+  ExternalLink,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import AssignmentForm from "./AssignmentForm";
 import QuizForm from "./QuizForm";
+import {
+  useCreateModuleLessonMutation,
+  useLazyGetVideoStatusQuery,
+  useCreateLessonQuizMutation,
+  useCreateLessonAssignmentMutation,
+} from "../../Api/adminApi";
 
-const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
+const AddLesson = ({ isOpen, onClose, courseId, moduleId }) => {
   const [title, setTitle] = useState("");
   const [contentType, setContentType] = useState("video");
   const [link, setLink] = useState("");
   const [file, setFile] = useState(null);
+  
+  // New fields for Live
+  const [liveDate, setLiveDate] = useState("");
+  const [liveTime, setLiveTime] = useState("");
+  
+  // New fields from backend schema
+  const [duration, setDuration] = useState("");
+  const [isPreview, setIsPreview] = useState(false);
+  const [isReleased, setIsReleased] = useState(true);
+
   const [assignmentData, setAssignmentData] = useState({
     description: "",
     instructions: "",
@@ -30,8 +52,25 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
     description: "",
     questions: [],
   });
+
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [videoStatus, setVideoStatus] = useState(null); // null, 'uploading', 'processing', 'ready', 'error'
   const fileInputRef = useRef(null);
+
+  // API hooks
+  const [createLesson] = useCreateModuleLessonMutation();
+  const [getVideoStatus] = useLazyGetVideoStatusQuery();
+  const [createQuiz] = useCreateLessonQuizMutation();
+  const [createAssignment] = useCreateLessonAssignmentMutation();
+
+  const pollingIntervalRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    };
+  }, []);
 
   if (!isOpen) return null;
 
@@ -64,6 +103,20 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
       activeClass: "bg-orange-50 border-orange-500 text-orange-700",
       baseClass: "border-stone-200 text-stone-600",
     },
+    {
+      id: "live",
+      label: "Live Session",
+      icon: <Video className="w-5 h-5 text-red-600" />,
+      activeClass: "bg-red-50 border-red-500 text-red-700",
+      baseClass: "border-stone-200 text-stone-600",
+    },
+    {
+      id: "external_link",
+      label: "External Link",
+      icon: <ExternalLink className="w-5 h-5 text-teal-600" />,
+      activeClass: "bg-teal-50 border-teal-500 text-teal-700",
+      baseClass: "border-stone-200 text-stone-600",
+    },
   ];
 
   const handleFileUpload = (e) => {
@@ -73,23 +126,227 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
     }
   };
 
-  const handleSubmit = () => {
-    if (!title.trim()) return;
+  const startPolling = (lessonId) => {
+    setVideoStatus('processing');
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const { data } = await getVideoStatus({ 
+          course_pk: courseId, 
+          module_pk: moduleId, 
+          id: lessonId 
+        });
+        if (data?.bunny_video_status === "ready") {
+          setVideoStatus('ready');
+          clearInterval(pollingIntervalRef.current);
+          toast.success("Video is ready!");
+        } else if (data?.bunny_video_status === "failed") {
+          setVideoStatus('error');
+          clearInterval(pollingIntervalRef.current);
+          toast.error("Video processing failed.");
+        }
+      } catch (error) {
+        console.error("Polling error:", error);
+      }
+    }, 10000); // 10 seconds
+  };
 
-    const newContent = {
-      id: Date.now(),
-      title,
-      type: contentType,
-      link: contentType === "video" || contentType === "document" ? link : null,
-      fileName: file ? file.name : null,
-      duration: contentType === "video" ? "00:00" : null,
-      assignment: contentType === "assignment" ? assignmentData : null,
-      quiz: contentType === "quiz" ? quizData : null,
+  const mapQuizDataToBackend = (data, lessonTitle) => {
+    return {
+      title: lessonTitle,
+      time_limit: parseInt(data.timeLimit) || 30,
+      passing_score: parseInt(data.passingScore) || 70,
+      questions: (data.questions || []).map(q => ({
+        text: q.text,
+        options: (q.options || []).map((opt, idx) => ({
+          text: opt,
+          is_correct: parseInt(q.correctAnswer) === idx
+        }))
+      }))
     };
+  };
 
-    onAdd(moduleId, newContent);
-    resetForm();
-    onClose();
+  const mapAssignmentDataToBackend = (data) => {
+    return {
+      description: data.description || "",
+      instructions: data.instructions || "",
+      due_date: data.dueDate ? `${data.dueDate}T23:59:00Z` : null,
+      max_points: parseInt(data.maxPoints) || 100,
+      allowed_file_types: "pdf, docx",
+      max_file_size: parseInt(data.maxFileSize) || 10
+    };
+  };
+
+  const handleSubmit = async () => {
+    if (isUploading) return;
+    if (!title.trim()) {
+      toast.error("Please enter a lesson title");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const payload = new FormData();
+      payload.append("title", title);
+      payload.append("content_type", contentType);
+
+      if (contentType === "live") {
+        await createLesson({ 
+          course_pk: courseId, 
+          module_pk: moduleId, 
+          body: { 
+            title, 
+            content_type: "live",
+            scheduled_at: `${liveDate}T${liveTime}:00Z`,
+            duration_in_minutes: duration || 0,
+            is_preview: isPreview,
+            is_released: isReleased
+          } 
+        }).unwrap();
+        toast.success("Live session scheduled successfully!");
+        onClose();
+        resetForm();
+        return;
+      } else if (contentType === "external_link") {
+        await createLesson({ 
+          course_pk: courseId, 
+          module_pk: moduleId, 
+          body: { 
+            title, 
+            content_type: "external_link",
+            content: link,
+            duration_in_minutes: duration || 0,
+            is_preview: isPreview,
+            is_released: isReleased
+          } 
+        }).unwrap();
+        toast.success("External link lesson created!");
+        onClose();
+        resetForm();
+        return;
+      } else if (contentType === "video") {
+        if (file) {
+          // Special Video Flow
+          // 1. POST metadata
+          const res = await createLesson({ 
+            course_pk: courseId, 
+            module_pk: moduleId, 
+            body: { 
+              title, 
+              content_type: "video",
+              duration_in_minutes: duration || 0,
+              is_preview: isPreview,
+              is_released: isReleased
+            } 
+          }).unwrap();
+
+          if (res.video_upload?.upload_url) {
+            setVideoStatus('uploading');
+            // 2. PUT file with headers
+            const putRes = await fetch(res.video_upload.upload_url, {
+              method: res.video_upload.upload_method || "PUT",
+              headers: res.video_upload.upload_headers || {},
+              body: file,
+            });
+
+            if (!putRes.ok) throw new Error("Video upload failed");
+            
+            // 3. Start Polling
+            startPolling(res.id);
+            // We don't close the modal yet if user wants to see processing status, 
+            // but usually we can close it and let them see it in the list.
+            // For now, let's toast and close.
+            toast.success("Video upload started!");
+            onClose();
+            resetForm();
+            return;
+          }
+        }
+      } else if (contentType === "document" && file) {
+        payload.append("content", link); // If link provided
+        payload.append("file_content", file);
+      } else if (contentType === "assignment") {
+        payload.append("assignment_details", JSON.stringify(assignmentData));
+      } else if (contentType === "quiz") {
+        // Step 1: Create the Lesson record
+        const res = await createLesson({ 
+          course_pk: courseId, 
+          module_pk: moduleId, 
+          body: { 
+            title, 
+            content_type: "quiz",
+            duration_in_minutes: duration || 0,
+            is_preview: isPreview,
+            is_released: isReleased
+          } 
+        }).unwrap();
+
+        // Step 2: Create and link the Quiz details
+        if (res.id) {
+          const quizPayload = mapQuizDataToBackend(quizData, title);
+          await createQuiz({
+            course_pk: courseId,
+            module_pk: moduleId,
+            lesson_pk: res.id,
+            body: quizPayload
+          }).unwrap();
+        }
+        
+        toast.success("Quiz lesson created successfully!");
+        onClose();
+        resetForm();
+        return;
+      } else if (contentType === "assignment") {
+        // Step 1: Create the Lesson record
+        const res = await createLesson({ 
+          course_pk: courseId, 
+          module_pk: moduleId, 
+          body: { 
+            title, 
+            content_type: "assignment",
+            duration_in_minutes: duration || 0,
+            is_preview: isPreview,
+            is_released: isReleased
+          } 
+        }).unwrap();
+
+        // Step 2: Create and link the Assignment details
+        if (res.id) {
+          const assignmentPayload = mapAssignmentDataToBackend(assignmentData);
+          await createAssignment({
+            course_pk: courseId,
+            module_pk: moduleId,
+            lesson_pk: res.id,
+            body: assignmentPayload
+          }).unwrap();
+        }
+        
+        toast.success("Assignment lesson created successfully!");
+        onClose();
+        resetForm();
+        return;
+      }
+
+      payload.append("duration_in_minutes", duration || 0);
+      payload.append("is_preview", isPreview);
+      payload.append("is_released", isReleased);
+
+      await createLesson({ 
+        course_pk: courseId, 
+        module_pk: moduleId, 
+        body: payload 
+      }).unwrap();
+
+      toast.success("Lesson added successfully");
+      resetForm();
+      onClose();
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.data?.detail || "Failed to add lesson");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const resetForm = () => {
@@ -97,6 +354,11 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
     setContentType("video");
     setLink("");
     setFile(null);
+    setLiveDate("");
+    setLiveTime("");
+    setDuration("");
+    setIsPreview(false);
+    setIsReleased(true);
     setAssignmentData({
       description: "",
       instructions: "",
@@ -110,6 +372,8 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
       description: "",
       questions: [],
     });
+    setVideoStatus(null);
+    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
   };
 
   return (
@@ -137,18 +401,94 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
 
         {/* Form Body */}
         <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
-          {/* Lesson Title */}
-          <div className="space-y-3">
-            <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
-              Lesson Title
+          {/* Status Alert for processing video */}
+          {videoStatus && (
+            <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-2 ${
+              videoStatus === 'ready' ? 'bg-green-50 text-green-700' : 
+              videoStatus === 'error' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'
+            }`}>
+              {videoStatus === 'processing' || videoStatus === 'uploading' ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : videoStatus === 'ready' ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : (
+                <AlertCircle className="w-5 h-5" />
+              )}
+              <span className="text-sm font-bold">
+                {videoStatus === 'uploading' && "Uploading video file..."}
+                {videoStatus === 'processing' && "Video is processing. This may take a few minutes."}
+                {videoStatus === 'ready' && "Video is ready and available for students."}
+                {videoStatus === 'error' && "There was an error processing your video."}
+              </span>
+            </div>
+          )}
+
+          {/* Lesson Title & Duration */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className={`${(contentType === "video" || contentType === "live" || contentType === "external_link") ? "md:col-span-2" : "md:col-span-3"} space-y-3`}>
+              <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
+                Lesson Title
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Introduction to React"
+                className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
+              />
+            </div>
+            {(contentType === "video" || contentType === "live" || contentType === "external_link") && (
+              <div className="space-y-3 animate-in slide-in-from-right-4 duration-300">
+                <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
+                  Duration (Minutes)
+                </label>
+                <input
+                  type="number"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  placeholder="e.g., 45"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-bold text-stone-800 inter-font"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Visibility & Preview Settings */}
+          <div className="flex flex-wrap gap-6 bg-stone-50 p-4 rounded-2xl border border-stone-100">
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={isReleased}
+                  onChange={(e) => setIsReleased(e.target.checked)}
+                  className="peer hidden"
+                />
+                <div className="w-12 h-6 bg-stone-200 rounded-full peer-checked:bg-teal-500 transition-all shadow-inner"></div>
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-6 shadow-sm"></div>
+              </div>
+              <span className="text-sm font-bold text-stone-700 group-hover:text-stone-900 transition-colors">
+                Available to Students (Released)
+              </span>
             </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Introduction to React"
-              className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-medium text-stone-800 inter-font"
-            />
+
+            {/* Show Free Preview only for compatible types */}
+            {(contentType === "video" || contentType === "document" || contentType === "external_link") && (
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={isPreview}
+                    onChange={(e) => setIsPreview(e.target.checked)}
+                    className="peer hidden"
+                  />
+                  <div className="w-12 h-6 bg-stone-200 rounded-full peer-checked:bg-amber-500 transition-all shadow-inner"></div>
+                  <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-6 shadow-sm"></div>
+                </div>
+                <span className="text-sm font-bold text-stone-700 group-hover:text-stone-900 transition-colors">
+                  Free Preview
+                </span>
+              </label>
+            )}
           </div>
 
           {/* Content Type */}
@@ -156,12 +496,12 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
             <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
               Content Type
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {contentTypes.map((type) => (
                 <button
                   key={type.id}
                   onClick={() => setContentType(type.id)}
-                  className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 transition-all group ${
+                  className={`flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all group ${
                     contentType === type.id
                       ? type.activeClass
                       : type.baseClass +
@@ -173,7 +513,7 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
                   >
                     {type.icon}
                   </div>
-                  <span className="text-sm font-bold arimo-font">
+                  <span className="text-[10px] sm:text-xs font-bold arimo-font whitespace-nowrap">
                     {type.label}
                   </span>
                 </button>
@@ -181,32 +521,55 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
             </div>
           </div>
 
-          {/* Link */}
-          {(contentType === "video" || contentType === "document") && (
+          {/* Type-Specific Fields */}
+          {contentType === "external_link" && (
             <div className="space-y-3">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-sm font-bold text-stone-700 inter-font">
-                  External Link
-                </label>
-                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest bg-stone-100 px-2 py-0.5 rounded-md">
-                  Supports YouTube, Vimeo, S3, Drive, etc.
-                </span>
-              </div>
+              <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
+                External URL
+              </label>
               <input
-                type="text"
+                type="url"
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
-                placeholder="Paste any link here (YouTube, Vimeo, Amazon S3, Google Drive, etc.)"
+                placeholder="https://example.com/resource"
                 className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-bold text-blue-600 inter-font"
               />
-              <p className="text-[10px] font-medium text-stone-400 ml-1">
-                * No restrictions on link sources. Direct video links, embed
-                links, or storage links are all supported.
-              </p>
             </div>
           )}
 
-          {/* Conditional Form Sections */}
+          {contentType === "live" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
+                  Session Date
+                </label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={liveDate}
+                    onChange={(e) => setLiveDate(e.target.value)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-bold text-stone-800 inter-font"
+                  />
+                  <Calendar className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
+                  Session Time
+                </label>
+                <div className="relative">
+                  <input
+                    type="time"
+                    value={liveTime}
+                    onChange={(e) => setLiveTime(e.target.value)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-bold text-stone-800 inter-font"
+                  />
+                  <Clock className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+          )}
+
           {contentType === "assignment" ? (
             <AssignmentForm
               data={assignmentData}
@@ -214,7 +577,7 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
             />
           ) : contentType === "quiz" ? (
             <QuizForm data={quizData} onChange={setQuizData} />
-          ) : (
+          ) : contentType !== "external_link" && contentType !== "live" ? (
             <div className="space-y-3">
               <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
                 Upload{" "}
@@ -229,32 +592,27 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFileUpload}
+                  accept={contentType === "video" ? "video/*" : ".pdf,.doc,.docx"}
                   className="hidden"
                 />
                 <div className="flex flex-col items-center text-center">
-                  {isUploading ? (
-                    <Loader2 className="w-10 h-10 text-teal-500 animate-spin mb-4" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-full bg-stone-50 flex items-center justify-center group-hover:scale-110 transition-transform mb-4">
-                      <UploadCloud className="w-8 h-8 text-stone-400" />
-                    </div>
-                  )}
+                  <div className="w-16 h-16 rounded-full bg-stone-50 flex items-center justify-center group-hover:scale-110 transition-transform mb-4 shadow-sm border border-stone-100 group-hover:border-teal-100">
+                    <UploadCloud className="w-8 h-8 text-stone-400 group-hover:text-teal-500 transition-colors" />
+                  </div>
                   <div className="space-y-1">
                     <h4 className="text-stone-900 font-bold arimo-font">
                       {file ? file.name : "Click to upload or drag and drop"}
                     </h4>
                     <p className="text-stone-400 text-sm font-medium inter-font">
                       {contentType === "video"
-                        ? "MP4, MOV, AVI (max 500MB)"
-                        : contentType === "document"
-                          ? "PDF, DOCX (max 100MB)"
-                          : "Files (max 100MB)"}
+                        ? "MP4, MOV (max 500MB)"
+                        : "PDF, DOCX (max 10MB)"}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Footer */}
@@ -267,9 +625,19 @@ const AddLesson = ({ isOpen, onClose, onAdd, moduleId }) => {
           </button>
           <button
             onClick={handleSubmit}
-            className="px-8 py-3 bg-greenTeal hover:bg-teal-700 text-white rounded-xl font-black shadow-lg shadow-teal-900/10 active:scale-95 transition-all arimo-font"
+            disabled={isUploading}
+            className="px-8 py-3 bg-greenTeal hover:bg-teal-700 text-white rounded-xl font-black shadow-lg shadow-teal-900/10 active:scale-95 transition-all arimo-font flex items-center gap-2 disabled:opacity-50"
           >
-            Add Content
+            {isUploading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Working...</span>
+              </>
+            ) : (
+              <>
+                <span>Add Lesson</span>
+              </>
+            )}
           </button>
         </div>
       </div>

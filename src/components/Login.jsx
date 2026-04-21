@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAuth } from "@/Redux/features/auth/authSlice";
 import { useLoginMutation } from "../Api/api";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const { role, accessToken } = useSelector((state) => state.auth);
@@ -42,9 +43,31 @@ export default function Login() {
       dispatch(
         setAuth({ access: result.access, refresh: result.refresh, role }),
       );
+      toast.success("Login successful!");
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Invalid credentials");
+
+      // Extract error message from API response
+      let errorMessage = "Login failed. Please try again.";
+
+      if (error?.data?.detail) {
+        errorMessage = error.data.detail;
+      } else if (error?.data?.email) {
+        errorMessage = "Invalid email address";
+      } else if (error?.data?.password) {
+        errorMessage = "Invalid password";
+      } else if (error?.data?.non_field_errors) {
+        errorMessage = error.data.non_field_errors[0];
+      } else if (error?.status === 401) {
+        errorMessage = "No active account found with the given credentials";
+      } else if (error?.status === 400) {
+        errorMessage = "Invalid email or password";
+      }
+
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: "top-center",
+      });
     }
   };
 

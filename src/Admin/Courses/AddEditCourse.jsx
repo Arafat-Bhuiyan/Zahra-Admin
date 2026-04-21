@@ -2,41 +2,42 @@ import {
   ChevronLeft,
   Image as ImageIcon,
   Play,
-  Save
+  Save,
+  Loader2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import TextEditor from "../../components/Editor";
 import CourseCurriculum from "./CourseCurriculum";
+import {
+  useCreateCourseMutation,
+  useGetCourseCategoriesQuery,
+  useGetTeacherProfilesQuery,
+} from "../../Api/adminApi";
 
 const AddEditCourse = ({ course, onBack, onSave }) => {
   const [activeTab, setActiveTab] = useState("Course Overview");
+  const [courseId, setCourseId] = useState(course?.id || null);
   const tabs = ["Course Overview", "Course Curriculum"];
 
   const [formData, setFormData] = useState({
     title: "",
     subtitle: "",
     description: "",
-    instructor: "",
-    category: "Mental Health",
-    status: "Upcoming",
-    price: "99",
-    duration: "12",
-    level: "Beginner",
-    lessons: "24",
-    totalHours: "",
-    sessionDuration: "",
-    image: null,
-    imagePreview: null,
+    teacher: "",
+    category: "",
+    status: "upcoming",
+    price: "",
+    duration_in_weeks: "",
+    level: "beginner",
+    total_hours: "",
+    hours_per_session: "",
+    thumbnail: null,
+    thumbnailPreview: null,
     video: null,
     videoName: "",
-    learningObjectives: [
-      "Integrate daily mindfulness practices rooted in Islamic tradition",
-      "Develop emotional awareness and self-compassion through Quranic principles",
-    ],
-    requirements: [
-      "Basic understanding of Islamic principles",
-      "Commitment to daily practice (15-20 minutes)",
-    ],
+    learningObjectives: [],
+    requirements: [],
     curriculum: [
       {
         id: 1,
@@ -48,39 +49,47 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
             type: "video",
             duration: "05:45",
           },
-          {
-            id: 102,
-            title: "How to get the most out of this course",
-            type: "video",
-            duration: "08:20",
-          },
-          {
-            id: 103,
-            title: "Learning Materials & Resources",
-            type: "document",
-          },
         ],
       },
     ],
-    startDate: "",
+    start_date: "",
+    is_active: true,
   });
 
   const [newObjective, setNewObjective] = useState("");
   const [newRequirement, setNewRequirement] = useState("");
 
+  // API hooks
+  const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
+  const { data: categoriesResponse } = useGetCourseCategoriesQuery();
+  const { data: teachersResponse } = useGetTeacherProfilesQuery();
+
+  const categories = categoriesResponse?.results || [];
+  const teachers = teachersResponse?.results || [];
+
   useEffect(() => {
     if (course) {
+      setCourseId(course.id);
       setFormData({
-        ...course,
-        imagePreview: course.image,
+        ...formData,
+        title: course.title || "",
         subtitle: course.subtitle || "",
         description: course.description || "",
-        level: course.level || "Beginner",
+        teacher: course.teacher?.id || "",
+        category: course.category?.id || "",
+        status: course.status || "upcoming",
+        price: course.price || "",
+        duration_in_weeks: course.duration_in_weeks || "",
+        level: course.level || "beginner",
+        total_hours: course.total_hours || "",
+        hours_per_session: course.hours_per_session || "",
+        thumbnailPreview: course.thumbnail || null,
         videoName: course.videoName || "",
         learningObjectives: course.learningObjectives || [],
         requirements: course.requirements || [],
         curriculum: course.curriculum || [],
-        startDate: course.startDate || "",
+        start_date: course.start_date || "",
+        is_active: course.is_active !== undefined ? course.is_active : true,
       });
     }
   }, [course]);
@@ -101,8 +110,8 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
       reader.onloadend = () => {
         setFormData((prev) => ({
           ...prev,
-          image: file,
-          imagePreview: reader.result,
+          thumbnail: file,
+          thumbnailPreview: reader.result,
         }));
       };
       reader.readAsDataURL(file);
@@ -154,9 +163,60 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    // Validation
+    if (!formData.title.trim()) {
+      toast.error("Course title is required.");
+      return;
+    }
+    if (!formData.category) {
+      toast.error("Please select a category.");
+      return;
+    }
+    if (!formData.teacher) {
+      toast.error("Please assign a teacher.");
+      return;
+    }
+    if (!formData.price) {
+      toast.error("Please set a price.");
+      return;
+    }
+
+    try {
+      const payload = new FormData();
+      payload.append("title", formData.title);
+      if (formData.subtitle) payload.append("subtitle", formData.subtitle);
+      if (formData.description) payload.append("description", formData.description);
+      payload.append("category", formData.category);
+      payload.append("teacher", formData.teacher);
+      payload.append("price", formData.price);
+      payload.append("level", formData.level);
+      payload.append("status", formData.status);
+      payload.append("is_active", formData.is_active);
+      if (formData.duration_in_weeks) payload.append("duration_in_weeks", formData.duration_in_weeks);
+      if (formData.total_hours) payload.append("total_hours", formData.total_hours);
+      if (formData.hours_per_session) payload.append("hours_per_session", formData.hours_per_session);
+      if (formData.status === "upcoming" && formData.start_date) {
+        payload.append("start_date", formData.start_date);
+      }
+      if (formData.thumbnail instanceof File) {
+        payload.append("thumbnail", formData.thumbnail);
+      }
+
+      const response = await createCourse(payload).unwrap();
+      setCourseId(response.id);
+      toast.success("Course created successfully!");
+      // Optionally stay on page or switch tab
+      // onBack(); 
+    } catch (err) {
+      console.error("Failed to create course:", err);
+      const errorMsg = err?.data
+        ? Object.entries(err.data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`).join("\n")
+        : "Failed to create course.";
+      toast.error(errorMsg);
+    }
   };
 
   return (
@@ -180,21 +240,6 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                 : "Create comprehensive course content"}
             </p>
           </div>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={onBack}
-            className="px-6 py-2.5 bg-white border border-stone-200 rounded-xl text-sm font-bold text-stone-600 hover:bg-stone-50 transition-all active:scale-95"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="flex items-center gap-2 bg-greenTeal text-white px-6 py-2.5 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95"
-          >
-            <Save className="w-4 h-4" />
-            <span>{course ? "Save Changes" : "Publish Course"}</span>
-          </button>
         </div>
       </div>
 
@@ -272,8 +317,8 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                 <FormGroup label="Duration (weeks)">
                   <input
                     type="text"
-                    name="duration"
-                    value={formData.duration}
+                    name="duration_in_weeks"
+                    value={formData.duration_in_weeks}
                     onChange={handleChange}
                     placeholder="12"
                     className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
@@ -286,9 +331,9 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                     onChange={handleChange}
                     className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer"
                   >
-                    <option>Beginner</option>
-                    <option>Intermediate</option>
-                    <option>Advanced</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
                   </select>
                 </FormGroup>
                 <FormGroup label="Category">
@@ -298,10 +343,12 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                     onChange={handleChange}
                     className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer"
                   >
-                    <option>Mental Health</option>
-                    <option>Spiritual Growth</option>
-                    <option>Relationships</option>
-                    <option>Professional</option>
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
                   </select>
                 </FormGroup>
               </div>
@@ -314,46 +361,61 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                     onChange={handleChange}
                     className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer font-bold text-stone-800"
                   >
-                    <option>Upcoming</option>
-                    <option>Running</option>
-                    <option>Recorded</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="running">Running</option>
+                    <option value="recorded">Recorded</option>
                   </select>
                 </FormGroup>
-                {formData.status === "Upcoming" && (
+                {formData.status === "upcoming" && (
                   <FormGroup label="Start Date">
                     <input
-                      type="text"
-                      name="startDate"
-                      value={formData.startDate}
+                      type="date"
+                      name="start_date"
+                      value={formData.start_date}
                       onChange={handleChange}
-                      placeholder="e.g. May 10, 2026"
+                      placeholder="e.g. 2026-05-10"
                       className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none font-bold text-stone-800"
                     />
                   </FormGroup>
                 )}
                 <FormGroup label="Assign Teacher">
                   <select
-                    name="instructor"
-                    value={formData.instructor}
+                    name="teacher"
+                    value={formData.teacher}
                     onChange={handleChange}
                     className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer"
                   >
                     <option value="">Select Teacher</option>
-                    <option>Dr. Ahmed Hassan</option>
-                    <option>Dr. Yasir Qadhi</option>
-                    <option>Fatima Rahman</option>
+                    {teachers.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.user?.first_name} {t.user?.last_name}
+                      </option>
+                    ))}
                   </select>
                 </FormGroup>
-                {/* <FormGroup label="Lessons">
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormGroup label="Total Hours">
                   <input
-                    type="number"
-                    name="lessons"
-                    value={formData.lessons}
+                    type="text"
+                    name="total_hours"
+                    value={formData.total_hours}
                     onChange={handleChange}
-                    placeholder="24"
+                    placeholder="20"
                     className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
                   />
-                </FormGroup> */}
+                </FormGroup>
+                <FormGroup label="Hours Per Session">
+                  <input
+                    type="text"
+                    name="hours_per_session"
+                    value={formData.hours_per_session}
+                    onChange={handleChange}
+                    placeholder="2"
+                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
+                  />
+                </FormGroup>
               </div>
             </div>
           </section>
@@ -373,7 +435,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                 btnText="Upload Image"
                 onChange={handleImageUpload}
                 accept="image/*.jpg,image/*.jpeg,image/*.png"
-                preview={formData.imagePreview}
+                preview={formData.thumbnailPreview}
               />
               <UploadCard
                 title="Course Preview Video"
@@ -387,102 +449,33 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
             </div>
           </section>
 
-          {/* What You'll Learn */}
-          {/* <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
-            <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs inter-font">
-              <CheckCircle2 className="w-4 h-4 text-teal-500" />
-              What You'll Learn
-            </div>
-
-            <div className="space-y-4">
-              {formData.learningObjectives.map((obj, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 group"
-                >
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5" />
-                  <p className="flex-1 text-sm font-medium text-stone-800 leading-relaxed inter-font">
-                    {obj}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => removeObjective(idx)}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-all transform active:scale-95"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newObjective}
-                  onChange={(e) => setNewObjective(e.target.value)}
-                  placeholder="Add a learning objective..."
-                  className="flex-1 bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 outline-none inter-font focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300 transition-all font-medium text-stone-800"
-                />
-                <button
-                  type="button"
-                  onClick={addObjective}
-                  className="w-12 h-12 flex items-center justify-center bg-greenTeal text-white rounded-xl hover:bg-teal-700 transition-all shadow-md active:scale-95"
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          </section> */}
-
-          {/* Requirements */}
-          {/* <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
-            <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs inter-font">
-              <AlertCircle className="w-4 h-4 text-blue-500" />
-              Requirements
-            </div>
-
-            <div className="space-y-4">
-              {formData.requirements.map((req, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-4 p-4 bg-blue-50 rounded-2xl border border-blue-100 group"
-                >
-                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <p className="flex-1 text-sm font-medium text-stone-800 leading-relaxed inter-font">
-                    {req}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => removeRequirement(idx)}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-all transform active:scale-95"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newRequirement}
-                  onChange={(e) => setNewRequirement(e.target.value)}
-                  placeholder="Add a requirement..."
-                  className="flex-1 bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 outline-none inter-font focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300 transition-all font-medium text-stone-800"
-                />
-                <button
-                  type="button"
-                  onClick={addRequirement}
-                  className="w-12 h-12 flex items-center justify-center bg-greenTeal text-white rounded-xl hover:bg-teal-700 transition-all shadow-md active:scale-95"
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          </section> */}
+          {/* Submit Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleSubmit}
+              disabled={isCreating}
+              className="flex items-center gap-2 bg-greenTeal text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  <span>Submit Course</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
 
       {activeTab === "Course Curriculum" && (
         <CourseCurriculum
+          courseId={courseId}
+          onInitialize={handleSubmit}
           modules={formData.curriculum}
           onModulesChange={handleCurriculumChange}
         />

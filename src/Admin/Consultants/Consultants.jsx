@@ -19,6 +19,7 @@ const Consultants = () => {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return "N/A";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -26,13 +27,52 @@ const Consultants = () => {
     });
   };
 
-  const formatTime = (timeString) => {
-    if (!timeString) return "N/A";
-    const [hours, minutes] = timeString.split(":");
-    const h = parseInt(hours, 10);
-    const ampm = h >= 12 ? "PM" : "AM";
-    const h12 = h % 12 || 12;
-    return `${h12}:${minutes} ${ampm}`;
+  const formatTime = (dateOrTimeString) => {
+    if (!dateOrTimeString) return "N/A";
+    let date;
+    if (dateOrTimeString.includes("T")) {
+      date = new Date(dateOrTimeString);
+    } else {
+      date = new Date(`1970-01-01T${dateOrTimeString}`);
+    }
+    if (Number.isNaN(date.getTime())) return "N/A";
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  };
+
+  const formatSlotDate = (slot) => {
+    if (!slot) return "N/A";
+    return formatDate(slot.day || slot.scheduled_start);
+  };
+
+  const buildSlotSummaries = (slots) => {
+    if (!slots?.length) return {};
+    const sortedSlots = [...slots].sort(
+      (a, b) => new Date(a.scheduled_start) - new Date(b.scheduled_start),
+    );
+
+    return sortedSlots.reduce((groups, slot) => {
+      const dateLabel = formatSlotDate(slot);
+      const start = formatTime(slot.scheduled_start);
+      const end = formatTime(slot.scheduled_end);
+
+      if (!groups[dateLabel]) {
+        groups[dateLabel] = { dateLabel, firstStart: start, lastEnd: end };
+      } else {
+        groups[dateLabel].lastEnd = end;
+      }
+
+      return groups;
+    }, {});
+  };
+
+  const formatGroupedSlots = (slots) => {
+    const groups = buildSlotSummaries(slots);
+    return Object.values(groups).map(
+      (group) => `${group.dateLabel} | ${group.firstStart} - ${group.lastEnd}`,
+    );
   };
 
   const handleAddConsultation = (newConsultation) => {
@@ -91,11 +131,11 @@ const Consultants = () => {
                 key={consultation.id}
                 className="bg-stone-50/50 border-l-4 border-amber-500 rounded-2xl p-6 flex flex-col md:flex-row md:items-center gap-4 hover:bg-white hover:shadow-md transition-all group"
               >
-                <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100 shrink-0">
+                <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100 shrink-0 -mb-10">
                   <User className="w-6 h-6 text-amber-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-stone-900 inter-font group-hover:text-amber-700 transition-colors">
+                  <h3 className="text-lg font-bold text-stone-900 inter-font group-hover:text-amber-700 transition-colors mb-5">
                     {consultation.teacher?.user?.first_name +
                       " " +
                       consultation.teacher?.user?.last_name || "N/A"}
@@ -105,12 +145,22 @@ const Consultants = () => {
                       <Mail className="w-3.5 h-3.5" />
                       {consultation.teacher?.user?.email || "N/A"}
                     </p>
-                    <p className="text-sm font-medium text-amber-600 inter-font flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {consultation.timeslots?.length > 0
-                        ? `${formatDate(consultation.timeslots[0].day)} at ${formatTime(consultation.timeslots[0].start_time)} - ${formatTime(consultation.timeslots[consultation.timeslots.length - 1].end_time)}`
-                        : "No timeslots"}
-                    </p>
+                    <div className="text-sm font-medium text-amber-600 inter-font flex items-start gap-3">
+                      <Calendar className="w-4 h-4 mt-1.5 flex-shrink-0" />
+                      {consultation.timeslots?.length > 0 ? (
+                        <ul className="list-none m-0 p-0 space-y-1 text-left">
+                          {formatGroupedSlots(consultation.timeslots).map(
+                            (summary) => (
+                              <li key={summary} className="leading-tight">
+                                {summary}
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      ) : (
+                        "No timeslots"
+                      )}
+                    </div>
                   </div>
                 </div>
                 <button
