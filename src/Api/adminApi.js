@@ -356,6 +356,25 @@ export const adminApi = api.injectEndpoints({
         `/courses/${courseId}/reviews/?page=${page}`,
       providesTags: ["reviews"],
     }),
+
+    getAssignmentSubmissions: builder.query({
+      query: ({ status, assignment, page = 1 } = {}) => {
+        const params = new URLSearchParams({ page });
+        if (status) params.append("status", status);
+        if (assignment) params.append("assignment", assignment);
+        return `/assignment-submissions/?${params.toString()}`;
+      },
+      providesTags: ["assignmentSubmissions"],
+    }),
+
+    reviewAssignmentSubmission: builder.mutation({
+      query: ({ id, status, teacher_feedback, mark }) => ({
+        url: `/assignment-submissions/${id}/review/`,
+        method: "PATCH",
+        body: { status, teacher_feedback, mark },
+      }),
+      invalidatesTags: ["assignmentSubmissions"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -408,4 +427,6 @@ export const {
   useGetLessonQuizzesQuery,
   useGetLessonAssignmentsQuery,
   useGetCourseReviewsQuery,
+  useGetAssignmentSubmissionsQuery,
+  useReviewAssignmentSubmissionMutation,
 } = adminApi;
