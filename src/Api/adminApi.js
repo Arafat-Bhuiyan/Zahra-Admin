@@ -398,6 +398,15 @@ export const adminApi = api.injectEndpoints({
       query: () => "/teacher/consultations/",
       providesTags: ["teacherSessions"],
     }),
+
+    getTeacherLiveSessions: builder.query({
+      query: ({ status, page = 1, page_size = 20 } = {}) => {
+        const params = new URLSearchParams({ page, page_size });
+        if (status) params.append("status", status);
+        return `/teacher/live-sessions/?${params.toString()}`;
+      },
+      providesTags: ["teacherLiveSessions"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -456,4 +465,5 @@ export const {
   useGetConsultationCalendarQuery,
   useGetConsultationTimeslotsQuery,
   useGetTeacherUpcomingSessionsQuery,
+  useGetTeacherLiveSessionsQuery,
 } = adminApi;
