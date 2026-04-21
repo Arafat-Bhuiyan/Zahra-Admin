@@ -216,7 +216,7 @@ export default function MyCourses() {
                 <div className="grid grid-cols-2 gap-3 mb-4 text-xs text-gray-600">
                   <div className="flex items-center gap-1">
                     <BookOpen size={18} />
-                    {course.lessons} Lessons
+                    {course.total_lessons} Lessons
                   </div>
                   <div className="flex items-center gap-1">
                     <CalendarDays size={18} />
