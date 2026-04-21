@@ -27,10 +27,13 @@ function isWithin30Min(scheduledStart) {
 
 // ── Day Slots Slide-Over ───────────────────────────────────────────────────────
 function DaySlotsPanel({ consultationId, date, onClose }) {
-  const { data: slots, isLoading, isError } = useGetConsultationTimeslotsQuery(
+  const { data: slotsRaw, isLoading, isError } = useGetConsultationTimeslotsQuery(
     { id: consultationId, date },
     { skip: !consultationId || !date }
   );
+
+  // API returns paginated { count, results: [...] } — normalise to array
+  const slots = Array.isArray(slotsRaw) ? slotsRaw : (slotsRaw?.results ?? []);
 
   const displayDate = formatLocal(date + 'T00:00:00', {
     weekday: 'long', month: 'long', day: 'numeric',
@@ -63,13 +66,13 @@ function DaySlotsPanel({ consultationId, date, onClose }) {
               <span>Failed to load timeslots.</span>
             </div>
           )}
-          {!isLoading && !isError && (!slots || slots.length === 0) && (
+          {!isLoading && !isError && slots.length === 0 && (
             <div className="text-center py-16 text-gray-400">
               <Clock className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p>No slots on this day.</p>
             </div>
           )}
-          {!isLoading && !isError && slots?.length > 0 && (
+          {!isLoading && !isError && slots.length > 0 && (
             <div className="space-y-3">
               {slots.map((slot) => {
                 const startTime = formatLocal(slot.scheduled_start, { hour: '2-digit', minute: '2-digit' });
@@ -242,7 +245,202 @@ function AvailabilityCalendar({ consultationId }) {
   );
 }
 
-// ── Main Component ─────────────────────────────────────────────────────────────
+// ── Sessions Day Panel ────────────────────────────────────────────────────────
+function SessionsDayPanel({ sessions, date, onClose }) {
+  const displayDate = formatLocal(date + 'T00:00:00', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col">
+        <div className="bg-teal-600 text-white p-5 flex items-center justify-between sticky top-0">
+          <div>
+            <h2 className="text-lg font-bold">{displayDate}</h2>
+            <p className="text-teal-100 text-sm mt-0.5">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</p>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-teal-700 rounded transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-3">
+          {sessions.map((slot) => {
+            const startTime = formatLocal(slot.scheduled_start, { hour: '2-digit', minute: '2-digit' });
+            const endTime = formatLocal(slot.scheduled_end, { hour: '2-digit', minute: '2-digit' });
+            const duration = durationMinutes(slot.scheduled_start, slot.scheduled_end);
+            const canStart = isWithin30Min(slot.scheduled_start);
+
+            return (
+              <div key={slot.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-gray-900">{startTime} – {endTime}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{duration} min session</p>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                    Booked
+                  </span>
+                </div>
+
+                {slot.zoom_start_url && (
+                  <a
+                    href={canStart ? slot.zoom_start_url : undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={!canStart ? (e) => e.preventDefault() : undefined}
+                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      canStart
+                        ? 'bg-teal-600 text-white hover:bg-teal-700'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                    title={canStart ? 'Start Zoom session' : 'Available 30 min before session'}
+                  >
+                    <Video className="w-4 h-4" />
+                    {canStart ? 'Start Zoom ↗' : 'Start Zoom (not yet)'}
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Sessions Calendar ─────────────────────────────────────────────────────────
+function SessionsCalendar({ sessions, isLoading, isError }) {
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1)
+  );
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+
+  const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
+
+  // Group sessions by local date key YYYY-MM-DD
+  const sessionsByDate = {};
+  sessions.forEach((slot) => {
+    const d = new Date(slot.scheduled_start);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (!sessionsByDate[key]) sessionsByDate[key] = [];
+    sessionsByDate[key].push(slot);
+  });
+
+  const getDateKey = (day) =>
+    `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayMon = (new Date(year, month, 1).getDay() + 6) % 7;
+  const cells = [
+    ...Array(firstDayMon).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const selectedSessions = selectedDate ? (sessionsByDate[selectedDate] ?? []) : [];
+
+  return (
+    <div>
+      {/* Month Nav */}
+      <div className="flex items-center justify-between mb-5">
+        <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <ChevronLeft className="w-5 h-5 text-gray-600" />
+        </button>
+        <h3 className="text-lg font-bold text-gray-900">
+          {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+        </h3>
+        <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <ChevronRight className="w-5 h-5 text-gray-600" />
+        </button>
+      </div>
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-16 gap-2 text-gray-500">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span>Loading sessions…</span>
+        </div>
+      )}
+      {isError && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>Failed to load sessions. Make sure you're logged in.</span>
+        </div>
+      )}
+
+      {!isLoading && !isError && (
+        <>
+          {/* Day headers */}
+          <div className="grid grid-cols-7 mb-1">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+              <div key={d} className="text-center text-xs font-semibold text-gray-400 py-2">{d}</div>
+            ))}
+          </div>
+
+          {/* Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {cells.map((day, i) => {
+              if (!day) return <div key={i} />;
+              const dateKey = getDateKey(day);
+              const daySessions = sessionsByDate[dateKey];
+              const hasSession = !!daySessions;
+              const isToday = dateKey === todayKey;
+              const isSelected = selectedDate === dateKey;
+
+              return (
+                <button
+                  key={i}
+                  onClick={() => hasSession && setSelectedDate(dateKey)}
+                  disabled={!hasSession}
+                  className={`relative flex flex-col items-center justify-center h-12 rounded-lg text-sm font-medium transition-all
+                    ${hasSession ? 'cursor-pointer hover:bg-gray-100' : 'cursor-default'}
+                    ${isSelected ? 'bg-teal-100 ring-2 ring-teal-400' : ''}
+                    ${isToday && !isSelected ? 'ring-2 ring-teal-300' : ''}
+                    ${isToday ? 'text-teal-700 font-bold' : hasSession ? 'text-gray-900' : 'text-gray-300'}
+                  `}
+                >
+                  {day}
+                  {hasSession && (
+                    <span className="w-1.5 h-1.5 rounded-full mt-0.5 bg-blue-500" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-6 mt-5 pt-4 border-t border-gray-100 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
+              Has Session
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-gray-400 text-center">
+            Click a highlighted day to view sessions
+          </p>
+        </>
+      )}
+
+      {selectedDate && selectedSessions.length > 0 && (
+        <SessionsDayPanel
+          sessions={selectedSessions}
+          date={selectedDate}
+          onClose={() => setSelectedDate(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+
 export default function Consultations() {
   const [activeTab, setActiveTab] = useState('booked');
 
@@ -334,74 +532,11 @@ export default function Consultations() {
         <div className="p-6">
           {/* Upcoming Sessions */}
           {activeTab === 'booked' && (
-            <div>
-              {sessionsLoading && (
-                <div className="flex items-center justify-center py-16 gap-2 text-gray-500">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Loading sessions…</span>
-                </div>
-              )}
-              {sessionsError && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>Failed to load sessions. Make sure you're logged in.</span>
-                </div>
-              )}
-              {!sessionsLoading && !sessionsError && sessions.length === 0 && (
-                <div className="text-center py-16 text-gray-400">
-                  <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p className="font-medium">No upcoming sessions</p>
-                  <p className="text-sm mt-1">Booked sessions will appear here.</p>
-                </div>
-              )}
-              {!sessionsLoading && !sessionsError && sessions.length > 0 && (
-                <div className="space-y-4">
-                  {sessions.map((slot) => {
-                    const startStr = formatLocal(slot.scheduled_start, {
-                      weekday: 'short', month: 'short', day: 'numeric',
-                      hour: '2-digit', minute: '2-digit',
-                    });
-                    const duration = durationMinutes(slot.scheduled_start, slot.scheduled_end);
-                    const canStart = isWithin30Min(slot.scheduled_start);
-
-                    return (
-                      <div
-                        key={slot.id}
-                        className="flex items-center justify-between p-5 bg-gray-50 rounded-lg border border-gray-200 hover:border-teal-200 transition-colors"
-                      >
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Video className="w-5 h-5 text-teal-600" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">{startStr}</p>
-                            <p className="text-sm text-gray-500 mt-0.5">{duration} min session</p>
-                          </div>
-                        </div>
-
-                        {slot.zoom_start_url && (
-                          <a
-                            href={canStart ? slot.zoom_start_url : undefined}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                              canStart
-                                ? 'bg-teal-600 text-white hover:bg-teal-700'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
-                            title={canStart ? 'Start Zoom session' : 'Available 30 min before session'}
-                            onClick={!canStart ? (e) => e.preventDefault() : undefined}
-                          >
-                            <Video className="w-4 h-4" />
-                            Start Zoom ↗
-                          </a>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <SessionsCalendar
+              sessions={sessions}
+              isLoading={sessionsLoading}
+              isError={sessionsError}
+            />
           )}
 
           {/* Availability Calendar */}
