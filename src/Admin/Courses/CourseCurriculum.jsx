@@ -24,14 +24,17 @@ import {
   useGetModuleLessonsQuery,
   useDeleteModuleLessonMutation,
 } from "../../Api/adminApi";
+import Pagination from "../../components/Pagination";
 import toast from "react-hot-toast";
 
 const ModuleItem = ({ mod, courseId, onAddLesson, onRemoveModule, onLessonDetails }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
+  const [page, setPage] = useState(1);
   const { data: lessonsResponse, isLoading: isLoadingLessons } = useGetModuleLessonsQuery({
     course_pk: courseId,
     module_pk: mod.id,
+    page: page,
   }, { skip: !isExpanded });
 
   const lessons = lessonsResponse?.results || [];
@@ -195,6 +198,17 @@ const ModuleItem = ({ mod, courseId, onAddLesson, onRemoveModule, onLessonDetail
         ) : (
           <div className="py-8 text-center text-stone-400 text-sm font-medium border-2 border-dashed border-stone-100 rounded-2xl">
             No lessons added yet. Click Add Lesson to start.
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {lessonsResponse?.total_pages > 1 && (
+          <div className="mt-4 pt-4 border-t border-stone-50">
+            <Pagination
+              currentPage={page}
+              totalPages={lessonsResponse.total_pages}
+              onPageChange={setPage}
+            />
           </div>
         )}
       </div>

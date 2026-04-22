@@ -69,6 +69,7 @@ export const api = createApi({
     "dashboard",
     "courseModules",
     "moduleLessons",
+    "rescheduleRequests",
   ],
   endpoints: (builder) => ({
     login: builder.mutation({

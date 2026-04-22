@@ -81,7 +81,10 @@ const CourseBuilder = ({ course, onBack }) => {
           )}
           {activeTab === "Review" && <CourseReviews />}
           {activeTab === "Community Chat" && (
-            <CommunityChat courseTitle={fullCourse?.title || course.title} />
+            <CommunityChat 
+              courseTitle={fullCourse?.title || course.title} 
+              courseId={course.id}
+            />
           )}
         </>
       )}

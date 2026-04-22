@@ -1,30 +1,96 @@
 import React, { useState } from "react";
-import { User, Mail, Calendar, Video, Plus } from "lucide-react";
+import { 
+  User, 
+  Mail, 
+  Calendar, 
+  Video, 
+  Plus, 
+  Clock, 
+  ChevronRight, 
+  ArrowLeft, 
+  MoreHorizontal,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  ChevronDown,
+  ArrowRight
+} from "lucide-react";
 import ScheduleConsultationModal from "./ScheduleConsultationModal";
 import ConsultationDetailsModal from "./ConsultationDetailsModal";
-import { useGetConsultationsQuery } from "../../Api/adminApi";
+import RescheduleDetailsModal from "./RescheduleDetailsModal";
+import Pagination from "../../components/Pagination";
+import { 
+  useGetConsultationsQuery, 
+  useGetTeacherProfilesQuery,
+  useGetRescheduleRequestsQuery 
+} from "../../Api/adminApi";
+import { toast } from "react-hot-toast";
 
 const Consultants = () => {
+  const [activeTab, setActiveTab] = useState("Consultations"); // 'Consultations' or 'Reschedule Requests'
+  const [activeView, setActiveView] = useState("teachers"); // 'teachers' or 'consultations' (for the teachers tab)
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedConsultation, setSelectedConsultation] = useState(null);
+  
+  // Reschedule state
+  const [teacherPage, setTeacherPage] = useState(1);
+  const [reschedulePage, setReschedulePage] = useState(1);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+  const [selectedReschedule, setSelectedReschedule] = useState(null);
 
+  // Fetch Teachers (Paginated)
+  const {
+    data: teachersData,
+    isLoading: isLoadingTeachers,
+    isError: isTeachersError,
+  } = useGetTeacherProfilesQuery({ 
+    offers_consultations: true, 
+    page: teacherPage 
+  });
+  const teachers = teachersData?.results || [];
+  const totalTeacherPages = teachersData?.total_pages || 1;
+
+  // Fetch Consultations for selected teacher
   const {
     data: consultationsData,
-    isLoading,
-    isError,
-  } = useGetConsultationsQuery();
+    isLoading: isLoadingConsultations,
+    isError: isConsultationsError,
+  } = useGetConsultationsQuery(
+    { teacher: selectedTeacher?.id },
+    { skip: !selectedTeacher || activeView !== "consultations" || activeTab !== "Consultations" }
+  );
   const consultations = consultationsData?.results || [];
 
-  const formatDate = (dateString) => {
+  // Fetch Reschedule Requests
+  const {
+    data: rescheduleData,
+    isLoading: isLoadingReschedule,
+    isError: isRescheduleError,
+  } = useGetRescheduleRequestsQuery({ 
+    page: reschedulePage 
+  }, { skip: activeTab !== "Reschedule Requests" });
+  
+  const rescheduleRequests = rescheduleData?.results || [];
+  const totalReschedulePages = rescheduleData?.total_pages || 1;
+
+  const formatDate = (dateString, includeTime = false) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     if (Number.isNaN(date.getTime())) return "N/A";
-    return date.toLocaleDateString("en-US", {
+    
+    const options = {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
-    });
+    };
+    if (includeTime) {
+      options.hour = "2-digit";
+      options.minute = "2-digit";
+    }
+    
+    return date.toLocaleDateString("en-US", options);
   };
 
   const formatTime = (dateOrTimeString) => {
@@ -68,124 +134,362 @@ const Consultants = () => {
     }, {});
   };
 
-  const formatGroupedSlots = (slots) => {
-    const groups = buildSlotSummaries(slots);
-    return Object.values(groups).map(
-      (group) => `${group.dateLabel} | ${group.firstStart} - ${group.lastEnd}`,
-    );
+  const handleTeacherClick = (teacher) => {
+    setSelectedTeacher(teacher);
+    setActiveView("consultations");
   };
 
-  const handleAddConsultation = (newConsultation) => {
-    // Since the mutation invalidates tags, the query will refetch automatically
-    // No need to manually update local state
+  const handleBackToTeachers = () => {
+    setActiveView("teachers");
+    setSelectedTeacher(null);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === "Consultations") {
+      setActiveView("teachers");
+      setSelectedTeacher(null);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'accepted':
+        return (
+          <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-100">
+            <CheckCircle2 className="w-3 h-3" />
+            Accepted
+          </span>
+        );
+      case 'rejected':
+        return (
+          <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-rose-100">
+            <XCircle className="w-3 h-3" />
+            Rejected
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-amber-100">
+            <AlertCircle className="w-3 h-3" />
+            Pending
+          </span>
+        );
+    }
   };
 
   return (
     <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 duration-500 pb-20 p-6 md:p-8">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
-        <button
-          onClick={() => setIsConsultationModalOpen(true)}
-          className="flex items-center gap-2 bg-greenTeal hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-teal-900/10 inter-font w-fit"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add New Consultation</span>
-        </button>
-      </div>
-
-      {/* Consultations Container */}
-      <div className="bg-white rounded-[2rem] border border-stone-200 shadow-sm overflow-hidden p-8 space-y-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-stone-400 font-bold uppercase tracking-widest text-xs inter-font">
-            Upcoming Consultations
-          </h2>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          {(activeView === "consultations" && activeTab === "Consultations") && (
+            <button
+              onClick={handleBackToTeachers}
+              className="p-3 bg-white border border-stone-100 rounded-2xl text-stone-400 hover:text-teal-600 hover:border-teal-100 hover:bg-teal-50 shadow-sm transition-all group"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            </button>
+          )}
+          <h1 className="text-3xl font-black text-stone-900 arimo-font tracking-tight">
+            Consultation Hub
+          </h1>
         </div>
 
-        <div className="grid grid-cols-1 gap-6">
-          {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
-                <Calendar className="w-10 h-10 text-stone-300 animate-spin" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-stone-900">
-                  Loading consultations...
-                </h3>
-              </div>
-            </div>
-          ) : isError ? (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
-                <Calendar className="w-10 h-10 text-stone-300" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-stone-900">
-                  Failed to load consultations
-                </h3>
-                <p className="text-stone-500">Please try again later.</p>
-              </div>
-            </div>
-          ) : consultations.length > 0 ? (
-            consultations.map((consultation) => (
-              <div
-                key={consultation.id}
-                className="bg-stone-50/50 border-l-4 border-amber-500 rounded-2xl p-6 flex flex-col md:flex-row md:items-center gap-4 hover:bg-white hover:shadow-md transition-all group"
-              >
-                <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100 shrink-0 -mb-10">
-                  <User className="w-6 h-6 text-amber-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-stone-900 inter-font group-hover:text-amber-700 transition-colors mb-5">
-                    {consultation.teacher?.user?.first_name +
-                      " " +
-                      consultation.teacher?.user?.last_name || "N/A"}
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-1">
-                    <p className="text-sm font-medium text-stone-400 inter-font flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5" />
-                      {consultation.teacher?.user?.email || "N/A"}
-                    </p>
-                    <div className="text-sm font-medium text-amber-600 inter-font flex items-start gap-3">
-                      <Calendar className="w-4 h-4 mt-1.5 flex-shrink-0" />
-                      {consultation.timeslots?.length > 0 ? (
-                        <ul className="list-none m-0 p-0 space-y-1 text-left">
-                          {formatGroupedSlots(consultation.timeslots).map(
-                            (summary) => (
-                              <li key={summary} className="leading-tight">
-                                {summary}
-                              </li>
-                            ),
-                          )}
-                        </ul>
-                      ) : (
-                        "No timeslots"
-                      )}
-                    </div>
+        {/* Logical Button Placement - Only show when managing consultations */}
+        {activeTab === "Consultations" && (
+          <button
+            onClick={() => setIsConsultationModalOpen(true)}
+            className="flex items-center gap-2 bg-greenTeal hover:bg-teal-700 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-teal-900/10 inter-font w-fit active:scale-95"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add New Consultation</span>
+          </button>
+        )}
+      </div>
+
+      {/* Main Container with Tabs */}
+      <div className="bg-white rounded-[2rem] border border-stone-200 shadow-sm overflow-hidden flex flex-col min-h-[700px]">
+        {/* Tab Switcher */}
+        <div className="flex border-b border-stone-100 p-2 gap-2 bg-stone-50/30">
+          {["Consultations", "Reschedule Requests"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              className={`px-8 py-3 rounded-2xl text-sm font-bold transition-all inter-font ${
+                activeTab === tab
+                  ? "bg-white text-teal-600 shadow-sm border border-stone-100"
+                  : "text-stone-400 hover:text-stone-600 hover:bg-stone-50"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-8 flex-1 flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-stone-400 font-bold uppercase tracking-widest text-[10px] inter-font flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+              {activeTab === "Consultations" 
+                ? (activeView === "teachers" ? "Select a Teacher" : `Plans for ${selectedTeacher?.user?.first_name}`) 
+                : "Manage Reschedule Inquiries"}
+            </h2>
+          </div>
+
+          {activeTab === "Consultations" ? (
+            <>
+              {activeView === "teachers" ? (
+                <div className="flex-1 flex flex-col">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 content-start">
+                    {isLoadingTeachers ? (
+                      <div className="col-span-full py-20 flex flex-col items-center justify-center text-center space-y-4">
+                        <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
+                          <User className="w-10 h-10 text-stone-300 animate-pulse" />
+                        </div>
+                        <h3 className="text-xl font-bold text-stone-900">Loading Teachers...</h3>
+                      </div>
+                    ) : teachers.length > 0 ? (
+                      teachers.map((teacher) => (
+                        <div
+                          key={teacher.id}
+                          onClick={() => handleTeacherClick(teacher)}
+                          className="group bg-white rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:border-teal-200 transition-all duration-500 p-6 cursor-pointer relative overflow-hidden"
+                        >
+                          <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="bg-teal-50 text-teal-600 p-2 rounded-xl">
+                              <ChevronRight className="w-4 h-4 translate-x-0 group-hover:translate-x-0.5 transition-transform" />
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-5">
+                            <div className="relative shrink-0">
+                              {teacher.profile_picture ? (
+                                <img
+                                  src={teacher.profile_picture}
+                                  alt=""
+                                  className="w-20 h-20 rounded-[1.5rem] object-cover border border-stone-100 group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 bg-stone-50 rounded-[1.5rem] flex items-center justify-center border border-stone-100">
+                                  <User className="w-10 h-10 text-stone-300" />
+                                </div>
+                              )}
+                              {teacher.offers_consultations && (
+                                <div className="absolute -bottom-1 -right-1 bg-teal-500 text-white p-1.5 rounded-xl border-4 border-white shadow-sm scale-90">
+                                  <Video className="w-3 h-3" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-lg font-black text-stone-900 arimo-font tracking-tight mb-0.5 group-hover:text-teal-900 truncate">
+                                {teacher.user?.first_name} {teacher.user?.last_name}
+                              </h4>
+                              <p className="text-[11px] font-bold text-stone-400 mb-3 truncate inter-font uppercase tracking-wider">
+                                {teacher.professional_title || "Teacher"}
+                              </p>
+                              <div className="inline-flex items-center gap-1.5 bg-stone-50 text-stone-600 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest group-hover:bg-teal-50 group-hover:text-teal-700 transition-colors">
+                                ${teacher.consultation_rate || "0"}/hr
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="col-span-full py-20 flex flex-col items-center justify-center text-center space-y-4">
+                        <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
+                          <User className="w-10 h-10 text-stone-300" />
+                        </div>
+                        <h3 className="text-xl font-bold text-stone-900">No teachers found</h3>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Pagination for Teachers */}
+                  <div className="mt-auto pt-8 border-t border-stone-50">
+                    <Pagination 
+                      currentPage={teacherPage}
+                      totalPages={totalTeacherPages}
+                      onPageChange={setTeacherPage}
+                    />
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    setSelectedConsultation(consultation);
-                    setIsDetailsModalOpen(true);
-                  }}
-                  className="bg-white border border-stone-200 text-stone-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700 transition-all shadow-sm w-fit"
-                >
-                  View Details
-                </button>
-              </div>
-            ))
+              ) : (
+                <div className="grid grid-cols-1 gap-6">
+                  {isLoadingConsultations ? (
+                    <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
+                      <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
+                        <Calendar className="w-10 h-10 text-stone-300 animate-pulse" />
+                      </div>
+                      <h3 className="text-xl font-bold text-stone-900">Loading consultations...</h3>
+                    </div>
+                  ) : consultations.length > 0 ? (
+                    consultations.map((consultation) => {
+                      const slotSummaries = buildSlotSummaries(consultation.timeslots);
+                      return (
+                        <div
+                          key={consultation.id}
+                          className="group bg-white rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:border-teal-200 transition-all duration-500 p-1 overflow-hidden"
+                        >
+                          <div className="p-6 flex flex-col md:flex-row md:items-center gap-6">
+                            <div className="relative shrink-0">
+                              <div className="w-16 h-16 bg-stone-50 rounded-2xl flex items-center justify-center border border-stone-100 shadow-inner group-hover:bg-teal-50 group-hover:border-teal-100 transition-colors duration-500">
+                                <Calendar className="w-7 h-7 text-stone-400 group-hover:text-teal-600 transition-colors duration-500" />
+                              </div>
+                              <div className="absolute -top-2 -left-2 bg-white border border-stone-100 shadow-sm rounded-lg px-2 py-0.5 text-[10px] font-black text-stone-400 tracking-tighter uppercase">
+                                #{consultation.id}
+                              </div>
+                            </div>
+
+                            <div className="flex-1 space-y-4">
+                              <div className="space-y-1">
+                                <h3 className="text-xl font-black text-stone-900 arimo-font tracking-tight group-hover:text-teal-900 transition-colors">
+                                  {consultation.teacher?.user?.first_name}'s Plan
+                                </h3>
+                                <div className="flex items-center gap-2 text-stone-400 font-medium text-xs inter-font">
+                                  <Clock className="w-3.5 h-3.5 text-stone-300" />
+                                  Active Plan with {consultation.timeslots?.length || 0} slots
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap gap-3">
+                                {Object.values(slotSummaries).length > 0 ? (
+                                  Object.values(slotSummaries).map((group, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="bg-stone-50/50 rounded-2xl p-3 border border-stone-100 group-hover:bg-teal-50/30 group-hover:border-teal-50 transition-colors duration-500"
+                                    >
+                                      <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest block mb-2 opacity-70">
+                                        {group.dateLabel}
+                                      </span>
+                                      <div className="inline-flex items-center gap-1.5 bg-white text-teal-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-stone-100 shadow-sm">
+                                        <Clock className="w-3.5 h-3.5 text-teal-500" />
+                                        <span>{group.firstStart} - {group.lastEnd}</span>
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="text-stone-400 text-xs font-medium italic flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" />
+                                    No active timeslots
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0 border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-6">
+                              <button
+                                onClick={() => {
+                                  setSelectedConsultation(consultation);
+                                  setIsDetailsModalOpen(true);
+                                }}
+                                className="flex items-center gap-2 bg-stone-900 hover:bg-teal-700 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-stone-900/10 active:scale-95 group/btn"
+                              >
+                                <span>View Details</span>
+                                <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
+                      <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
+                        <Calendar className="w-10 h-10 text-stone-300" />
+                      </div>
+                      <h3 className="text-xl font-bold text-stone-900">No consultations scheduled</h3>
+                      <p className="text-stone-500">This teacher has no consultation plans yet.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
-                <Calendar className="w-10 h-10 text-stone-300" />
+            /* Reschedule Requests Tab Content */
+            <div className="flex-1 flex flex-col">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 content-start">
+                {isLoadingReschedule ? (
+                  <div className="col-span-full py-20 flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
+                      <Clock className="w-10 h-10 text-stone-300 animate-pulse" />
+                    </div>
+                    <h3 className="text-xl font-bold text-stone-900">Loading Reschedule Requests...</h3>
+                  </div>
+                ) : rescheduleRequests.length > 0 ? (
+                  rescheduleRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      onClick={() => {
+                        setSelectedReschedule(request);
+                        setIsRescheduleModalOpen(true);
+                      }}
+                      className="bg-white rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:border-teal-200 transition-all duration-500 p-6 cursor-pointer flex flex-col gap-6 group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-stone-50 flex items-center justify-center border border-stone-100 group-hover:bg-teal-50 group-hover:border-teal-100 transition-colors">
+                            <User className="w-5 h-5 text-stone-400 group-hover:text-teal-600" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-stone-900 truncate">
+                              {request.student_email || "Student"}
+                            </p>
+                            <p className="text-[10px] text-stone-400 font-medium">Requested on {formatDate(request.created_at)}</p>
+                          </div>
+                        </div>
+                        {getStatusBadge(request.status)}
+                      </div>
+
+                      <div className="flex flex-col gap-4 bg-stone-50/50 rounded-3xl p-5 border border-stone-100 group-hover:bg-teal-50/30 group-hover:border-teal-50 transition-all">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex-1 space-y-1">
+                            <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest block">Old Slot</span>
+                            <p className="text-xs font-bold text-stone-600">{formatDate(request.old_slot_time, true)}</p>
+                          </div>
+                          <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-white border border-stone-100 text-stone-300">
+                             <ArrowRight className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 space-y-1 text-right">
+                            <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest block">New Request</span>
+                            <p className="text-xs font-black text-teal-700">{formatDate(request.requested_slot_time, true)}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {request.reason && (
+                        <div className="px-1 line-clamp-2">
+                           <p className="text-stone-500 text-xs italic inter-font">
+                             &ldquo;{request.reason}&rdquo;
+                           </p>
+                        </div>
+                      )}
+                      
+                      <div className="mt-auto pt-6 border-t border-stone-50 flex items-center justify-between">
+                         <span className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em]">View Details</span>
+                         <div className="w-8 h-8 rounded-xl bg-stone-50 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition-all">
+                           <ChevronRight className="w-4 h-4" />
+                         </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-20 flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
+                      <Clock className="w-10 h-10 text-stone-300" />
+                    </div>
+                    <h3 className="text-xl font-bold text-stone-900">No reschedule requests</h3>
+                    <p className="text-stone-500">Everything up to date!</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-stone-900">
-                  No consultations scheduled
-                </h3>
-                <p className="text-stone-500">
-                  Scheduled consultations will appear here.
-                </p>
+              
+              {/* Pagination for Reschedule */}
+              <div className="mt-auto pt-8 border-t border-stone-50">
+                <Pagination 
+                  currentPage={reschedulePage}
+                  totalPages={totalReschedulePages}
+                  onPageChange={setReschedulePage}
+                />
               </div>
             </div>
           )}
@@ -195,13 +499,22 @@ const Consultants = () => {
       <ScheduleConsultationModal
         isOpen={isConsultationModalOpen}
         onClose={() => setIsConsultationModalOpen(false)}
-        onSchedule={handleAddConsultation}
+        onSchedule={(newConsultation) => {
+          // RTK query invalidates so we just close
+          setIsConsultationModalOpen(false);
+        }}
       />
 
       <ConsultationDetailsModal
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         consultation={selectedConsultation}
+      />
+      
+      <RescheduleDetailsModal
+        isOpen={isRescheduleModalOpen}
+        onClose={() => setIsRescheduleModalOpen(false)}
+        request={selectedReschedule}
       />
     </div>
   );

@@ -263,8 +263,11 @@ export const adminApi = api.injectEndpoints({
     }),
     // Module Lessons
     getModuleLessons: builder.query({
-      query: ({ course_pk, module_pk }) => `/courses/${course_pk}/modules/${module_pk}/lessons/`,
-      providesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+      query: ({ course_pk, module_pk, page = 1 }) =>
+        `/courses/${course_pk}/modules/${module_pk}/lessons/?page=${page}`,
+      providesTags: (result, error, { module_pk }) => [
+        { type: "moduleLessons", id: module_pk },
+      ],
     }),
     createModuleLesson: builder.mutation({
       query: ({ course_pk, module_pk, body }) => ({
@@ -461,8 +464,113 @@ export const adminApi = api.injectEndpoints({
     }),
 
     getConsultations: builder.query({
-      query: () => "/consultations/",
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.teacher) queryParams.append("teacher", params.teacher);
+        if (params.page) queryParams.append("page", params.page);
+        if (params.search) queryParams.append("search", params.search);
+        const q = queryParams.toString();
+        return `/consultations/${q ? `?${q}` : ""}`;
+      },
       providesTags: ["consultations"],
+    }),
+
+    // Course Discussions
+    getCourseDiscussions: builder.query({
+      query: (course_pk) => `/courses/${course_pk}/discussions/`,
+      providesTags: (result, error, course_pk) => [{ type: "discussions", id: course_pk }],
+    }),
+
+    getCourseDiscussionDetails: builder.query({
+      query: ({ course_pk, id }) => `/courses/${course_pk}/discussions/${id}/`,
+      providesTags: (result, error, { id }) => [{ type: "discussions", id }],
+    }),
+
+    createCourseDiscussion: builder.mutation({
+      query: ({ course_pk, body }) => ({
+        url: `/courses/${course_pk}/discussions/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "discussions", id: course_pk }],
+    }),
+
+    patchCourseDiscussion: builder.mutation({
+      query: ({ course_pk, id, body }) => ({
+        url: `/courses/${course_pk}/discussions/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "discussions", id }],
+    }),
+
+    pinCourseDiscussion: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/discussions/${id}/pin/`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { id, course_pk }) => [
+        { type: "discussions", id },
+        { type: "discussions", id: course_pk },
+      ],
+    }),
+
+    closeCourseDiscussion: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/discussions/${id}/close/`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { id, course_pk }) => [
+        { type: "discussions", id },
+        { type: "discussions", id: course_pk },
+      ],
+    }),
+
+    deleteCourseDiscussion: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/discussions/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "discussions", id: course_pk }],
+    }),
+
+    getDiscussionReplies: builder.query({
+      query: ({ course_pk, post_pk }) => `/courses/${course_pk}/discussions/${post_pk}/replies/`,
+      providesTags: (result, error, { post_pk }) => [{ type: "replies", id: post_pk }],
+    }),
+
+    createDiscussionReply: builder.mutation({
+      query: ({ course_pk, post_pk, body }) => ({
+        url: `/courses/${course_pk}/discussions/${post_pk}/replies/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { post_pk }) => [{ type: "replies", id: post_pk }],
+    }),
+
+    patchDiscussionReply: builder.mutation({
+      query: ({ course_pk, post_pk, id, body }) => ({
+        url: `/courses/${course_pk}/discussions/${post_pk}/replies/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      // Invalidate the replies list for this discussion
+      invalidatesTags: (result, error, { course_pk, post_pk }) => [
+        { type: "replies", id: post_pk },
+        { type: "discussions", id: course_pk },
+      ],
+    }),
+
+    deleteDiscussionReply: builder.mutation({
+      query: ({ course_pk, post_pk, id }) => ({
+        url: `/courses/${course_pk}/discussions/${post_pk}/replies/${id}/`,
+        method: "DELETE",
+      }),
+      // Invalidate replies + parent discussion (reply_count changes)
+      invalidatesTags: (result, error, { course_pk, post_pk }) => [
+        { type: "replies", id: post_pk },
+        { type: "discussions", id: course_pk },
+      ],
     }),
 
     getConsultation: builder.query({
@@ -510,6 +618,34 @@ export const adminApi = api.injectEndpoints({
         return `/consultations/${id}/timeslots/${q ? `?${q}` : ""}`;
       },
       providesTags: ["consultations"],
+    }),
+    getRescheduleRequests: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page);
+        if (params.status) queryParams.append("status", params.status);
+        const q = queryParams.toString();
+        return `/reschedule-requests/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["rescheduleRequests"],
+    }),
+    getRescheduleRequestDetails: builder.query({
+      query: (id) => `/reschedule-requests/${id}/`,
+      providesTags: ["rescheduleRequests"],
+    }),
+    acceptRescheduleRequest: builder.mutation({
+      query: (id) => ({
+        url: `/reschedule-requests/${id}/accept/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["rescheduleRequests"],
+    }),
+    declineRescheduleRequest: builder.mutation({
+      query: (id) => ({
+        url: `/reschedule-requests/${id}/decline/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["rescheduleRequests"],
     }),
 
     getDonations: builder.query({
@@ -845,6 +981,10 @@ export const {
   useCreateConsultationBundleMutation,
   useGetConsultationCalendarQuery,
   useGetConsultationTimeslotsQuery,
+  useGetRescheduleRequestsQuery,
+  useGetRescheduleRequestDetailsQuery,
+  useAcceptRescheduleRequestMutation,
+  useDeclineRescheduleRequestMutation,
   useGetEnrollmentsQuery,
   useGetScholarshipsQuery,
   useApproveScholarshipMutation,
@@ -885,4 +1025,15 @@ export const {
   useLazyGetVideoStatusQuery,
   useCreateLessonQuizMutation,
   useCreateLessonAssignmentMutation,
+  useGetCourseDiscussionsQuery,
+  useGetCourseDiscussionDetailsQuery,
+  useCreateCourseDiscussionMutation,
+  usePatchCourseDiscussionMutation,
+  usePinCourseDiscussionMutation,
+  useCloseCourseDiscussionMutation,
+  useDeleteCourseDiscussionMutation,
+  useGetDiscussionRepliesQuery,
+  useCreateDiscussionReplyMutation,
+  usePatchDiscussionReplyMutation,
+  useDeleteDiscussionReplyMutation,
 } = adminApi;
