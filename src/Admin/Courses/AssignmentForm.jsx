@@ -1,4 +1,5 @@
 import { Calendar } from "lucide-react";
+import TextEditor from "../../components/Editor";
 
 const AssignmentForm = ({ data, onChange }) => {
   const handleChange = (field, value) => {
@@ -12,12 +13,10 @@ const AssignmentForm = ({ data, onChange }) => {
         <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
           Description
         </label>
-        <textarea
-          rows={3}
-          value={data.description || ""}
-          onChange={(e) => handleChange("description", e.target.value)}
-          placeholder="Brief overview of the assignment"
-          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-medium text-stone-800 inter-font resize-none"
+        <TextEditor
+          htmlElement={data.description || ""}
+          onChange={(html) => handleChange("description", html)}
+          isEditable={true}
         />
       </div>
 
@@ -26,12 +25,10 @@ const AssignmentForm = ({ data, onChange }) => {
         <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
           Instructions
         </label>
-        <textarea
-          rows={4}
-          value={data.instructions || ""}
-          onChange={(e) => handleChange("instructions", e.target.value)}
-          placeholder="Detailed instructions for students..."
-          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-medium text-stone-800 inter-font resize-none"
+        <TextEditor
+          htmlElement={data.instructions || ""}
+          onChange={(html) => handleChange("instructions", html)}
+          isEditable={true}
         />
       </div>
 

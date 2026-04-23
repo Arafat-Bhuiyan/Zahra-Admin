@@ -161,9 +161,10 @@ const LessonDetailsModal = ({ lesson, isOpen, onClose }) => {
                   <h4 className="text-sm font-black text-stone-800 uppercase tracking-widest">
                     Quiz Description
                   </h4>
-                  <p className="text-stone-600 text-sm leading-relaxed font-medium">
-                    {lesson.quiz_details.description}
-                  </p>
+                  <div 
+                    className="text-stone-600 text-sm leading-relaxed font-medium rich-text-content"
+                    dangerouslySetInnerHTML={{ __html: lesson.quiz_details.description }}
+                  />
                 </div>
               )}
 
@@ -225,9 +226,10 @@ const LessonDetailsModal = ({ lesson, isOpen, onClose }) => {
                   <h4 className="text-sm font-black text-stone-800 uppercase tracking-widest">
                     Description
                   </h4>
-                  <p className="text-stone-600 text-sm leading-relaxed font-medium">
-                    {lesson.assignment_details.description}
-                  </p>
+                  <div 
+                    className="text-stone-600 text-sm leading-relaxed font-medium rich-text-content"
+                    dangerouslySetInnerHTML={{ __html: lesson.assignment_details.description }}
+                  />
                 </div>
               )}
 
@@ -237,9 +239,10 @@ const LessonDetailsModal = ({ lesson, isOpen, onClose }) => {
                     <CheckCircle2 className="w-4 h-4 text-green-600" />
                     Instructions
                   </h4>
-                  <p className="text-stone-600 text-sm leading-relaxed font-medium whitespace-pre-wrap">
-                    {lesson.assignment_details.instructions}
-                  </p>
+                  <div 
+                    className="text-stone-600 text-sm leading-relaxed font-medium rich-text-content"
+                    dangerouslySetInnerHTML={{ __html: lesson.assignment_details.instructions }}
+                  />
                 </div>
               )}
 

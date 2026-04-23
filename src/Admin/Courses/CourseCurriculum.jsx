@@ -13,6 +13,7 @@ import {
   Save,
   ChevronDown,
   ChevronUp,
+  Edit2,
 } from "lucide-react";
 
 import AddContentModal from "./AddLesson";
@@ -27,7 +28,7 @@ import {
 import Pagination from "../../components/Pagination";
 import toast from "react-hot-toast";
 
-const ModuleItem = ({ mod, courseId, onAddLesson, onRemoveModule, onLessonDetails }) => {
+const ModuleItem = ({ mod, courseId, onAddLesson, onEditLesson, onRemoveModule, onLessonDetails }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
   const [page, setPage] = useState(1);
@@ -187,12 +188,22 @@ const ModuleItem = ({ mod, courseId, onAddLesson, onRemoveModule, onLessonDetail
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => handleRemoveLesson(lesson.id)}
-                className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                <button
+                  onClick={() => onEditLesson(mod.id, lesson.id)}
+                  className="p-2 text-stone-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+                  title="Edit Lesson"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleRemoveLesson(lesson.id)}
+                  className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                  title="Delete Lesson"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           ))
         ) : (
@@ -221,6 +232,7 @@ const CourseCurriculum = ({ courseId, onInitialize }) => {
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetModuleId, setTargetModuleId] = useState(null);
+  const [editingLessonId, setEditingLessonId] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -251,6 +263,13 @@ const CourseCurriculum = ({ courseId, onInitialize }) => {
 
   const openAddContentModal = (moduleId) => {
     setTargetModuleId(moduleId);
+    setEditingLessonId(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditContentModal = (moduleId, lessonId) => {
+    setTargetModuleId(moduleId);
+    setEditingLessonId(lessonId);
     setIsModalOpen(true);
   };
 
@@ -335,6 +354,7 @@ const CourseCurriculum = ({ courseId, onInitialize }) => {
               mod={mod}
               courseId={courseId}
               onAddLesson={openAddContentModal}
+              onEditLesson={openEditContentModal}
               onRemoveModule={handleRemoveModule}
               onLessonDetails={openLessonDetails}
             />
@@ -377,9 +397,13 @@ const CourseCurriculum = ({ courseId, onInitialize }) => {
 
       <AddContentModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingLessonId(null);
+        }}
         moduleId={targetModuleId}
         courseId={courseId}
+        lessonId={editingLessonId}
       />
 
       {/* Lesson Details Viewer Modal */}

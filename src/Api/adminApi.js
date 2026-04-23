@@ -98,6 +98,10 @@ export const adminApi = api.injectEndpoints({
       query: () => "/book-categories/",
       providesTags: ["books"],
     }),
+    getLuluPackages: builder.query({
+      query: () => "/books/lulu-packages/",
+      providesTags: ["books"],
+    }),
     addBookCategory: builder.mutation({
       query: (name) => ({
         url: "/book-categories/",
@@ -241,6 +245,18 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: ["courses"],
     }),
+    // Update Course
+    updateCourse: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/courses/${id}/`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "courses", id },
+        "courses",
+      ],
+    }),
     // Course Modules
     getCourseModules: builder.query({
       query: (course_pk) => `/courses/${course_pk}/modules/`,
@@ -269,6 +285,10 @@ export const adminApi = api.injectEndpoints({
         { type: "moduleLessons", id: module_pk },
       ],
     }),
+    getLessonDetails: builder.query({
+      query: ({ course_pk, module_pk, id }) => `/courses/${course_pk}/modules/${module_pk}/lessons/${id}/`,
+      providesTags: (result, error, { id }) => [{ type: "lesson", id }],
+    }),
     createModuleLesson: builder.mutation({
       query: ({ course_pk, module_pk, body }) => ({
         url: `/courses/${course_pk}/modules/${module_pk}/lessons/`,
@@ -276,6 +296,17 @@ export const adminApi = api.injectEndpoints({
         body,
       }),
       invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    updateModuleLesson: builder.mutation({
+      query: ({ course_pk, module_pk, id, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk, id }) => [
+        { type: "moduleLessons", id: module_pk },
+        { type: "lesson", id }
+      ],
     }),
     deleteModuleLesson: builder.mutation({
       query: ({ course_pk, module_pk, id }) => ({
@@ -295,6 +326,28 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
     }),
+    updateLessonQuiz: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, id, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/quizzes/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk, lesson_pk }) => [
+        { type: "moduleLessons", id: module_pk },
+        { type: "lesson", id: lesson_pk }
+      ],
+    }),
+    createLessonQuizQuestion: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, quiz_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/quizzes/${quiz_pk}/questions/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk, lesson_pk }) => [
+        { type: "moduleLessons", id: module_pk },
+        { type: "lesson", id: lesson_pk }
+      ],
+    }),
     createLessonAssignment: builder.mutation({
       query: ({ course_pk, module_pk, lesson_pk, body }) => ({
         url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/assignments/`,
@@ -302,6 +355,17 @@ export const adminApi = api.injectEndpoints({
         body,
       }),
       invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    updateLessonAssignment: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, id, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/assignments/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk, lesson_pk }) => [
+        { type: "moduleLessons", id: module_pk },
+        { type: "lesson", id: lesson_pk }
+      ],
     }),
     // Course Categories
     getCourseCategories: builder.query({
@@ -1016,15 +1080,22 @@ export const {
   useGetNewsletterSubscribersQuery,
   useDeleteNewsletterSubscriberMutation,
   useCreateCourseMutation,
+  useUpdateCourseMutation,
   useGetCourseModulesQuery,
   useCreateCourseModuleMutation,
   useDeleteCourseModuleMutation,
   useGetModuleLessonsQuery,
+  useGetLessonDetailsQuery,
   useCreateModuleLessonMutation,
+  useUpdateModuleLessonMutation,
   useDeleteModuleLessonMutation,
   useLazyGetVideoStatusQuery,
   useCreateLessonQuizMutation,
+  useUpdateLessonQuizMutation,
+  useCreateLessonQuizQuestionMutation,
   useCreateLessonAssignmentMutation,
+  useUpdateLessonAssignmentMutation,
+  useGetLuluPackagesQuery,
   useGetCourseDiscussionsQuery,
   useGetCourseDiscussionDetailsQuery,
   useCreateCourseDiscussionMutation,

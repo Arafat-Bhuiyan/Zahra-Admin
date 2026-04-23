@@ -11,6 +11,8 @@ import TextEditor from "../../components/Editor";
 import CourseCurriculum from "./CourseCurriculum";
 import {
   useCreateCourseMutation,
+  useUpdateCourseMutation,
+  useGetCourseDetailsQuery,
   useGetCourseCategoriesQuery,
   useGetTeacherProfilesQuery,
 } from "../../Api/adminApi";
@@ -61,38 +63,43 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
 
   // API hooks
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
+  const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
   const { data: categoriesResponse } = useGetCourseCategoriesQuery();
   const { data: teachersResponse } = useGetTeacherProfilesQuery();
+  const { data: courseDetails, isLoading: isLoadingDetails } = useGetCourseDetailsQuery(course?.id, { 
+    skip: !course?.id 
+  });
 
   const categories = categoriesResponse?.results || [];
   const teachers = teachersResponse?.results || [];
 
   useEffect(() => {
-    if (course) {
-      setCourseId(course.id);
-      setFormData({
-        ...formData,
-        title: course.title || "",
-        subtitle: course.subtitle || "",
-        description: course.description || "",
-        teacher: course.teacher?.id || "",
-        category: course.category?.id || "",
-        status: course.status || "upcoming",
-        price: course.price || "",
-        duration_in_weeks: course.duration_in_weeks || "",
-        level: course.level || "beginner",
-        total_hours: course.total_hours || "",
-        hours_per_session: course.hours_per_session || "",
-        thumbnailPreview: course.thumbnail || null,
-        videoName: course.videoName || "",
-        learningObjectives: course.learningObjectives || [],
-        requirements: course.requirements || [],
-        curriculum: course.curriculum || [],
-        start_date: course.start_date || "",
-        is_active: course.is_active !== undefined ? course.is_active : true,
-      });
+    const dataToUse = courseDetails || course;
+    if (dataToUse) {
+      setCourseId(dataToUse.id);
+      setFormData((prev) => ({
+        ...prev,
+        title: dataToUse.title || "",
+        subtitle: dataToUse.subtitle || "",
+        description: dataToUse.description || "",
+        teacher: dataToUse.teacher?.id || "",
+        category: dataToUse.category?.id || "",
+        status: dataToUse.status || "upcoming",
+        price: dataToUse.price || "",
+        duration_in_weeks: dataToUse.duration_in_weeks || "",
+        level: dataToUse.level || "beginner",
+        total_hours: dataToUse.total_hours || "",
+        hours_per_session: dataToUse.hours_per_session || "",
+        thumbnailPreview: dataToUse.thumbnail || null,
+        videoName: dataToUse.videoName || (dataToUse.preview_video ? "Preview Video Exists" : ""),
+        learningObjectives: dataToUse.learningObjectives || [],
+        requirements: dataToUse.requirements || [],
+        curriculum: dataToUse.curriculum || [],
+        start_date: dataToUse.start_date || "",
+        is_active: dataToUse.is_active !== undefined ? dataToUse.is_active : true,
+      }));
     }
-  }, [course]);
+  }, [courseDetails, course]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -205,16 +212,23 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
         payload.append("thumbnail", formData.thumbnail);
       }
 
-      const response = await createCourse(payload).unwrap();
-      setCourseId(response.id);
-      toast.success("Course created successfully!");
-      // Optionally stay on page or switch tab
-      // onBack(); 
+      if (formData.preview_video instanceof File) {
+        payload.append("preview_video", formData.preview_video);
+      }
+
+      if (courseId) {
+        await updateCourse({ id: courseId, data: payload }).unwrap();
+        toast.success("Course updated successfully!");
+      } else {
+        const response = await createCourse(payload).unwrap();
+        setCourseId(response.id);
+        toast.success("Course created successfully!");
+      }
     } catch (err) {
-      console.error("Failed to create course:", err);
+      console.error("Failed to save course:", err);
       const errorMsg = err?.data
         ? Object.entries(err.data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`).join("\n")
-        : "Failed to create course.";
+        : "Failed to save course.";
       toast.error(errorMsg);
     }
   };
@@ -260,82 +274,87 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
         ))}
       </div>
 
-      {activeTab === "Course Overview" && (
-        <div className="space-y-8 animate-in fade-in duration-500">
-          {/* Basic Information */}
-          <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
-            <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs">
-              <span className="w-2 h-2 rounded-full bg-teal-500"></span>
-              Basic Information
-            </div>
+      {isLoadingDetails ? (
+        <div className="flex flex-col items-center justify-center py-40 gap-4">
+          <Loader2 className="w-12 h-12 text-teal-600 animate-spin" />
+          <p className="text-stone-500 font-medium animate-pulse">Loading detailed course information...</p>
+        </div>
+      ) : (
+        <>
+          {activeTab === "Course Overview" && (
+            <div className="space-y-8 animate-in fade-in duration-500">
+              <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
+                <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs">
+                  <span className="w-2 h-2 rounded-full bg-teal-500"></span>
+                  Basic Information
+                </div>
 
-            <div className="space-y-6">
-              <FormGroup label="Course Title">
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Mindfulness in Islam"
-                  className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300 transition-all font-medium text-stone-800"
-                />
-              </FormGroup>
+                <div className="space-y-6">
+                  <FormGroup label="Course Title">
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleChange}
+                      placeholder="e.g. Mindfulness in Islam"
+                      className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300 transition-all font-medium text-stone-800"
+                    />
+                  </FormGroup>
 
-              <FormGroup label="Course Subtitle">
-                <input
-                  type="text"
-                  name="subtitle"
-                  value={formData.subtitle}
-                  onChange={handleChange}
-                  placeholder="Faith-centered emotional healing journey"
-                  className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300 transition-all font-medium text-stone-800"
-                />
-              </FormGroup>
+                  <FormGroup label="Course Subtitle">
+                    <input
+                      type="text"
+                      name="subtitle"
+                      value={formData.subtitle}
+                      onChange={handleChange}
+                      placeholder="e.g. Faith-centered emotional healing journey"
+                      className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300 transition-all font-medium text-stone-800"
+                    />
+                  </FormGroup>
 
-              <FormGroup label="Course Description">
-                <TextEditor
-                  value={formData.description}
-                  onChange={(html) =>
-                    setFormData((prev) => ({ ...prev, description: html }))
-                  }
-                  isEditable={true}
-                  placeholder="Detailed description of what students will learn..."
-                />
-              </FormGroup>
+                  <FormGroup label="Course Description">
+                    <TextEditor
+                      htmlElement={formData.description}
+                      onChange={(html) =>
+                        setFormData((prev) => ({ ...prev, description: html }))
+                      }
+                      isEditable={true}
+                    />
+                  </FormGroup>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <FormGroup label="Price ($)">
-                  <input
-                    type="text"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleChange}
-                    placeholder="99"
-                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
-                  />
-                </FormGroup>
-                <FormGroup label="Duration (weeks)">
-                  <input
-                    type="text"
-                    name="duration_in_weeks"
-                    value={formData.duration_in_weeks}
-                    onChange={handleChange}
-                    placeholder="12"
-                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
-                  />
-                </FormGroup>
-                <FormGroup label="Level">
-                  <select
-                    name="level"
-                    value={formData.level}
-                    onChange={handleChange}
-                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                </FormGroup>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <FormGroup label="Price ($)">
+                      <input
+                        type="text"
+                        name="price"
+                        value={formData.price}
+                        onChange={handleChange}
+                        placeholder="99"
+                        className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
+                      />
+                    </FormGroup>
+                    <FormGroup label="Duration (weeks)">
+                      <input
+                        type="text"
+                        name="duration_in_weeks"
+                        value={formData.duration_in_weeks}
+                        onChange={handleChange}
+                        placeholder="12"
+                        className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
+                      />
+                    </FormGroup>
+                    <FormGroup label="Level">
+                      <select
+                        name="level"
+                        value={formData.level}
+                        onChange={handleChange}
+                        className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                      </select>
+                    </FormGroup>
                 <FormGroup label="Category">
                   <select
                     name="category"
@@ -453,10 +472,10 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
           <div className="flex justify-end">
             <button
               onClick={handleSubmit}
-              disabled={isCreating}
+              disabled={isCreating || isUpdating}
               className="flex items-center gap-2 bg-greenTeal text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isCreating ? (
+              {isCreating || isUpdating ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Submitting...</span>
@@ -464,21 +483,23 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
               ) : (
                 <>
                   <Save className="w-5 h-5" />
-                  <span>Submit Course</span>
+                  <span>{courseId ? "Update Course" : "Submit Course"}</span>
                 </>
               )}
             </button>
-          </div>
-        </div>
-      )}
+              </div>
+            </div>
+          )}
 
-      {activeTab === "Course Curriculum" && (
-        <CourseCurriculum
-          courseId={courseId}
-          onInitialize={handleSubmit}
-          modules={formData.curriculum}
-          onModulesChange={handleCurriculumChange}
-        />
+          {activeTab === "Course Curriculum" && (
+            <CourseCurriculum
+              courseId={courseId}
+              onInitialize={handleSubmit}
+              modules={formData.curriculum}
+              onModulesChange={handleCurriculumChange}
+            />
+          )}
+        </>
       )}
     </div>
   );

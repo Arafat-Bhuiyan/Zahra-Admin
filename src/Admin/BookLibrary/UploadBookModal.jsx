@@ -13,6 +13,7 @@ import {
   useAddBookGalleryImageMutation,
   useAddBookMutation,
   useGetBookCategoriesQuery,
+  useGetLuluPackagesQuery,
 } from "../../Api/adminApi";
 
 import TextEditor from "../../components/Editor";
@@ -39,6 +40,8 @@ const UploadBookModal = ({ onClose, onSave }) => {
     otherImages: [null, null, null],
     bookFile: null,
     sampleFile: null,
+    luluCoverPdf: null,
+    lulu_pod_package_id: "",
     is_visible: true,
   });
 
@@ -46,6 +49,7 @@ const UploadBookModal = ({ onClose, onSave }) => {
   const [addGalleryImage, { isLoading: isUploadingGallery }] =
     useAddBookGalleryImageMutation();
   const { data: categories } = useGetBookCategoriesQuery();
+  const { data: luluPackages } = useGetLuluPackagesQuery();
 
   useEffect(() => {
     if (categories?.length > 0) {
@@ -56,11 +60,21 @@ const UploadBookModal = ({ onClose, onSave }) => {
     }
   }, [categories]);
 
+  useEffect(() => {
+    if (luluPackages?.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        lulu_pod_package_id: luluPackages[0].id,
+      }));
+    }
+  }, [luluPackages]);
+
   const isLoading = isCreating || isUploadingGallery;
 
   const fileInputRef = useRef(null);
   const sampleInputRef = useRef(null);
   const coverInputRef = useRef(null);
+  const luluCoverInputRef = useRef(null);
   const otherInputRefs = [useRef(null), useRef(null), useRef(null)];
 
   const handleChange = (e) => {
@@ -82,6 +96,8 @@ const UploadBookModal = ({ onClose, onSave }) => {
       setFormData((prev) => ({ ...prev, bookFile: file }));
     } else if (type === "sample") {
       setFormData((prev) => ({ ...prev, sampleFile: file }));
+    } else if (type === "lulu_cover") {
+      setFormData((prev) => ({ ...prev, luluCoverPdf: file }));
     }
   };
 
@@ -110,6 +126,8 @@ const UploadBookModal = ({ onClose, onSave }) => {
     data.append("number_of_pages", formData.pages);
     if (formData.bookFile) data.append("book_file", formData.bookFile);
     if (formData.sampleFile) data.append("sample_file", formData.sampleFile);
+    if (formData.luluCoverPdf) data.append("lulu_cover_pdf", formData.luluCoverPdf);
+    if (formData.lulu_pod_package_id) data.append("lulu_pod_package_id", formData.lulu_pod_package_id);
     data.append("video_url", formData.video_url || "");
     data.append("has_physical", has_physical);
     data.append("physical_price", has_physical ? formData.physicalPrice : "0");
@@ -485,6 +503,27 @@ const UploadBookModal = ({ onClose, onSave }) => {
                   </div>
                 </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-neutral-950 text-sm font-normal">
+                    Lulu POD Package
+                  </label>
+                  <div className="relative">
+                    <select
+                      name="lulu_pod_package_id"
+                      value={formData.lulu_pod_package_id}
+                      onChange={handleChange}
+                      className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-sm text-neutral-950"
+                    >
+                      {luluPackages?.map((pkg) => (
+                        <option key={pkg.id} value={pkg.id}>
+                          {pkg.description}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-neutral-950 text-sm font-normal">
@@ -697,6 +736,51 @@ const UploadBookModal = ({ onClose, onSave }) => {
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
                           PDF up to 10MB (preview pages)
+                        </p>
+                        <button
+                          type="button"
+                          className="mt-4 px-4 py-2 bg-white border border-black/10 rounded-lg text-sm font-medium"
+                        >
+                          Select File
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Lulu Cover PDF */}
+                <div className="space-y-2">
+                  <label className="text-neutral-950 text-sm font-normal">
+                    Lulu Cover PDF
+                  </label>
+                  <div
+                    onClick={() => luluCoverInputRef.current?.click()}
+                    className="h-40 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-6 cursor-pointer hover:border-teal-400 transition-colors bg-gray-50/50"
+                  >
+                    <input
+                      type="file"
+                      className="hidden"
+                      ref={luluCoverInputRef}
+                      accept=".pdf"
+                      onChange={(e) => handleFileChange(e, "lulu_cover")}
+                    />
+                    {formData.luluCoverPdf ? (
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-8 h-8 text-teal-600" />
+                        <span className="text-sm font-medium text-neutral-950">
+                          {formData.luluCoverPdf.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3">
+                          <FileText className="w-6 h-6 text-gray-400" />
+                        </div>
+                        <p className="text-sm text-gray-600 font-medium">
+                          Click to upload or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Lulu print-ready cover PDF
                         </p>
                         <button
                           type="button"

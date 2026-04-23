@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { X, Edit3, Save, ChevronDown, Eye, EyeOff } from "lucide-react";
+import { X, Edit3, Save, ChevronDown, Eye, EyeOff, FileText, Upload } from "lucide-react";
 import QuillEditor from "../../components/Editor";
 import {
   useUpdateBookMutation,
   useGetBookCategoriesQuery,
+  useGetLuluPackagesQuery,
 } from "../../Api/adminApi";
 import toast from "react-hot-toast";
+import { useRef } from "react";
 
 const EditBookModal = ({ book, onClose, onSave }) => {
   const [activeTab, setActiveTab] = useState("Basic");
@@ -26,10 +28,19 @@ const EditBookModal = ({ book, onClose, onSave }) => {
     stock_count: "0",
     video_url: "",
     is_visible: true,
+    lulu_pod_package_id: "",
+    bookFile: null,
+    sampleFile: null,
+    luluCoverPdf: null,
   });
 
   const [updateBook, { isLoading }] = useUpdateBookMutation();
   const { data: categories } = useGetBookCategoriesQuery();
+  const { data: luluPackages } = useGetLuluPackagesQuery();
+
+  const fileInputRef = useRef(null);
+  const sampleInputRef = useRef(null);
+  const luluCoverInputRef = useRef(null);
 
   useEffect(() => {
     if (book) {
@@ -60,9 +71,26 @@ const EditBookModal = ({ book, onClose, onSave }) => {
         stock_count: book.stock_count?.toString() || "0",
         video_url: book.video_url || "",
         is_visible: book.is_visible ?? true,
+        lulu_pod_package_id: book.lulu_pod_package_id || "",
+        bookFile: null,
+        sampleFile: null,
+        luluCoverPdf: null,
       });
     }
   }, [book]);
+
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (type === "book") {
+      setFormData((prev) => ({ ...prev, bookFile: file }));
+    } else if (type === "sample") {
+      setFormData((prev) => ({ ...prev, sampleFile: file }));
+    } else if (type === "lulu_cover") {
+      setFormData((prev) => ({ ...prev, luluCoverPdf: file }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,39 +100,40 @@ const EditBookModal = ({ book, onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const has_physical =
-      formData.type.includes("Physical") || formData.type.includes("Both");
-    const has_digital =
-      formData.type.includes("Digital") || formData.type.includes("Both");
+    const data = new FormData();
+    data.append("category", formData.category);
+    data.append("title", formData.title);
+    data.append("author", formData.author);
+    data.append("author_designation", formData.authorDesignation);
+    data.append("description", formData.description);
+    data.append("isbn", formData.isbn);
+    data.append("language", formData.language);
+    data.append("publisher", formData.publisher);
+    data.append("published_date", formData.published_date);
+    data.append("number_of_pages", formData.number_of_pages);
+    data.append("video_url", formData.video_url || "");
+    data.append("has_physical", has_physical);
+    data.append("physical_price", has_physical ? formData.price : "0");
+    data.append("stock_count", formData.stock_count);
+    data.append("has_digital", has_digital);
+    data.append("digital_price", has_digital ? formData.price : "0");
+    
+    if (formData.bookFile) data.append("book_file", formData.bookFile);
+    if (formData.sampleFile) data.append("sample_file", formData.sampleFile);
+    if (formData.luluCoverPdf) data.append("lulu_cover_pdf", formData.luluCoverPdf);
+    if (formData.lulu_pod_package_id) data.append("lulu_pod_package_id", formData.lulu_pod_package_id);
 
-    const payload = {
-      category: parseInt(formData.category),
-      title: formData.title,
-      author: formData.author,
-      author_designation: formData.authorDesignation,
-      description: formData.description,
-      isbn: formData.isbn,
-      language: formData.language,
-      publisher: formData.publisher,
-      published_date: formData.published_date,
-      number_of_pages: parseInt(formData.number_of_pages),
-      video_url: formData.video_url,
-      has_physical,
-      physical_price: has_physical ? formData.price : "0",
-      stock_count: parseInt(formData.stock_count),
-      has_digital,
-      digital_price: has_digital ? formData.price : "0",
-      tags: formData.tags
-        ? formData.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter((t) => t !== "")
-        : [],
-      is_visible: formData.is_visible,
-    };
+    const tagsArray = formData.tags
+      ? formData.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t !== "")
+      : [];
+    data.append("tags", JSON.stringify(tagsArray));
+    data.append("is_visible", formData.is_visible);
 
     try {
-      await updateBook({ slug: book.slug, body: payload }).unwrap();
+      await updateBook({ slug: book.slug, body: data }).unwrap();
       toast.success("Book updated successfully!");
       onClose();
     } catch (error) {
@@ -154,9 +183,8 @@ const EditBookModal = ({ book, onClose, onSave }) => {
             </p>
           </div>
 
-          {/* Tabs */}
           <div className="w-full bg-gray-100 p-1 rounded-xl flex gap-1 mb-6">
-            {["Basic", "Details"].map((tab) => (
+            {["Basic", "Details", "Files"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -375,6 +403,28 @@ const EditBookModal = ({ book, onClose, onSave }) => {
                   </div>
                 </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-neutral-950 text-sm font-normal">
+                    Lulu POD Package
+                  </label>
+                  <div className="relative">
+                    <select
+                      name="lulu_pod_package_id"
+                      value={formData.lulu_pod_package_id}
+                      onChange={handleChange}
+                      className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-sm text-neutral-950"
+                    >
+                      <option value="">Select Package</option>
+                      {luluPackages?.map((pkg) => (
+                        <option key={pkg.id} value={pkg.id}>
+                          {pkg.description}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-neutral-950 text-sm font-normal">
@@ -451,8 +501,117 @@ const EditBookModal = ({ book, onClose, onSave }) => {
                     name="tags"
                     value={formData.tags}
                     onChange={handleChange}
-                    className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none text-sm"
-                  />
+                      className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none text-sm"
+                    />
+                  </div>
+                </div>
+            )}
+
+            {activeTab === "Files" && (
+              <div className="space-y-5">
+                {/* Book File */}
+                <div className="space-y-2">
+                  <label className="text-neutral-950 text-sm font-normal">
+                    Book File (PDF)
+                  </label>
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-32 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-teal-400 transition-colors bg-gray-50/50"
+                  >
+                    <input
+                      type="file"
+                      className="hidden"
+                      ref={fileInputRef}
+                      accept=".pdf"
+                      onChange={(e) => handleFileChange(e, "book")}
+                    />
+                    {formData.bookFile ? (
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-8 h-8 text-teal-600" />
+                        <span className="text-sm font-medium text-neutral-950">
+                          {formData.bookFile.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <FileText className="w-6 h-6 text-gray-400 mb-2" />
+                        <p className="text-xs text-gray-600 font-medium text-center">
+                          {book.book_file ? "Click to replace book file" : "Click to upload book file"}
+                        </p>
+                        {book.book_file && <p className="text-[10px] text-teal-600 mt-1">Current file exists</p>}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sample File */}
+                <div className="space-y-2">
+                  <label className="text-neutral-950 text-sm font-normal">
+                    Sample File (PDF)
+                  </label>
+                  <div
+                    onClick={() => sampleInputRef.current?.click()}
+                    className="h-32 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-teal-400 transition-colors bg-gray-50/50"
+                  >
+                    <input
+                      type="file"
+                      className="hidden"
+                      ref={sampleInputRef}
+                      accept=".pdf"
+                      onChange={(e) => handleFileChange(e, "sample")}
+                    />
+                    {formData.sampleFile ? (
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-8 h-8 text-teal-600" />
+                        <span className="text-sm font-medium text-neutral-950">
+                          {formData.sampleFile.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <FileText className="w-6 h-6 text-gray-400 mb-2" />
+                        <p className="text-xs text-gray-600 font-medium text-center">
+                          {book.sample_file ? "Click to replace sample file" : "Click to upload sample file"}
+                        </p>
+                        {book.sample_file && <p className="text-[10px] text-teal-600 mt-1">Current sample exists</p>}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Lulu Cover PDF */}
+                <div className="space-y-2">
+                  <label className="text-neutral-950 text-sm font-normal">
+                    Lulu Cover PDF
+                  </label>
+                  <div
+                    onClick={() => luluCoverInputRef.current?.click()}
+                    className="h-32 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:border-teal-400 transition-colors bg-gray-50/50"
+                  >
+                    <input
+                      type="file"
+                      className="hidden"
+                      ref={luluCoverInputRef}
+                      accept=".pdf"
+                      onChange={(e) => handleFileChange(e, "lulu_cover")}
+                    />
+                    {formData.luluCoverPdf ? (
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-8 h-8 text-teal-600" />
+                        <span className="text-sm font-medium text-neutral-950">
+                          {formData.luluCoverPdf.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-6 h-6 text-gray-400 mb-2" />
+                        <p className="text-xs text-gray-600 font-medium text-center">
+                          {book.lulu_cover_pdf ? "Click to replace Lulu cover PDF" : "Click to upload Lulu cover PDF"}
+                        </p>
+                        {book.lulu_cover_pdf && <p className="text-[10px] text-teal-600 mt-1">Current cover exists</p>}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
