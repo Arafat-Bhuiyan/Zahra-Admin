@@ -4,8 +4,10 @@ import { Bell, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { clearAuth } from "@/Redux/features/auth/authSlice";
+import { useGetTeacherProfileMeQuery } from "@/Api/adminApi";
 
 const Header = ({ title, subtitle }) => {
+  const { data: profileData } = useGetTeacherProfileMeQuery();
   const [hasNotification, setHasNotification] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,6 +18,9 @@ const Header = ({ title, subtitle }) => {
     dispatch(clearAuth());
     navigate("/login");
   };
+
+  const displayName = profileData?.user?.first_name + " " + profileData?.user?.last_name || "Teacher";
+  const displayImage = profileData?.profile_picture || profile;
 
   return (
     <div className="flex items-center justify-between px-6 py-7 bg-[#FFFFFF]">
@@ -28,18 +33,18 @@ const Header = ({ title, subtitle }) => {
         <p className="text-base font-normal text-[#4A5565] mt-1">{subtitle}</p>
       </div>
       <div className="flex items-center gap-4">
-        
+
         <div className="flex items-center gap-3 border-l-2 border-[#0000001A] pl-4">
           <div className="flex flex-col">
             <h1 className="text-right justify-start text-neutral-950 text-sm font-semibold inter-font">
-              Fatima Ara
+              {displayName}
             </h1>
             <p className="text-right justify-start text-gray-600 text-xs font-normal inter-font capitalize">
               {role || "User"}
             </p>
           </div>
           <button className="w-10 h-10 rounded-full overflow-hidden bg-[#F5F3F3] border border-[#093349] font-bold text-base">
-            <img src={profile} alt="" />
+            <img src={displayImage} alt="" className="w-full h-full object-cover" />
           </button>
         </div>
         <button

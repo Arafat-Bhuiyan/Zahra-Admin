@@ -160,9 +160,7 @@ export default function CourseDetailsPage() {
               {/* Left: big media */}
               <div className="flex-1 relative">
                 <img
-                  src={course.image}
-                  alt={course.title}
-                  className="w-full h-64 lg:h-96 object-cover rounded-lg"
+                  src={course.thumbnail || course.image}
                 />
                 {/* play overlay for any course (visual) */}
                 <button className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-teal-600 text-white p-4 rounded-full shadow-lg">
@@ -179,9 +177,9 @@ export default function CourseDetailsPage() {
                 <div className="bg-white border rounded-lg shadow-sm h-full flex flex-col justify-between">
                   <div>
 
-                    <div className="rounded-t-lg overflow-hidden">
+                    <div className="rounded-t-lg overflow-hidden h-48">
                       <img
-                        src={course.image}
+                        src={course.thumbnail || course.image}
                         alt="thumb"
                         className="w-full h-full object-cover"
                       />

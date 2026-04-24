@@ -1,99 +1,57 @@
-import { CircleCheck } from "lucide-react";
+import { useGetCourseByIdQuery, useGetCourseEnrollmentsQuery } from "../../Api/adminApi";
 
 export default function CourseOverview({ course }) {
+  const courseId = course?.id;
+
+  const { data: courseDetail, isLoading: courseLoading } = useGetCourseByIdQuery(courseId, {
+    skip: !courseId,
+  });
+
+  const { data: enrollmentsData, isLoading: enrollmentsLoading } = useGetCourseEnrollmentsQuery(
+    { courseId },
+    { skip: !courseId }
+  );
+
+  const description = courseDetail?.description || course?.description;
+  const subtitle = courseDetail?.subtitle || course?.subtitle;
+  const enrollments = enrollmentsData?.results || [];
+  const totalEnrolled = enrollmentsData?.count ?? 0;
+
   return (
     <div className="space-y-6">
+      {/* Description */}
       <div className="border rounded-xl p-5 bg-white">
-        <h3 className="text-xl font-bold text-gray-900 mb-3">
-          40 Days Towards Change "Faith-centered emotional healing journey"
+        <h3 className="text-xl font-bold text-gray-900 mb-4">
+          {courseDetail?.title || course?.title}
         </h3>
-        <p className="text-gray-700 leading-relaxed">This comprehensive healing program integrates Islamic spiritual practices with evidence-based psychological approaches. Through 5 carefully designed modules over 6 weeks (40 Days), you will learn tools and insights to overcome stress, build emotional resilience, and find inner peace through faith-based approaches.</p> <br />
-        <p className="text-gray-700 leading-relaxed">The course combines video lessons, guided exercises, daily routines, and community support to help you develop lasting mental wellness practices rooted in Islamic teachings. Each session is 2 hours, designed to give you deep understanding and practical application.</p>
+        {subtitle && (
+          <p className="text-gray-500 text-sm mb-4 italic">{subtitle}</p>
+        )}
+        {courseLoading ? (
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-100 animate-pulse rounded w-full" />
+            <div className="h-4 bg-gray-100 animate-pulse rounded w-5/6" />
+            <div className="h-4 bg-gray-100 animate-pulse rounded w-4/6" />
+          </div>
+        ) : description ? (
+          <div
+            className="prose prose-gray max-w-none text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
+        ) : (
+          <p className="text-gray-400 italic">No description available.</p>
+        )}
       </div>
 
-      <div className="border rounded-xl p-5 bg-white">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          What You'll Learn
-        </h3>
-        <ul className="space-y-3">
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-            <span className="text-gray-700">
-              Understanding anxiety from both Islamic and psychological perspectives
-            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-
-            <span className="text-gray-700">
-              Integrate dhikr and mindfulness techniques for anxiety relief
-            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-
-            <span className="text-gray-700">
-              Apply cognitive behavioral strategies rooted in Islamic teachings
-            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-
-            <span className="text-gray-700">
-              Build lasting emotional resilience through faith practices
-            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-
-            <span className="text-gray-700">
-              Creating personalized anxiety management routines
-            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-
-            <span className="text-gray-700">
-              Recognizing triggers and developing coping mechanisms
-            </span>
-          </li>
-        </ul>
-      </div>
-      <div className="border rounded-xl p-5 bg-white">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Requirements
-        </h3>
-        <ul className="space-y-3">
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-            <span className="text-gray-700">
-              Open mind and willingness to learn            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-
-            <span className="text-gray-700">
-              Basic understanding of Islam            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-
-            <span className="text-gray-700">
-              Notebook for exercises            </span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CircleCheck size={20} className="text-primary" />
-
-            <span className="text-gray-700">
-              Commitment to daily practice            </span>
-          </li>
-
-        </ul>
-      </div>
+      {/* Enrolled Students */}
       <div className="border rounded-xl p-5 bg-white">
         <p className="text-gray-400 font-medium text-sm">Total Enrolled</p>
         <h3 className="text-2xl font-bold text-gray-900 mb-6">
-          245 students
+          {enrollmentsLoading ? (
+            <span className="inline-block h-7 w-24 bg-gray-100 animate-pulse rounded" />
+          ) : (
+            `${totalEnrolled} student${totalEnrolled !== 1 ? "s" : ""}`
+          )}
         </h3>
 
         <div className="border border-gray-200 rounded-xl overflow-hidden">
@@ -106,26 +64,42 @@ export default function CourseOverview({ course }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {[
-                { name: "Emma Wilson", email: "emma.w@email.com", status: "Active" },
-                { name: "Michael Chen", email: "michael.c@email.com", status: "Active" },
-                { name: "Sarah Parker", email: "sarah.p@email.com", status: "Active" },
-                { name: "David Kim", email: "david.k@email.com", status: "Behind" },
-                { name: "Lisa Anderson", email: "lisa.a@email.com", status: "Active" },
-              ].map((student, idx) => (
-                <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-700">{student.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{student.email}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${student.status === "Active"
-                      ? "bg-[#E6F6EC] text-[#00A63E]"
-                      : "bg-[#FFF4E5] text-[#FF9500]"
-                      }`}>
-                      {student.status}
-                    </span>
+              {enrollmentsLoading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-100 animate-pulse rounded w-32" /></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-gray-100 animate-pulse rounded w-40" /></td>
+                    <td className="px-6 py-4"><div className="h-5 bg-gray-100 animate-pulse rounded-full w-16" /></td>
+                  </tr>
+                ))
+              ) : enrollments.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-400">
+                    No students enrolled yet.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                enrollments.map((enrollment) => {
+                  const student = enrollment.student;
+                  const fullName = `${student?.first_name || ""} ${student?.last_name || ""}`.trim() || "—";
+                  const status = enrollment.is_completed ? "Completed" : "Active";
+                  return (
+                    <tr key={enrollment.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-700">{fullName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{student?.email || "—"}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                          status === "Completed"
+                            ? "bg-[#E6F6EC] text-[#00A63E]"
+                            : "bg-[#EEF4FF] text-[#2563EB]"
+                        }`}>
+                          {status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

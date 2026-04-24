@@ -29,7 +29,7 @@ const EditBookModal = ({ book, onClose, onSave }) => {
     video_url: "",
     is_visible: true,
     lulu_pod_package_id: "",
-    bookFile: null,
+    digital_file: null,
     sampleFile: null,
     luluCoverPdf: null,
   });
@@ -72,7 +72,7 @@ const EditBookModal = ({ book, onClose, onSave }) => {
         video_url: book.video_url || "",
         is_visible: book.is_visible ?? true,
         lulu_pod_package_id: book.lulu_pod_package_id || "",
-        bookFile: null,
+        digital_file: null,
         sampleFile: null,
         luluCoverPdf: null,
       });
@@ -84,7 +84,7 @@ const EditBookModal = ({ book, onClose, onSave }) => {
     if (!file) return;
 
     if (type === "book") {
-      setFormData((prev) => ({ ...prev, bookFile: file }));
+      setFormData((prev) => ({ ...prev, digital_file: file }));
     } else if (type === "sample") {
       setFormData((prev) => ({ ...prev, sampleFile: file }));
     } else if (type === "lulu_cover") {
@@ -117,17 +117,17 @@ const EditBookModal = ({ book, onClose, onSave }) => {
     data.append("stock_count", formData.stock_count);
     data.append("has_digital", has_digital);
     data.append("digital_price", has_digital ? formData.price : "0");
-    
-    if (formData.bookFile) data.append("book_file", formData.bookFile);
+
+    if (formData.digital_file) data.append("digital_file", formData.digital_file);
     if (formData.sampleFile) data.append("sample_file", formData.sampleFile);
     if (formData.luluCoverPdf) data.append("lulu_cover_pdf", formData.luluCoverPdf);
     if (formData.lulu_pod_package_id) data.append("lulu_pod_package_id", formData.lulu_pod_package_id);
 
     const tagsArray = formData.tags
       ? formData.tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter((t) => t !== "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t !== "")
       : [];
     data.append("tags", JSON.stringify(tagsArray));
     data.append("is_visible", formData.is_visible);
@@ -188,11 +188,10 @@ const EditBookModal = ({ book, onClose, onSave }) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === tab
-                    ? "bg-white text-neutral-950 shadow-sm"
-                    : "text-gray-500 hover:text-neutral-800"
-                }`}
+                className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab
+                  ? "bg-white text-neutral-950 shadow-sm"
+                  : "text-gray-500 hover:text-neutral-800"
+                  }`}
               >
                 {tab === "Basic" ? "Basic Info" : tab}
               </button>
@@ -223,11 +222,10 @@ const EditBookModal = ({ book, onClose, onSave }) => {
                     <div className="flex items-center justify-between p-3 bg-zinc-100 border border-black/5 rounded-xl transition-all hover:bg-zinc-200/50">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`p-2 rounded-lg transition-colors ${
-                            formData.is_visible
-                              ? "bg-emerald-100 text-emerald-600"
-                              : "bg-rose-100 text-rose-600"
-                          }`}
+                          className={`p-2 rounded-lg transition-colors ${formData.is_visible
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-rose-100 text-rose-600"
+                            }`}
                         >
                           {formData.is_visible ? (
                             <Eye className="w-4 h-4" />
@@ -255,16 +253,14 @@ const EditBookModal = ({ book, onClose, onSave }) => {
                             is_visible: !prev.is_visible,
                           }))
                         }
-                        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none ring-2 ring-transparent ring-offset-2 ${
-                          formData.is_visible ? "bg-teal-600" : "bg-gray-300"
-                        }`}
+                        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none ring-2 ring-transparent ring-offset-2 ${formData.is_visible ? "bg-teal-600" : "bg-gray-300"
+                          }`}
                       >
                         <span
-                          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                            formData.is_visible
-                              ? "translate-x-6"
-                              : "translate-x-1"
-                          }`}
+                          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${formData.is_visible
+                            ? "translate-x-6"
+                            : "translate-x-1"
+                            }`}
                         />
                       </button>
                     </div>
@@ -501,10 +497,10 @@ const EditBookModal = ({ book, onClose, onSave }) => {
                     name="tags"
                     value={formData.tags}
                     onChange={handleChange}
-                      className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none text-sm"
-                    />
-                  </div>
+                    className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none text-sm"
+                  />
                 </div>
+              </div>
             )}
 
             {activeTab === "Files" && (
@@ -525,11 +521,11 @@ const EditBookModal = ({ book, onClose, onSave }) => {
                       accept=".pdf"
                       onChange={(e) => handleFileChange(e, "book")}
                     />
-                    {formData.bookFile ? (
+                    {formData.digital_file ? (
                       <div className="flex items-center gap-3">
                         <FileText className="w-8 h-8 text-teal-600" />
                         <span className="text-sm font-medium text-neutral-950">
-                          {formData.bookFile.name}
+                          {formData.digital_file.name}
                         </span>
                       </div>
                     ) : (
