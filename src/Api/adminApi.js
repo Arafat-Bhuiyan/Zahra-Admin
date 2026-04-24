@@ -988,6 +988,7 @@ export const adminApi = api.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: ["bundles"],
+    }),
 
     // Get Teacher Profile
     getTeacherProfile: builder.query({
