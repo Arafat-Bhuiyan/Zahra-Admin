@@ -988,6 +988,16 @@ export const adminApi = api.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: ["bundles"],
+
+    // Get Teacher Profile
+    getTeacherProfile: builder.query({
+      query: (id) => `/teacher-profiles/${id}/`,
+      providesTags: ["teacher"],
+    }),
+    getTeacherProfileMe: builder.query({
+      query: () => "/teacher-profiles/me/",
+      providesTags: ["teacher"],
+
     }),
   }),
   overrideExisting: false,
@@ -1033,6 +1043,7 @@ export const {
   useUpdateEmailTemplateMutation,
   useDeleteEmailTemplateMutation,
   useGetTeacherProfilesQuery,
+  useGetTeacherProfileMeQuery,
   useGetStudentProfilesQuery,
   useGetTeacherProfileQuery,
   useGetStudentProfileQuery,
