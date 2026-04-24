@@ -19,7 +19,7 @@ const StudentTable = ({ data, onDelete }) => {
             <tr className="text-neutral-950">
               <th className="py-3 px-2 font-normal w-44 text-left">Name</th>
               <th className="py-3 px-2 font-normal w-52 text-left">Email</th>
-              <th className="py-3 px-2 font-normal w-24">Courses</th>
+              {/* <th className="py-3 px-2 font-normal w-24">Courses</th> */}
               <th className="py-3 px-2 font-normal w-32">Joined</th>
               <th className="py-3 px-2 font-normal w-48">Actions</th>
             </tr>
@@ -36,7 +36,9 @@ const StudentTable = ({ data, onDelete }) => {
                 <td className="py-4 px-2 text-neutral-950 whitespace-nowrap text-left">
                   {user.email}
                 </td>
-                <td className="py-4 px-2 text-neutral-950">{user.courses}</td>
+                {/* <td className="py-4 px-2 text-neutral-950">
+                  {(user.courses || []).length}
+                </td> */}
                 <td className="py-4 px-2 text-neutral-950">{user.joined}</td>
 
                 <td className="py-4 px-2">

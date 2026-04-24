@@ -9,15 +9,15 @@ import {
   Tag,
   Type,
 } from "lucide-react";
+import { useUpdateSiteAnnouncementMutation } from "../../Api/adminApi";
 import toast from "react-hot-toast";
-import { useCreateSiteAnnouncementMutation } from "../../Api/adminApi";
 
-const CreatePopupAnnouncementModal = ({ isOpen, onClose }) => {
+const EditPopupAnnouncementModal = ({ isOpen, onClose, announcement }) => {
   const [formData, setFormData] = useState({
     title_prefix: "",
     main_title: "",
     message: "",
-    cta_text: "Learn more",
+    cta_text: "",
     cta_link: "",
     badges: [],
     highlights: [],
@@ -30,7 +30,24 @@ const CreatePopupAnnouncementModal = ({ isOpen, onClose }) => {
   const [newBadge, setNewBadge] = useState("");
   const [newHighlight, setNewHighlight] = useState("");
 
-  const [createAnnouncement, { isLoading }] = useCreateSiteAnnouncementMutation();
+  const [updateAnnouncement, { isLoading }] = useUpdateSiteAnnouncementMutation();
+
+  useEffect(() => {
+    if (isOpen && announcement) {
+      setFormData({
+        title_prefix: announcement.title_prefix || "",
+        main_title: announcement.main_title || "",
+        message: announcement.message || "",
+        cta_text: announcement.cta_text || "Learn more",
+        cta_link: announcement.cta_link || "",
+        badges: Array.isArray(announcement.badges) ? announcement.badges : [],
+        highlights: Array.isArray(announcement.highlights) ? announcement.highlights : [],
+        is_active: announcement.is_active !== undefined ? announcement.is_active : true,
+      });
+      setImagePreview(announcement.image || null);
+      setImageFile(null);
+    }
+  }, [isOpen, announcement]);
 
   if (!isOpen) return null;
 
@@ -58,26 +75,13 @@ const CreatePopupAnnouncementModal = ({ isOpen, onClose }) => {
         submitData.append("image", imageFile);
       }
 
-      await createAnnouncement(submitData).unwrap();
-      toast.success("Site announcement created successfully!");
-
-      setFormData({
-        title_prefix: "",
-        main_title: "",
-        message: "",
-        cta_text: "Learn more",
-        cta_link: "",
-        badges: [],
-        highlights: [],
-        is_active: true,
-      });
-      setImageFile(null);
-      setImagePreview(null);
+      await updateAnnouncement({ id: announcement.id, body: submitData }).unwrap();
+      toast.success("Site announcement updated successfully!");
       onClose();
     } catch (err) {
       const errorMsg = err?.data?.error 
         || (err?.data && typeof err.data === 'object' && Object.values(err.data).flat().join(" | "))
-        || "Failed to create announcement.";
+        || "Failed to update announcement.";
       toast.error(errorMsg);
     }
   };
@@ -126,7 +130,7 @@ const CreatePopupAnnouncementModal = ({ isOpen, onClose }) => {
         <div className="px-8 py-6 bg-gradient-to-r from-[#7AA4A5] to-[#5e8283] relative">
           <div className="flex justify-between items-center text-white">
             <div>
-              <h2 className="text-2xl font-bold inter-font">Create Site Popup</h2>
+              <h2 className="text-2xl font-bold inter-font">Edit Site Popup</h2>
               <p className="text-white/80 text-sm mt-1">Configure your site-wide announcement</p>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -313,7 +317,7 @@ const CreatePopupAnnouncementModal = ({ isOpen, onClose }) => {
           </button>
           <button disabled={isLoading} onClick={handleSubmit} className="px-8 py-2.5 rounded-xl bg-[#7BA0A0] text-white font-black uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-[#6A8F8F] transition-all shadow-lg active:scale-95 disabled:opacity-50">
             <Send size={16} />
-            {isLoading ? "Creating..." : "Create Popup"}
+            {isLoading ? "Updating..." : "Update Popup"}
           </button>
         </div>
       </div>
@@ -321,4 +325,4 @@ const CreatePopupAnnouncementModal = ({ isOpen, onClose }) => {
   );
 };
 
-export default CreatePopupAnnouncementModal;
+export default EditPopupAnnouncementModal;

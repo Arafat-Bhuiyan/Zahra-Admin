@@ -7,6 +7,8 @@ import {
   Calendar,
   ChevronDown,
   X,
+  Users,
+  LayoutGrid,
 } from "lucide-react";
 
 const CourseDetailsContent = ({ course }) => {
@@ -16,51 +18,25 @@ const CourseDetailsContent = ({ course }) => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState("");
 
-  const students = [
-    {
-      id: 1,
-      name: "Emma Wilson",
-      courseDetails: "Full Stack Web Development",
-      enrollmentDate: "2024-02-15 10:30 AM",
-      paymentStatus: "Completed",
-      orderId: "#ORD-7829",
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      courseDetails: "Advanced React Patterns",
-      enrollmentDate: "2024-02-16 02:15 PM",
-      paymentStatus: "Pending",
-      orderId: "#ORD-7830",
-    },
-    {
-      id: 3,
-      name: "Sarah Parker",
-      courseDetails: "UI/UX Design Masterclass",
-      enrollmentDate: "2024-02-17 09:45 AM",
-      paymentStatus: "Completed",
-      orderId: "#ORD-7831",
-    },
-    {
-      id: 4,
-      name: "David Kim",
-      courseDetails: "Node.js Backend Essentials",
-      enrollmentDate: "2024-02-18 11:00 AM",
-      paymentStatus: "Completed",
-      orderId: "#ORD-7832",
-    },
-    {
-      id: 5,
-      name: "Lisa Anderson",
-      courseDetails: "Mobile App Development",
-      enrollmentDate: "2024-02-19 04:30 PM",
-      paymentStatus: "Failed",
-      orderId: "#ORD-7833",
-    },
-  ];
+  const getDisplayValue = (value) => {
+    if (value == null) return "N/A";
+    if (typeof value === "string" || typeof value === "number") {
+      return value;
+    }
+    return String(value);
+  };
+
+  const instructorName = course.teacher?.user 
+    ? `${course.teacher.user.first_name} ${course.teacher.user.last_name}`
+    : "N/A";
+
+  const categoryName = course.category?.name || "N/A";
+  const durationText = course.duration_in_weeks ? `${course.duration_in_weeks} Weeks` : "N/A";
+  const lessonsText = course.total_lessons ? `${course.total_lessons} Lessons` : "N/A";
 
   const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
+    if (!course.enrollments) return [];
+    return course.enrollments.filter((student) => {
       const matchesSearch =
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.courseDetails
@@ -76,7 +52,7 @@ const CourseDetailsContent = ({ course }) => {
 
       return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [searchTerm, statusFilter, dateFilter]);
+  }, [searchTerm, statusFilter, dateFilter, course.enrollments]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-10">
@@ -86,28 +62,42 @@ const CourseDetailsContent = ({ course }) => {
           <span className="w-2 h-2 rounded-full bg-teal-500"></span>
           Course Information
         </div>
-        <div className="grid grid-cols-2 gap-6">
-          <div className="col-span-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="col-span-2 md:col-span-3">
             <DetailItem label="Course Title" value={course.title} />
           </div>
-          <div className="col-span-2">
+          <div className="col-span-2 md:col-span-3">
             <DetailItem
               label="Course Subtitle"
               value={course.subtitle || "N/A"}
             />
           </div>
-          <div className="col-span-2">
-            <DetailItem label="Level" value={course.level || "Beginner"} />
-          </div>
-          <DetailItem label="Instructor" value={course.instructor} />
-          <DetailItem label="Category" value={course.category} />
-          <DetailItem label="Price" value={course.price} />
-          <DetailItem label="Duration" value={course.duration} />
-          <DetailItem
-            label="Total Lessons"
-            value={`${course.lessons} lessons`}
+          <DetailItem 
+            label="Status" 
+            value={
+              course.status ? (
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${
+                    course.status === "running" ? "bg-red-500 animate-pulse" : 
+                    course.status === "upcoming" ? "bg-lime-500" : "bg-sky-500"
+                  }`} />
+                  <span className="uppercase text-xs font-black tracking-tight">{course.status}</span>
+                </div>
+              ) : "N/A"
+            } 
           />
-          <div className="col-span-2">
+          <DetailItem label="Level" value={course.level || "Beginner"} />
+          <DetailItem label="Price" value={`$${course.price || "0.00"}`} />
+          
+          <DetailItem label="Instructor" value={instructorName} />
+          <DetailItem label="Category" value={categoryName} />
+          <DetailItem label="Duration" value={durationText} />
+          
+          <DetailItem label="Lessons" value={lessonsText} />
+          <DetailItem label="Hours Per Session" value={`${course.hours_per_session || "0"} hrs`} />
+          <DetailItem label="Total Hours" value={`${course.total_hours || "0"} hrs`} />
+
+          <div className="col-span-2 md:col-span-3">
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3 block">
               Description
             </label>
@@ -118,150 +108,111 @@ const CourseDetailsContent = ({ course }) => {
         </div>
       </div>
 
-      {/* Learning Objectives & Requirements */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* Teacher Profile Section */}
+      {course.teacher && (
         <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-6">
           <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs">
-            <CheckCircle2 className="w-4 h-4 text-teal-600" />
-            What You'll Learn
+            <Users className="w-4 h-4 text-teal-600" />
+            About the Instructor
           </div>
-          <div className="space-y-3">
-            {course.learningObjectives?.map((obj, i) => (
-              <div
-                key={i}
-                className="flex gap-4 items-start p-3 bg-teal-50/30 rounded-xl border border-teal-50"
-              >
-                <CheckCircle2 className="w-5 h-5 text-teal-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-stone-700 font-medium leading-relaxed">
-                  {obj}
-                </span>
+          <div className="flex flex-col md:flex-row items-start gap-6 p-6 bg-stone-50 rounded-3xl border border-stone-100">
+            <img 
+              src={course.teacher.profile_picture || "https://zahra-cdn.b-cdn.net/teachers/profiles/placeholder.webp"} 
+              alt={instructorName}
+              className="w-24 h-24 rounded-2xl object-cover shadow-sm border-4 border-white"
+            />
+            <div className="space-y-3 flex-1">
+              <div>
+                <h4 className="text-xl font-black text-stone-900 tracking-tight">{instructorName}</h4>
+                <p className="text-sm font-bold text-teal-600 uppercase tracking-wider">{course.teacher.professional_title || "Instructor"}</p>
               </div>
-            )) || <span className="text-sm text-stone-400">N/A</span>}
+              <p className="text-[15px] text-stone-600 leading-relaxed font-medium">
+                {course.teacher.about || "No biography provided."}
+              </p>
+              <div className="flex flex-wrap gap-4 pt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Rate:</span>
+                  <span className="text-xs font-bold text-stone-700">${course.teacher.consultation_rate}/hr</span>
+                </div>
+                {course.teacher.offers_consultations && (
+                  <span className="px-2 py-0.5 bg-teal-50 text-teal-600 text-[10px] font-bold rounded-full uppercase tracking-tighter">
+                    Available for Consultations
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </section>
+      )}
 
-        <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-6">
-          <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs">
-            <AlertCircle className="w-4 h-4 text-amber-600" />
-            Requirements
-          </div>
-          <div className="space-y-3">
-            {course.requirements?.map((req, i) => (
-              <div
-                key={i}
-                className="flex gap-4 items-start p-3 bg-amber-50/30 rounded-xl border border-amber-50"
-              >
-                <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-stone-700 font-medium leading-relaxed">
-                  {req}
+      {/* Enrollment Status section */}
+      {course.enrollments && course.enrollments.length > 0 && (
+        <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+                Enrollment Status
+              </p>
+              <h3 className="text-3xl font-black text-stone-900">
+                {filteredStudents.length}{" "}
+                <span className="text-lg font-medium text-stone-400 ml-1">
+                  {filteredStudents.length === 1 ? "Student" : "Students"} found
                 </span>
+              </h3>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Search Bar */}
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 group-focus-within:text-teal-500 transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Search students, courses..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all w-64"
+                />
               </div>
-            )) || <span className="text-sm text-stone-400">N/A</span>}
-          </div>
-        </section>
-      </div> */}
 
-      {/* Enrollment Stats */}
-      <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">
-              Enrollment Status
-            </p>
-            <h3 className="text-3xl font-black text-stone-900">
-              {filteredStudents.length}{" "}
-              <span className="text-lg font-medium text-stone-400 ml-1">
-                {filteredStudents.length === 1 ? "Student" : "Students"} found
-              </span>
-            </h3>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Search Bar */}
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 group-focus-within:text-teal-500 transition-colors" />
-              <input
-                type="text"
-                placeholder="Search students, courses..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all w-64"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-stone-200 rounded-full transition-colors"
+              {/* Status Filter */}
+              <div className="relative">
+                <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="pl-11 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all appearance-none cursor-pointer"
                 >
-                  <X className="w-3 h-3 text-stone-500" />
-                </button>
-              )}
-            </div>
-
-            {/* Status Filter */}
-            <div className="relative">
-              <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="pl-11 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all appearance-none cursor-pointer"
-              >
-                <option value="All">All Status</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-                <option value="Failed">Failed</option>
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
-            </div>
-
-            {/* Date Filter */}
-            <div className="relative">
-              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-              <input
-                type="date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="pl-11 pr-4 py-3 bg-stone-50 border border-stone-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all cursor-pointer"
-              />
+                  <option value="All">All Status</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Failed">Failed</option>
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="rounded-[1.5rem] border border-stone-200 overflow-x-auto shadow-sm">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="px-6 py-4">Student Name</th>
-                <th className="px-6 py-4">Course Details</th>
-                <th className="px-6 py-4">Enrollment Date & Time</th>
-                <th className="px-6 py-4">Payment Status</th>
-                <th className="px-6 py-4">Order ID</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100">
-              {filteredStudents.length > 0 ? (
-                filteredStudents.map((student) => (
-                  <tr
-                    key={student.id}
-                    className="hover:bg-stone-50/50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-bold text-stone-800">
-                      {student.name}
-                    </td>
-                    <td className="px-6 py-4 text-stone-500 font-medium">
-                      {student.courseDetails}
-                    </td>
-                    <td className="px-6 py-4 text-stone-500 font-medium whitespace-nowrap">
-                      {student.enrollmentDate}
-                    </td>
+          <div className="rounded-[1.5rem] border border-stone-200 overflow-x-auto shadow-sm">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-stone-50 border-b border-stone-200 text-stone-500 font-bold uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th className="px-6 py-4">Student Name</th>
+                  <th className="px-6 py-4">Course Details</th>
+                  <th className="px-6 py-4">Enrollment Date & Time</th>
+                  <th className="px-6 py-4">Payment Status</th>
+                  <th className="px-6 py-4">Order ID</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-100">
+                {filteredStudents.map((student) => (
+                  <tr key={student.id} className="hover:bg-stone-50/50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-stone-800">{student.name}</td>
+                    <td className="px-6 py-4 text-stone-500 font-medium">{student.courseDetails}</td>
+                    <td className="px-6 py-4 text-stone-500 font-medium whitespace-nowrap">{student.enrollmentDate}</td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          student.paymentStatus === "Completed"
-                            ? "bg-teal-50 text-teal-600"
-                            : student.paymentStatus === "Pending"
-                              ? "bg-amber-50 text-amber-600"
-                              : "bg-rose-50 text-rose-600"
-                        }`}
-                      >
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        student.paymentStatus === "Completed" ? "bg-teal-50 text-teal-600" : 
+                        student.paymentStatus === "Pending" ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
+                      }`}>
                         {student.paymentStatus}
                       </span>
                     </td>
@@ -271,42 +222,54 @@ const CourseDetailsContent = ({ course }) => {
                       </button>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <Search className="w-8 h-8 text-stone-300" />
-                      <p className="text-stone-500 font-medium">
-                        No students found matching your filters.
-                      </p>
-                      <button
-                        onClick={() => {
-                          setSearchTerm("");
-                          setStatusFilter("All");
-                          setDateFilter("");
-                        }}
-                        className="text-teal-600 text-sm font-bold hover:underline"
-                      >
-                        Clear all filters
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* Related Courses Section */}
+      {course.related_courses && course.related_courses.length > 0 && (
+        <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
+          <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs">
+            <LayoutGrid className="w-4 h-4 text-teal-600" />
+            Related Courses
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {course.related_courses.map((rel) => (
+              <div key={rel.id} className="group bg-stone-50 rounded-3xl border border-stone-100 overflow-hidden hover:shadow-md transition-all">
+                <div className="aspect-[16/9] relative">
+                  <img 
+                    src={rel.thumbnail || "https://zahra-cdn.b-cdn.net/courses/thumbnails/placeholder.webp"} 
+                    alt={rel.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 right-3 px-2 py-1 bg-white/80 backdrop-blur-sm rounded-lg text-[10px] font-bold text-stone-600 uppercase tracking-tighter">
+                    {rel.level}
+                  </div>
+                </div>
+                <div className="p-4 space-y-3">
+                  <h5 className="font-bold text-stone-800 line-clamp-1 group-hover:text-teal-700 transition-colors">{rel.title}</h5>
+                  <div className="flex items-center justify-between">
+                    <span className="text-teal-800 font-bold text-sm">${rel.price}</span>
+                    <span className="text-xs text-stone-400 font-medium">{rel.duration_in_weeks} Weeks</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };
 
 const DetailItem = ({ label, value }) => (
   <div className="space-y-2">
-    <label className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1">
+    <div className="text-xs font-bold text-stone-500 uppercase tracking-widest ml-1">
       {label}
-    </label>
+    </div>
     <div className="px-5 py-3.5 bg-stone-50 rounded-2xl border border-stone-100 font-bold text-stone-800">
       {value}
     </div>

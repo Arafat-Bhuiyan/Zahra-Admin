@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Search,
   Plus,
@@ -153,36 +153,15 @@ const Courses = () => {
 
   return (
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
-      {/* Stats Quick View */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-        <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-            Total Courses
-          </p>
-          <h4 className="text-2xl font-bold text-neutral-900">48</h4>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-            Enrollments
-          </p>
-          <h4 className="text-2xl font-bold text-neutral-900">12.5k</h4>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-black/5 shadow-sm">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-            Completion Rate
-          </p>
-          <h4 className="text-2xl font-bold text-neutral-900">86%</h4>
-        </div>
-      </div>
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
-        <button
+        {/* <button
           onClick={() => setActiveView("live-sessions")}
           className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold arimo-font transition-all shadow-lg active:scale-95 flex items-center gap-2"
         >
           <Video className="w-5 h-5" />
           Live
-        </button>
+        </button> */}
         <button
           onClick={handleAddCourse}
           className="bg-greenTeal hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-lg active:scale-95 flex items-center gap-2"
@@ -222,22 +201,20 @@ const Courses = () => {
                       setSelectedCategory("");
                       setIsCategoryOpen(false);
                     }}
-                    className={`w-full px-4 py-2.5 rounded-xl text-sm text-left transition-all ${
-                      selectedCategory === ""
-                        ? "bg-teal-50 text-teal-700 font-bold"
-                        : "text-stone-600 hover:bg-stone-50"
-                    }`}
+                    className={`w-full px-4 py-2.5 rounded-xl text-sm text-left transition-all ${selectedCategory === ""
+                      ? "bg-teal-50 text-teal-700 font-bold"
+                      : "text-stone-600 hover:bg-stone-50"
+                      }`}
                   >
                     All Categories
                   </button>
                   {categories.map((cat) => (
                     <div
                       key={cat.id}
-                      className={`group flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${
-                        selectedCategory === cat.id.toString()
-                          ? "bg-teal-50 text-teal-700 font-bold"
-                          : "text-stone-600 hover:bg-stone-50"
-                      }`}
+                      className={`group flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${selectedCategory === cat.id.toString()
+                        ? "bg-teal-50 text-teal-700 font-bold"
+                        : "text-stone-600 hover:bg-stone-50"
+                        }`}
                       onClick={() => {
                         setSelectedCategory(cat.id.toString());
                         setIsCategoryOpen(false);
@@ -260,9 +237,7 @@ const Courses = () => {
                     placeholder="Add category..."
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && handleAddCategory()
-                    }
+                    onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
                     className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
                   />
                   <button
@@ -279,11 +254,10 @@ const Courses = () => {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory("")}
-              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                selectedCategory === ""
-                  ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
-                  : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
-              }`}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${selectedCategory === ""
+                ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
+                : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
+                }`}
             >
               All
             </button>
@@ -291,11 +265,10 @@ const Courses = () => {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id.toString())}
-                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedCategory === cat.id.toString()
-                    ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
-                    : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
-                }`}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${selectedCategory === cat.id.toString()
+                  ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
+                  : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
+                  }`}
               >
                 {cat.name}
               </button>
@@ -327,11 +300,10 @@ const Courses = () => {
                     setSelectedStatus(stat);
                     setIsStatusOpen(false);
                   }}
-                  className={`px-4 py-2.5 rounded-xl text-sm text-left transition-all ${
-                    selectedStatus === stat
-                      ? "bg-teal-50 text-teal-700 font-bold"
-                      : "text-stone-600 hover:bg-stone-50"
-                  }`}
+                  className={`px-4 py-2.5 rounded-xl text-sm text-left transition-all ${selectedStatus === stat
+                    ? "bg-teal-50 text-teal-700 font-bold"
+                    : "text-stone-600 hover:bg-stone-50"
+                    }`}
                 >
                   {stat}
                 </button>
@@ -344,11 +316,10 @@ const Courses = () => {
               <button
                 key={stat}
                 onClick={() => setSelectedStatus(stat)}
-                className={`px-6 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedStatus === stat
-                    ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
-                    : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
-                }`}
+                className={`px-6 py-1.5 rounded-full text-xs font-medium transition-all ${selectedStatus === stat
+                  ? "bg-gradient-to-b from-teal-600 to-cyan-900 text-white shadow-md scale-105"
+                  : "bg-white border border-stone-200 text-stone-500 hover:border-stone-400"
+                  }`}
               >
                 {stat}
               </button>
@@ -466,13 +437,12 @@ const Courses = () => {
                       {/* Status Badge */}
                       <div className="flex">
                         <span
-                          className={`px-4 py-1.5 rounded-[20px] text-xs font-semibold text-white flex items-center gap-2 ${
-                            statusLabel === "Upcoming"
-                              ? "bg-lime-600"
-                              : statusLabel === "Running"
-                                ? "bg-red-700"
-                                : "bg-sky-500"
-                          }`}
+                          className={`px-4 py-1.5 rounded-[20px] text-xs font-semibold text-white flex items-center gap-2 ${statusLabel === "Upcoming"
+                            ? "bg-lime-600"
+                            : statusLabel === "Running"
+                              ? "bg-red-700"
+                              : "bg-sky-500"
+                            }`}
                         >
                           {statusLabel === "Running" && (
                             <span className="relative flex h-2 w-2">
@@ -510,13 +480,13 @@ const Courses = () => {
                               Starts{" "}
                               {c.start_date
                                 ? new Date(c.start_date).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    },
-                                  )
+                                  "en-US",
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  },
+                                )
                                 : "TBD"}
                             </span>
                           )}
@@ -621,13 +591,12 @@ const Courses = () => {
                         <td className="py-4 px-6">
                           <div className="flex justify-center">
                             <span
-                              className={`px-3 py-1 rounded-[20px] text-[10px] font-bold uppercase ${
-                                statusLabel === "Upcoming"
-                                  ? "bg-lime-600 text-white"
-                                  : statusLabel === "Running"
-                                    ? "bg-red-700 text-white"
-                                    : "bg-sky-500 text-white"
-                              }`}
+                              className={`px-3 py-1 rounded-[20px] text-[10px] font-bold uppercase ${statusLabel === "Upcoming"
+                                ? "bg-lime-600 text-white"
+                                : statusLabel === "Running"
+                                  ? "bg-red-700 text-white"
+                                  : "bg-sky-500 text-white"
+                                }`}
                             >
                               {statusLabel}
                             </span>

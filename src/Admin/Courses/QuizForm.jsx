@@ -1,4 +1,5 @@
 import { Plus, Trash2, CheckCircle2 } from "lucide-react";
+import TextEditor from "../../components/Editor";
 
 const QuizForm = ({ data, onChange }) => {
   const updateQuiz = (field, value) => {
@@ -100,12 +101,10 @@ const QuizForm = ({ data, onChange }) => {
         <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
           Description
         </label>
-        <textarea
-          rows={2}
-          value={data.description || ""}
-          onChange={(e) => updateQuiz("description", e.target.value)}
-          placeholder="Brief description of the quiz"
-          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-medium text-stone-800 inter-font resize-none"
+        <TextEditor
+          htmlElement={data.description || ""}
+          onChange={(html) => updateQuiz("description", html)}
+          isEditable={true}
         />
       </div>
 

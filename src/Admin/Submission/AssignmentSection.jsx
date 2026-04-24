@@ -134,7 +134,7 @@ const AssignmentSection = ({ categories, submissions }) => {
                       <span>View Details</span>
                     </button>
 
-                    {submission.status === "Graded" ? (
+                    {submission.isGraded ? (
                       <button
                         onClick={() => handleGrade(submission)}
                         className="flex-1 md:flex-none px-6 py-2.5 rounded-[10px] border border-neutral-300 text-neutral-700 text-sm font-medium hover:bg-neutral-50 transition-colors flex items-center justify-center gap-2"

@@ -189,33 +189,6 @@ const BookLibrary = () => {
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={idx}
-              className="bg-white p-6 rounded-2xl border border-black/10 flex items-center justify-between shadow-sm"
-            >
-              <div className="space-y-1">
-                <p className="text-gray-500 text-sm font-normal">
-                  {stat.label}
-                </p>
-                <p className="text-neutral-950 text-2xl font-bold leading-8">
-                  {stat.value}
-                </p>
-              </div>
-              <div
-                className={`${stat.color} w-12 h-12 rounded-[10px] flex items-center justify-center`}
-              >
-                <Icon className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
       {/* Filter Bar */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/10 flex flex-col md:flex-row items-center gap-4">
         <div className="relative flex-1 w-full">
@@ -381,8 +354,10 @@ const BookLibrary = () => {
                   <div className="text-teal-600 text-sm font-bold leading-tight text-right">
                     {parseFloat(book.digital_price) > 0 && (
                       <div>
-                        <span className="text-xs text-gray-500">Digital Price:</span> ${" "}
-                        {book.digital_price}
+                        <span className="text-xs text-gray-500">
+                          Digital Price:
+                        </span>{" "}
+                        $ {book.digital_price}
                       </div>
                     )}
                     {parseFloat(book.physical_price) > 0 && (

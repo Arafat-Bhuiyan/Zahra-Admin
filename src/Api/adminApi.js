@@ -98,6 +98,10 @@ export const adminApi = api.injectEndpoints({
       query: () => "/book-categories/",
       providesTags: ["books"],
     }),
+    getLuluPackages: builder.query({
+      query: () => "/books/lulu-packages/",
+      providesTags: ["books"],
+    }),
     addBookCategory: builder.mutation({
       query: (name) => ({
         url: "/book-categories/",
@@ -113,6 +117,13 @@ export const adminApi = api.injectEndpoints({
       }),
       invalidatesTags: ["books"],
     }),
+
+    // Get Book Sales
+    getBookSalesData: builder.query({
+      query: (page = 1) => `/orders/book-sales/?page=${page}`,
+      providesTags: ["book-sales"],
+    }),
+
     // Get Blogs
     getBlogsData: builder.query({
       query: () => "/blogs/",
@@ -220,6 +231,142 @@ export const adminApi = api.injectEndpoints({
       query: () => "/courses/",
       providesTags: ["courses"],
     }),
+    // Get Course Details
+    getCourseDetails: builder.query({
+      query: (id) => `/courses/${id}/`,
+      providesTags: (result, error, id) => [{ type: "courses", id }],
+    }),
+    // Create Course
+    createCourse: builder.mutation({
+      query: (data) => ({
+        url: "/courses/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["courses"],
+    }),
+    // Update Course
+    updateCourse: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/courses/${id}/`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "courses", id },
+        "courses",
+      ],
+    }),
+    // Course Modules
+    getCourseModules: builder.query({
+      query: (course_pk) => `/courses/${course_pk}/modules/`,
+      providesTags: (result, error, course_pk) => [{ type: "courseModules", id: course_pk }],
+    }),
+    createCourseModule: builder.mutation({
+      query: ({ course_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "courseModules", id: course_pk }],
+    }),
+    deleteCourseModule: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/modules/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "courseModules", id: course_pk }],
+    }),
+    // Module Lessons
+    getModuleLessons: builder.query({
+      query: ({ course_pk, module_pk, page = 1 }) =>
+        `/courses/${course_pk}/modules/${module_pk}/lessons/?page=${page}`,
+      providesTags: (result, error, { module_pk }) => [
+        { type: "moduleLessons", id: module_pk },
+      ],
+    }),
+    getLessonDetails: builder.query({
+      query: ({ course_pk, module_pk, id }) => `/courses/${course_pk}/modules/${module_pk}/lessons/${id}/`,
+      providesTags: (result, error, { id }) => [{ type: "lesson", id }],
+    }),
+    createModuleLesson: builder.mutation({
+      query: ({ course_pk, module_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    updateModuleLesson: builder.mutation({
+      query: ({ course_pk, module_pk, id, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk, id }) => [
+        { type: "moduleLessons", id: module_pk },
+        { type: "lesson", id }
+      ],
+    }),
+    deleteModuleLesson: builder.mutation({
+      query: ({ course_pk, module_pk, id }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    getVideoStatus: builder.query({
+      query: ({ course_pk, module_pk, id }) => `/courses/${course_pk}/modules/${module_pk}/lessons/${id}/video/`,
+    }),
+    createLessonQuiz: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/quizzes/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    updateLessonQuiz: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, id, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/quizzes/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk, lesson_pk }) => [
+        { type: "moduleLessons", id: module_pk },
+        { type: "lesson", id: lesson_pk }
+      ],
+    }),
+    createLessonQuizQuestion: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, quiz_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/quizzes/${quiz_pk}/questions/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk, lesson_pk }) => [
+        { type: "moduleLessons", id: module_pk },
+        { type: "lesson", id: lesson_pk }
+      ],
+    }),
+    createLessonAssignment: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/assignments/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk }) => [{ type: "moduleLessons", id: module_pk }],
+    }),
+    updateLessonAssignment: builder.mutation({
+      query: ({ course_pk, module_pk, lesson_pk, id, body }) => ({
+        url: `/courses/${course_pk}/modules/${module_pk}/lessons/${lesson_pk}/assignments/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { module_pk, lesson_pk }) => [
+        { type: "moduleLessons", id: module_pk },
+        { type: "lesson", id: lesson_pk }
+      ],
+    }),
     // Course Categories
     getCourseCategories: builder.query({
       query: () => "/course-categories/",
@@ -251,6 +398,10 @@ export const adminApi = api.injectEndpoints({
     getSendgridApi: builder.query({
       query: () => "/email-templates/sendgrid-templates/",
       providesTags: ["sendgrid-api"],
+    }),
+    getTeacherEarnings: builder.query({
+      query: () => "/dashboard/teacher-earnings/",
+      providesTags: ["dashboard"],
     }),
 
     // get Purposes
@@ -290,7 +441,21 @@ export const adminApi = api.injectEndpoints({
 
     // Add more admin-specific endpoints here as needed...
     getTeacherProfiles: builder.query({
-      query: (page = 1) => `/teacher-profiles/?page=${page}`,
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        const page = typeof params === "number" ? params : params.page;
+        if (page) queryParams.append("page", page);
+        if (params && typeof params !== "number") {
+          if (params.offers_consultations !== undefined) {
+            queryParams.append(
+              "offers_consultations",
+              String(params.offers_consultations),
+            );
+          }
+        }
+        const queryString = queryParams.toString();
+        return `/teacher-profiles/${queryString ? `?${queryString}` : ""}`;
+      },
       providesTags: ["teachers"],
     }),
     getStudentProfiles: builder.query({
@@ -303,9 +468,353 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["student"],
     }),
 
+    getTeacherProfile: builder.query({
+      query: (id) => `/teacher-profiles/${id}/`,
+      providesTags: ["teachers"],
+    }),
+
+    getSiteSettings: builder.query({
+      query: () => ({
+        url: "/site-settings/",
+        method: "GET",
+      }),
+      providesTags: ["siteSettings"],
+    }),
+
+    updateSiteSettings: builder.mutation({
+      query: (body) => ({
+        url: "/site-settings/update/",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["siteSettings"],
+    }),
+
+    getAdminDashboard: builder.query({
+      query: () => ({
+        url: "/dashboard/admin/",
+        method: "GET",
+      }),
+      providesTags: ["dashboard"],
+    }),
+
+    getAssignmentSubmissions: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        const page = typeof params === "number" ? params : params.page;
+        if (page) queryParams.append("page", page);
+        if (params.assignment)
+          queryParams.append("assignment", params.assignment);
+        if (params.status) queryParams.append("status", params.status);
+        if (params.user) queryParams.append("user", params.user);
+        const queryString = queryParams.toString();
+        return {
+          url: `/assignment-submissions/${queryString ? `?${queryString}` : ""}`,
+          method: "GET",
+        };
+      },
+      transformResponse: (response) => response?.results || [],
+      providesTags: ["assignmentSubmissions"],
+    }),
+
+    getAssignmentSubmission: builder.query({
+      query: (id) => `/assignment-submissions/${id}/`,
+      providesTags: ["assignmentSubmissions"],
+    }),
+
+    reviewAssignmentSubmission: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/assignment-submissions/${id}/review/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["assignmentSubmissions"],
+    }),
+
+    getConsultations: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.teacher) queryParams.append("teacher", params.teacher);
+        if (params.page) queryParams.append("page", params.page);
+        if (params.search) queryParams.append("search", params.search);
+        const q = queryParams.toString();
+        return `/consultations/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["consultations"],
+    }),
+
+    // Course Discussions
+    getCourseDiscussions: builder.query({
+      query: (course_pk) => `/courses/${course_pk}/discussions/`,
+      providesTags: (result, error, course_pk) => [{ type: "discussions", id: course_pk }],
+    }),
+
+    getCourseDiscussionDetails: builder.query({
+      query: ({ course_pk, id }) => `/courses/${course_pk}/discussions/${id}/`,
+      providesTags: (result, error, { id }) => [{ type: "discussions", id }],
+    }),
+
+    createCourseDiscussion: builder.mutation({
+      query: ({ course_pk, body }) => ({
+        url: `/courses/${course_pk}/discussions/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "discussions", id: course_pk }],
+    }),
+
+    patchCourseDiscussion: builder.mutation({
+      query: ({ course_pk, id, body }) => ({
+        url: `/courses/${course_pk}/discussions/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "discussions", id }],
+    }),
+
+    pinCourseDiscussion: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/discussions/${id}/pin/`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { id, course_pk }) => [
+        { type: "discussions", id },
+        { type: "discussions", id: course_pk },
+      ],
+    }),
+
+    closeCourseDiscussion: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/discussions/${id}/close/`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, { id, course_pk }) => [
+        { type: "discussions", id },
+        { type: "discussions", id: course_pk },
+      ],
+    }),
+
+    deleteCourseDiscussion: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/discussions/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [{ type: "discussions", id: course_pk }],
+    }),
+
+    getDiscussionReplies: builder.query({
+      query: ({ course_pk, post_pk }) => `/courses/${course_pk}/discussions/${post_pk}/replies/`,
+      providesTags: (result, error, { post_pk }) => [{ type: "replies", id: post_pk }],
+    }),
+
+    createDiscussionReply: builder.mutation({
+      query: ({ course_pk, post_pk, body }) => ({
+        url: `/courses/${course_pk}/discussions/${post_pk}/replies/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { post_pk }) => [{ type: "replies", id: post_pk }],
+    }),
+
+    patchDiscussionReply: builder.mutation({
+      query: ({ course_pk, post_pk, id, body }) => ({
+        url: `/courses/${course_pk}/discussions/${post_pk}/replies/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      // Invalidate the replies list for this discussion
+      invalidatesTags: (result, error, { course_pk, post_pk }) => [
+        { type: "replies", id: post_pk },
+        { type: "discussions", id: course_pk },
+      ],
+    }),
+
+    deleteDiscussionReply: builder.mutation({
+      query: ({ course_pk, post_pk, id }) => ({
+        url: `/courses/${course_pk}/discussions/${post_pk}/replies/${id}/`,
+        method: "DELETE",
+      }),
+      // Invalidate replies + parent discussion (reply_count changes)
+      invalidatesTags: (result, error, { course_pk, post_pk }) => [
+        { type: "replies", id: post_pk },
+        { type: "discussions", id: course_pk },
+      ],
+    }),
+
+    getConsultation: builder.query({
+      query: (id) => `/consultations/${id}/`,
+      providesTags: ["consultations"],
+    }),
+
+    createConsultation: builder.mutation({
+      query: (body) => ({
+        url: "/consultations/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["consultations"],
+    }),
+
+    createConsultationRecurring: builder.mutation({
+      query: ({ consultationId, body }) => ({
+        url: `/consultations/${consultationId}/recurring/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["consultations"],
+    }),
+
+    createConsultationBundle: builder.mutation({
+      query: ({ consultationId, body }) => ({
+        url: `/consultations/${consultationId}/bundles/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["consultations"],
+    }),
+    getConsultationCalendar: builder.query({
+      query: ({ id, month }) => `/consultations/${id}/calendar/?month=${month}`,
+      providesTags: ["consultations"],
+    }),
+    getConsultationTimeslots: builder.query({
+      query: ({ id, date, page }) => {
+        const queryParams = new URLSearchParams();
+        if (date) queryParams.append("date", date);
+        if (page) queryParams.append("page", page);
+        // page_size omitted, let backend handle default pagination
+        const q = queryParams.toString();
+        return `/consultations/${id}/timeslots/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["consultations"],
+    }),
+    getRescheduleRequests: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page);
+        if (params.status) queryParams.append("status", params.status);
+        const q = queryParams.toString();
+        return `/reschedule-requests/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["rescheduleRequests"],
+    }),
+    getRescheduleRequestDetails: builder.query({
+      query: (id) => `/reschedule-requests/${id}/`,
+      providesTags: ["rescheduleRequests"],
+    }),
+    acceptRescheduleRequest: builder.mutation({
+      query: (id) => ({
+        url: `/reschedule-requests/${id}/accept/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["rescheduleRequests"],
+    }),
+    declineRescheduleRequest: builder.mutation({
+      query: (id) => ({
+        url: `/reschedule-requests/${id}/decline/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["rescheduleRequests"],
+    }),
+
+    getDonations: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page);
+        if (params.status) queryParams.append("status", params.status);
+        if (params.page_size) queryParams.append("page_size", params.page_size);
+        const q = queryParams.toString();
+        return `/donations/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["donations"],
+    }),
+
+    getNewsletterSubscribers: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page);
+        if (params.page_size) queryParams.append("page_size", params.page_size);
+        const q = queryParams.toString();
+        return `/newsletter/subscribers/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["newsletterSubscribers"],
+    }),
+
+    deleteNewsletterSubscriber: builder.mutation({
+      query: (id) => ({
+        url: `/newsletter/subscribers/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["newsletterSubscribers"],
+    }),
+
     getEnrollments: builder.query({
-      query: (userId) => `/enrollments/?user=${userId}`,
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.user) queryParams.append("user", params.user);
+        if (params?.course) queryParams.append("course", params.course);
+        if (params?.page) queryParams.append("page", params.page);
+        const q = queryParams.toString();
+        return `/enrollments/${q ? `?${q}` : ""}`;
+      },
       providesTags: ["enrollments"],
+    }),
+
+    getCertificateTemplates: builder.query({
+      query: () => "/certificate-templates/",
+      providesTags: ["certificate-templates"],
+    }),
+    getCertificateTemplatePreview: builder.query({
+      query: (id) => ({
+        url: `/certificate-templates/${id}/preview/`,
+        responseHandler: (response) => response.text(),
+      }),
+    }),
+    getCompletedStudents: builder.query({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.course) queryParams.append("course", params.course);
+        // if (params?.page) queryParams.append("page", params.page);
+        const q = queryParams.toString();
+        return `/certificates/completed-students/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["completed-students"],
+    }),
+    issueCertificates: builder.mutation({
+      query: (body) => ({
+        url: "/certificates/issue/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["completed-students"],
+    }),
+
+    // Scholarships
+    getScholarships: builder.query({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append("page", params.page);
+        if (params?.status) queryParams.append("status", params.status);
+        if (params?.course) queryParams.append("course", params.course);
+        const q = queryParams.toString();
+        return `/scholarships/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["scholarships"],
+    }),
+    approveScholarship: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/scholarships/${id}/approve/`,
+        method: "POST",
+        body: body,
+      }),
+      invalidatesTags: ["scholarships"],
+    }),
+    rejectScholarship: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/scholarships/${id}/reject/`,
+        method: "POST",
+        body: body, // e.g. optional rejection note
+      }),
+      invalidatesTags: ["scholarships"],
     }),
 
     // Add Student Profile
@@ -318,6 +827,168 @@ export const adminApi = api.injectEndpoints({
       invalidatesTags: ["students"],
     }),
 
+    // Add Teacher Profile
+    addTeacherProfile: builder.mutation({
+      query: (data) => ({
+        url: "/teacher-profiles/",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["teachers"],
+    }),
+
+    // Update Teacher Profile
+    updateTeacherProfile: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/teacher-profiles/${id}/`,
+        method: "PATCH",
+        body: body,
+      }),
+      invalidatesTags: ["teachers"],
+    }),
+
+    // Delete Student Profile
+    deleteStudentProfile: builder.mutation({
+      query: (id) => ({
+        url: `/student-profiles/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["students"],
+    }),
+
+    deleteTeacherProfile: builder.mutation({
+      query: (id) => ({
+        url: `/teacher-profiles/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["teachers"],
+    }),
+
+    // Site Announcements (Popups)
+    getSiteAnnouncements: builder.query({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append("page", params.page);
+        const q = queryParams.toString();
+        return `/announcements/site/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["siteAnnouncements"],
+    }),
+    createSiteAnnouncement: builder.mutation({
+      query: (body) => ({
+        url: "/announcements/site/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["siteAnnouncements"],
+    }),
+    updateSiteAnnouncement: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/announcements/site/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["siteAnnouncements"],
+    }),
+    deleteSiteAnnouncement: builder.mutation({
+      query: (id) => ({
+        url: `/announcements/site/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["siteAnnouncements"],
+    }),
+
+    // Course Announcements
+    getCourseAnnouncements: builder.query({
+      query: ({ course_pk, page }) => {
+        const queryParams = new URLSearchParams();
+        if (page) queryParams.append("page", page);
+        const q = queryParams.toString();
+        return `/courses/${course_pk}/announcements/${q ? `?${q}` : ""}`;
+      },
+      providesTags: (result, error, { course_pk }) => [
+        { type: "courseAnnouncements", id: course_pk },
+      ],
+    }),
+    createCourseAnnouncement: builder.mutation({
+      query: ({ course_pk, body }) => ({
+        url: `/courses/${course_pk}/announcements/`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [
+        { type: "courseAnnouncements", id: course_pk },
+      ],
+    }),
+    deleteCourseAnnouncement: builder.mutation({
+      query: ({ course_pk, id }) => ({
+        url: `/courses/${course_pk}/announcements/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, { course_pk }) => [
+        { type: "courseAnnouncements", id: course_pk },
+      ],
+    }),
+
+    // Memberships and Bundles
+    getMembershipPlan: builder.query({
+      query: () => "/membership/plan/",
+      providesTags: ["membership"],
+    }),
+    createMembershipPlan: builder.mutation({
+      query: (body) => ({
+        url: "/membership/plan/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["membership"],
+    }),
+    updateMembershipPlan: builder.mutation({
+      query: (body) => ({
+        url: "/membership/plan/",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["membership"],
+    }),
+    getBundles: builder.query({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append("page", params.page);
+        if (params?.is_active !== undefined)
+          queryParams.append("is_active", params.is_active);
+        const q = queryParams.toString();
+        return `/bundles/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["bundles"],
+    }),
+    getBundleDetails: builder.query({
+      query: (id) => `/bundles/${id}/`,
+      providesTags: ["bundles"],
+    }),
+    createBundle: builder.mutation({
+      query: (body) => ({
+        url: "/bundles/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["bundles"],
+    }),
+    updateBundle: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/bundles/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["bundles"],
+    }),
+    deleteBundle: builder.mutation({
+      query: (id) => ({
+        url: `/bundles/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["bundles"],
+
     // Get Teacher Profile
     getTeacherProfile: builder.query({
       query: (id) => `/teacher-profiles/${id}/`,
@@ -326,6 +997,7 @@ export const adminApi = api.injectEndpoints({
     getTeacherProfileMe: builder.query({
       query: () => "/teacher-profiles/me/",
       providesTags: ["teacher"],
+
     }),
   }),
   overrideExisting: false,
@@ -345,6 +1017,7 @@ export const {
   useGetBookCategoriesQuery,
   useAddBookCategoryMutation,
   useDeleteBookCategoryMutation,
+  useGetBookSalesDataQuery,
   useGetBlogsDataQuery,
   useAddBlogMutation,
   useDeleteBlogMutation,
@@ -359,6 +1032,7 @@ export const {
   useDeleteVideoMutation,
   useGetVideoDetailsQuery,
   useGetCoursesDataQuery,
+  useGetCourseDetailsQuery,
   useGetCourseCategoriesQuery,
   useAddCourseCategoryMutation,
   useDeleteCourseCategoryMutation,
@@ -371,7 +1045,82 @@ export const {
   useGetTeacherProfilesQuery,
   useGetTeacherProfileMeQuery,
   useGetStudentProfilesQuery,
+  useGetTeacherProfileQuery,
   useGetStudentProfileQuery,
+  useGetSiteSettingsQuery,
+  useUpdateSiteSettingsMutation,
+  useGetAdminDashboardQuery,
+  useGetAssignmentSubmissionsQuery,
+  useGetAssignmentSubmissionQuery,
+  useReviewAssignmentSubmissionMutation,
+  useGetConsultationsQuery,
+  useGetConsultationQuery,
+  useCreateConsultationMutation,
+  useCreateConsultationRecurringMutation,
+  useCreateConsultationBundleMutation,
+  useGetConsultationCalendarQuery,
+  useGetConsultationTimeslotsQuery,
+  useGetRescheduleRequestsQuery,
+  useGetRescheduleRequestDetailsQuery,
+  useAcceptRescheduleRequestMutation,
+  useDeclineRescheduleRequestMutation,
   useGetEnrollmentsQuery,
+  useGetScholarshipsQuery,
+  useApproveScholarshipMutation,
+  useRejectScholarshipMutation,
   useAddStudentProfileMutation,
+  useAddTeacherProfileMutation,
+  useUpdateTeacherProfileMutation,
+  useDeleteStudentProfileMutation,
+  useDeleteTeacherProfileMutation,
+  useGetCertificateTemplatesQuery,
+  useGetCompletedStudentsQuery,
+  useLazyGetCertificateTemplatePreviewQuery,
+  useIssueCertificatesMutation,
+  useGetMembershipPlanQuery,
+  useCreateMembershipPlanMutation,
+  useUpdateMembershipPlanMutation,
+  useGetBundlesQuery,
+  useCreateBundleMutation,
+  useUpdateBundleMutation,
+  useDeleteBundleMutation,
+  useGetSiteAnnouncementsQuery,
+  useCreateSiteAnnouncementMutation,
+  useUpdateSiteAnnouncementMutation,
+  useDeleteSiteAnnouncementMutation,
+  useGetCourseAnnouncementsQuery,
+  useCreateCourseAnnouncementMutation,
+  useDeleteCourseAnnouncementMutation,
+  useGetDonationsQuery,
+  useGetNewsletterSubscribersQuery,
+  useDeleteNewsletterSubscriberMutation,
+  useCreateCourseMutation,
+  useUpdateCourseMutation,
+  useGetCourseModulesQuery,
+  useCreateCourseModuleMutation,
+  useDeleteCourseModuleMutation,
+  useGetModuleLessonsQuery,
+  useGetLessonDetailsQuery,
+  useCreateModuleLessonMutation,
+  useUpdateModuleLessonMutation,
+  useDeleteModuleLessonMutation,
+  useLazyGetVideoStatusQuery,
+  useCreateLessonQuizMutation,
+  useUpdateLessonQuizMutation,
+  useCreateLessonQuizQuestionMutation,
+  useCreateLessonAssignmentMutation,
+  useUpdateLessonAssignmentMutation,
+  useGetLuluPackagesQuery,
+  useGetCourseDiscussionsQuery,
+  useGetCourseDiscussionDetailsQuery,
+  useCreateCourseDiscussionMutation,
+  usePatchCourseDiscussionMutation,
+  usePinCourseDiscussionMutation,
+  useCloseCourseDiscussionMutation,
+  useDeleteCourseDiscussionMutation,
+  useGetDiscussionRepliesQuery,
+  useCreateDiscussionReplyMutation,
+  usePatchDiscussionReplyMutation,
+  useDeleteDiscussionReplyMutation,
+  useGetTeacherEarningsQuery,
 } = adminApi;

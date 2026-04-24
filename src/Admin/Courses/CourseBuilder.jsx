@@ -3,13 +3,18 @@ import { ChevronLeft, Save } from "lucide-react";
 import CommunityChat from "./CommunityChat";
 import CourseReviews from "./CourseReviews";
 import CourseDetailsContent from "./CourseDetailsContent";
+import CourseCurriculum from "./CourseCurriculum";
+import { useGetCourseDetailsQuery } from "../../Api/adminApi";
+import { Loader2 } from "lucide-react";
 
 const CourseBuilder = ({ course, onBack }) => {
   const [activeTab, setActiveTab] = useState("Course Details");
+  const { data: fullCourse, isLoading, isError } = useGetCourseDetailsQuery(course.id);
 
   const tabs = [
     "Course Details",
-    "Review",
+    "Curriculum",
+    // "Review",
     "Community Chat",
   ];
 
@@ -56,11 +61,33 @@ const CourseBuilder = ({ course, onBack }) => {
       </div>
 
       {/* Main Content Area */}
-      {activeTab === "Course Details" && (
-        <CourseDetailsContent course={course} />
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-40 gap-4">
+          <Loader2 className="w-12 h-12 text-teal-600 animate-spin" />
+          <p className="text-stone-500 font-medium animate-pulse">Fetching full course details...</p>
+        </div>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center py-40 text-center">
+          <p className="text-red-500 font-bold text-lg">Failed to load course details</p>
+          <p className="text-stone-500 mt-2">Please try refreshing the page or check your connection.</p>
+        </div>
+      ) : (
+        <>
+          {activeTab === "Course Details" && (
+            <CourseDetailsContent course={fullCourse || course} />
+          )}
+          {activeTab === "Curriculum" && (
+            <CourseCurriculum courseId={course.id} />
+          )}
+          {activeTab === "Review" && <CourseReviews />}
+          {activeTab === "Community Chat" && (
+            <CommunityChat 
+              courseTitle={fullCourse?.title || course.title} 
+              courseId={course.id}
+            />
+          )}
+        </>
       )}
-      {activeTab === "Review" && <CourseReviews />}
-      {activeTab === "Community Chat" && <CommunityChat />}
     </div>
   );
 };

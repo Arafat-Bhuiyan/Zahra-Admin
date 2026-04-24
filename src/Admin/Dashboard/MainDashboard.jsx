@@ -1,39 +1,60 @@
 import { Users, BookOpen, DollarSign } from "lucide-react";
 import TopPerformingCourses from "./TopPerformingCourses";
 import ScheduleRescheduleSection from "./ScheduleRescheduleSection";
-
-const cards = [
-  {
-    title: "Total Students",
-    number: "2489",
-    icon: Users,
-    iconColor: "#ffffff",
-    bgColor: "#2B7FFF",
-  },
-  {
-    title: "Total Teachers",
-    number: "342",
-    icon: Users,
-    iconColor: "#ffffff",
-    bgColor: "#AD46FF",
-  },
-  {
-    title: "Active Courses",
-    number: "127",
-    icon: BookOpen,
-    iconColor: "#ffffff",
-    bgColor: "#7AA4A5",
-  },
-  {
-    title: "Total Revenue",
-    number: "$142,384",
-    icon: DollarSign,
-    iconColor: "#ffffff",
-    bgColor: "#1B08C0",
-  },
-];
+import { useGetAdminDashboardQuery } from "../../Api/adminApi";
 
 const MainDashboard = () => {
+  const { data: dashboardData, isLoading } = useGetAdminDashboardQuery();
+
+  const stats = dashboardData?.stats || {
+    total_students: 0,
+    total_teachers: 0,
+    active_courses: 0,
+    total_revenue: 0,
+  };
+
+  const topCourses = dashboardData?.top_courses || [];
+  const todaysClasses = dashboardData?.todays_classes || [];
+
+  const cards = [
+    {
+      title: "Total Students",
+      number: stats.total_students.toString(),
+      icon: Users,
+      iconColor: "#ffffff",
+      bgColor: "#2B7FFF",
+    },
+    {
+      title: "Total Teachers",
+      number: stats.total_teachers.toString(),
+      icon: Users,
+      iconColor: "#ffffff",
+      bgColor: "#AD46FF",
+    },
+    {
+      title: "Active Courses",
+      number: stats.active_courses.toString(),
+      icon: BookOpen,
+      iconColor: "#ffffff",
+      bgColor: "#7AA4A5",
+    },
+    {
+      title: "Total Revenue",
+      number: `$${stats.total_revenue?.toFixed(2)}`,
+      icon: DollarSign,
+      iconColor: "#ffffff",
+      bgColor: "#1B08C0",
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-10 pt-5">
       {/* Cards */}
@@ -68,10 +89,10 @@ const MainDashboard = () => {
       </div>
 
       {/* Top Performing Courses */}
-      <TopPerformingCourses />
+      <TopPerformingCourses courses={topCourses} />
 
       {/* Schedule and Reschedule */}
-      <ScheduleRescheduleSection />
+      <ScheduleRescheduleSection classes={todaysClasses} />
     </div>
   );
 };

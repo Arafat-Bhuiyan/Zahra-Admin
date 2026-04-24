@@ -1,71 +1,22 @@
-import React, { useState, useRef } from "react";
-import ReactDOM from "react-dom/client";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   Search,
-  Filter,
   Award,
   RotateCcw,
   Eye,
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import CertificateTemplate1HTML from "./Templates/CertificateTemplate1HTML";
-import CertificateTemplate2HTML from "./Templates/CertificateTemplate2HTML";
-import CertificateTemplate3HTML from "./Templates/CertificateTemplate3HTML";
-import CertificateTemplate4HTML from "./Templates/CertificateTemplate4HTML";
-import CertificateTemplate5HTML from "./Templates/CertificateTemplate5HTML";
-import CertificateTemplate6HTML from "./Templates/CertificateTemplate6HTML";
-import CertificateTemplate7HTML from "./Templates/CertificateTemplate7HTML";
-import CertificateTemplate8HTML from "./Templates/CertificateTemplate8HTML";
-import CertificateTemplate9HTML from "./Templates/CertificateTemplate9HTML";
-import CertificateTemplate10HTML from "./Templates/CertificateTemplate10HTML";
-import CertificateTemplate11HTML from "./Templates/CertificateTemplate11HTML";
-import CertificateTemplate12HTML from "./Templates/CertificateTemplate12HTML";
-import CertificateTemplate13HTML from "./Templates/CertificateTemplate13HTML";
-import CertificateTemplate14HTML from "./Templates/CertificateTemplate14HTML";
-import CertificateTemplate15HTML from "./Templates/CertificateTemplate15HTML";
-// import GenerateCertificateModal from "./GenerateCertificateModal";
+import {
+  useGetCompletedStudentsQuery,
+  useGetCertificateTemplatesQuery,
+  useLazyGetCertificateTemplatePreviewQuery,
+  useIssueCertificatesMutation
+} from "../../Api/adminApi";
+import Pagination from "../../components/Pagination";
 
-const CourseDetailsStatsCard = ({ value, label, color }) => {
-  const colorStyles = {
-    blue: {
-      bg: "bg-blue-50",
-      text: "text-blue-700",
-    },
-    green: {
-      bg: "bg-green-50",
-      text: "text-green-700",
-    },
-    gray: {
-      bg: "bg-slate-400/10",
-      text: "text-slate-500",
-    },
-    yellow: {
-      bg: "bg-yellow-50",
-      text: "text-yellow-700",
-    },
-  };
-
-  const style = colorStyles[color];
-
-  return (
-    <div
-      className={`flex-1 min-w-[200px] px-3 pt-3 pb-3 rounded-[10px] outline outline-1 outline-offset-[-1px] outline-neutral-200 flex flex-col justify-start items-center gap-1 ${style.bg}`}
-    >
-      <div className={`text-2xl font-bold arimo-font ${style.text}`}>
-        {value}
-      </div>
-      <div className="text-neutral-600 text-xs font-normal arimo-font text-center">
-        {label}
-      </div>
-    </div>
-  );
-};
-
-const StudentRow = ({ student, isSelected, onSelect }) => {
+const StudentRow = ({ enrollment, isSelected, onSelect }) => {
   const statusStyles = {
     Issued: {
       bg: "bg-green-100",
@@ -81,45 +32,53 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
     },
   };
 
-  const style = statusStyles[student.status] || statusStyles["Issued"];
+  const status = enrollment.has_certificate ? "Issued" : "Eligible";
+  const style = statusStyles[status];
+
+  const studentName = enrollment.student_name || `Student #${enrollment.enrollment_id}`;
+  const studentEmail = enrollment.student_email || "";
+  const initials = enrollment.student_name ? enrollment.student_name.charAt(0).toUpperCase() : "S";
 
   return (
     <div
-      className={`w-full px-4 py-3 rounded-[10px] border ${isSelected ? "border-blue-300 bg-blue-50/30" : "border-neutral-200 bg-white"} hover:border-blue-300 transition-all flex items-center gap-4`}
+      className={`w-full px-4 py-3 rounded-[10px] border ${isSelected ? "border-blue-300 bg-blue-50/30" : "border-neutral-200 bg-white"} cursor-pointer hover:border-blue-300 transition-all flex items-center gap-4`}
+      onClick={() => onSelect(enrollment)}
     >
       <div className="flex items-center justify-center">
         <input
           type="checkbox"
           checked={isSelected}
-          onChange={() => onSelect(student.id)}
-          className="w-5 h-5 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+          onChange={() => { }} // handled by parent div click
+          className="w-5 h-5 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
         />
       </div>
 
-      <div className="w-10 h-10 bg-slate-400 rounded-full flex justify-center items-center text-white font-bold text-sm">
-        {student.initials}
+      <div className="w-10 h-10 bg-slate-400 rounded-full flex justify-center items-center text-white font-bold text-sm shrink-0">
+        {initials}
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <span className="text-neutral-800 text-base font-bold arimo-font">
-          {student.name}
+      <div className="flex-1 flex flex-col truncate">
+        <span className="text-neutral-800 text-base font-bold arimo-font truncate">
+          {studentName}
         </span>
-        <span className="text-neutral-500 text-sm font-normal arimo-font">
-          {student.email}
-        </span>
+        {studentEmail && (
+          <span className="text-neutral-500 text-sm font-normal arimo-font truncate">
+            {studentEmail}
+          </span>
+        )}
       </div>
 
-      <div className="w-32 flex flex-col items-end mr-8">
+      <div className="w-32 flex flex-col items-end mr-4 sm:mr-8 shrink-0 hidden sm:flex">
         <span className="text-neutral-500 text-sm font-normal arimo-font">
-          Completion
+          Completed
         </span>
         <span className="text-neutral-800 text-sm font-normal arimo-font">
-          {student.completionDate}
+          {new Date(enrollment.completed_at).toLocaleDateString()}
         </span>
       </div>
 
       <div
-        className={`w-24 h-7 rounded-full flex items-center px-1.5 gap-2 outline outline-1 outline-offset-[-1px] ${style.bg} ${style.border}`}
+        className={`w-28 shrink-0 h-7 rounded-full flex justify-center items-center px-1.5 gap-2 outline outline-1 outline-offset-[-1px] ${style.bg} ${style.border}`}
       >
         <div className="w-3 h-3 relative flex items-center justify-center">
           <div
@@ -127,7 +86,7 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
           ></div>
         </div>
         <span className={`text-xs font-bold arimo-font ${style.text}`}>
-          {student.status}
+          {status}
         </span>
       </div>
     </div>
@@ -135,328 +94,112 @@ const StudentRow = ({ student, isSelected, onSelect }) => {
 };
 
 const CertificateDetails = ({ selectedCourse, onBack }) => {
-  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [selectedEnrollments, setSelectedEnrollments] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const certificateRef = useRef(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
 
-  const [templates] = useState([
-    {
-      id: "template1",
-      name: "Certificate Template 1",
-      component: CertificateTemplate1HTML,
-    },
-    {
-      id: "template2",
-      name: "Certificate Template 2",
-      component: CertificateTemplate2HTML,
-    },
-    {
-      id: "template3",
-      name: "Certificate Template 3",
-      component: CertificateTemplate3HTML,
-    },
-    {
-      id: "template4",
-      name: "Certificate Template 4",
-      component: CertificateTemplate4HTML,
-    },
-    {
-      id: "template5",
-      name: "Certificate Template 5",
-      component: CertificateTemplate5HTML,
-    },
-    {
-      id: "template6",
-      name: "Certificate Template 6",
-      component: CertificateTemplate6HTML,
-    },
-    {
-      id: "template7",
-      name: "Certificate Template 7",
-      component: CertificateTemplate7HTML,
-    },
-    {
-      id: "template8",
-      name: "Certificate Template 8",
-      component: CertificateTemplate8HTML,
-    },
-    {
-      id: "template9",
-      name: "Certificate Template 9",
-      component: CertificateTemplate9HTML,
-    },
-    {
-      id: "template10",
-      name: "Certificate Template 10",
-      component: CertificateTemplate10HTML,
-    },
-    {
-      id: "template11",
-      name: "Certificate Template 11",
-      component: CertificateTemplate11HTML,
-    },
-    {
-      id: "template12",
-      name: "Certificate Template 12",
-      component: CertificateTemplate12HTML,
-    },
-    {
-      id: "template13",
-      name: "Certificate Template 13",
-      component: CertificateTemplate13HTML,
-    },
-    {
-      id: "template14",
-      name: "Certificate Template 14",
-      component: CertificateTemplate14HTML,
-    },
-    {
-      id: "template15",
-      name: "Certificate Template 15",
-      component: CertificateTemplate15HTML,
-    },
-  ]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState("template1");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState("");
+  const [isFetchingPreview, setIsFetchingPreview] = useState(false);
 
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+  // Scaling state
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(0.65);
+  const A4_W = 1122;
+  const A4_H = 793;
 
-  const [students, setStudents] = useState([
-    {
-      id: 1,
-      name: "Emily Rodriguez",
-      initials: "ER",
-      email: "emily.r@email.com",
-      completionDate: "Jan 5, 2026",
-      status: "Issued",
-    },
-    {
-      id: 2,
-      name: "Marcus Johnson",
-      initials: "MJ",
-      email: "marcus.j@email.com",
-      completionDate: "Jan 8, 2026",
-      status: "Issued",
-    },
-    {
-      id: 3,
-      name: "Sarah Chen",
-      initials: "SC",
-      email: "sarah.chen@email.com",
-      completionDate: "Jan 10, 2026",
-      status: "Eligible",
-    },
-    {
-      id: 4,
-      name: "Ahmed Hassan",
-      initials: "AH",
-      email: "ahmed.h@email.com",
-      completionDate: "Jan 12, 2026",
-      status: "Eligible",
-    },
-    {
-      id: 5,
-      name: "Lisa Park",
-      initials: "LP",
-      email: "lisa.p@email.com",
-      completionDate: "Jan 14, 2026",
-      status: "Eligible",
-    },
-    {
-      id: 6,
-      name: "David Smith",
-      initials: "DS",
-      email: "david.s@email.com",
-      completionDate: "Jan 15, 2026",
-      status: "Issued",
-    },
-    {
-      id: 7,
-      name: "Maria Garcia",
-      initials: "MG",
-      email: "maria.g@email.com",
-      completionDate: "Jan 16, 2026",
-      status: "Issued",
-    },
-  ]);
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const available = entry.contentRect.width - 64; // subtract padding
+      setScale(Math.min(available / A4_W, 1));
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [isPreviewOpen]);
 
-  const handleSelectStudent = (id) => {
-    setSelectedStudents((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
+  // Queries
+  const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetCompletedStudentsQuery({ course: selectedCourse.id, page: currentPage });
+  const { data: templatesData, isLoading: isTemplatesLoading } = useGetCertificateTemplatesQuery();
+  const [fetchPreview] = useLazyGetCertificateTemplatePreviewQuery();
+  const [issueCertificates, { isLoading: isIssuing }] = useIssueCertificatesMutation();
+
+  const enrollmentsList = Array.isArray(enrollmentsData) ? enrollmentsData : (enrollmentsData?.results || []);
+  const templatesList = templatesData?.results || [];
+
+  // Default select first template when loaded
+  useEffect(() => {
+    if (templatesList.length > 0 && !selectedTemplateId) {
+      setSelectedTemplateId(templatesList[0].id);
+    }
+  }, [templatesList, selectedTemplateId]);
+
+  const handleSelectEnrollment = (enrollment) => {
+    // The endpoint only returns completed students now, so no is_completed check block needed.
+    const id = enrollment.enrollment_id;
+    setSelectedEnrollments((prev) =>
+      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id],
     );
   };
 
   const handleDeselectAll = () => {
-    setSelectedStudents([]);
+    setSelectedEnrollments([]);
   };
 
-  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const handlePreviewOpen = async () => {
+    if (!selectedTemplateId) {
+      toast.error("Please select a template first.");
+      return;
+    }
+    setIsPreviewOpen(true);
+    setIsFetchingPreview(true);
+    setPreviewHtml("");
+    try {
+      const htmlStr = await fetchPreview(selectedTemplateId).unwrap();
+      // Test if it's a 404 from DRF
+      if (htmlStr.includes("Not Found")) {
+        setPreviewHtml(`
+            <div style="text-align: center; font-family: sans-serif; padding: 50px;">
+               <h3>404 Error</h3>
+               <p>The backend could not find a valid HTML preview for this template id: ${selectedTemplateId}</p>
+            </div>
+         `);
+      } else {
+        setPreviewHtml(htmlStr);
+      }
+    } catch (err) {
+      setPreviewHtml(`
+         <div style="text-align: center; font-family: sans-serif; padding: 50px; color: red;">
+            <h3>Error Fetching Preview</h3>
+            <p>Could not connect or fetch HTML render.</p>
+         </div>
+      `);
+    } finally {
+      setIsFetchingPreview(false);
+    }
+  };
 
-  const selectedStudentObjects = students.filter((student) =>
-    selectedStudents.includes(student.id),
-  );
-
-  const handleGenerateClick = () => {
-    if (selectedStudents.length === 0) {
+  const handleGenerateClick = async () => {
+    if (selectedEnrollments.length === 0) {
       toast.error("Please select at least one student.");
       return;
     }
-    generateCertificates();
-  };
-
-  const generateCertificates = async () => {
-    try {
-      for (const student of selectedStudentObjects) {
-        // Create a temporary container
-        const tempContainer = document.createElement("div");
-        tempContainer.id = `cert-${student.id}`;
-        tempContainer.style.position = "fixed";
-        tempContainer.style.left = "-9999px";
-        tempContainer.style.top = "-9999px";
-        tempContainer.style.width = "297mm";
-        tempContainer.style.height = "210mm";
-        document.body.appendChild(tempContainer);
-
-        // Render the template
-        const SelectedTemplate = selectedTemplate.component;
-        const certificateElement = (
-          <SelectedTemplate
-            studentName={student.name}
-            courseTitle={selectedCourse.title}
-            instructorName={selectedCourse.instructor}
-            directorName="Dr. Abdul Rahman"
-            date={new Date().toLocaleDateString()}
-          />
-        );
-
-        // Use ReactDOM to render temporarily
-        const root = ReactDOM.createRoot(tempContainer);
-        root.render(certificateElement);
-
-        // Wait for render
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Capture canvas
-        const canvas = await html2canvas(tempContainer, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: "#ffffff",
-          allowTaint: true,
-        });
-
-        // Create PDF
-        const pdf = new jsPDF({
-          orientation: "landscape",
-          unit: "mm",
-          format: "a4",
-        });
-
-        const imgData = canvas.toDataURL("image/png");
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * pageWidth) / canvas.width;
-
-        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-
-        // Save PDF
-        const fileName = `${student.name.replace(/\s+/g, "_")}_Certificate.pdf`;
-        pdf.save(fileName);
-
-        // Clean up
-        root.unmount();
-        document.body.removeChild(tempContainer);
-      }
-
-      // Update status to Issued for selected students
-      setStudents((prevStudents) =>
-        prevStudents.map((student) =>
-          selectedStudents.includes(student.id)
-            ? { ...student, status: "Issued" }
-            : student,
-        ),
-      );
-
-      toast.success(
-        `Certificates generated for ${selectedStudents.length} student(s)!`,
-      );
-      setSelectedStudents([]);
-    } catch (error) {
-      console.error("Error generating certificates:", error);
-      toast.error("Error generating certificates. Please try again.");
+    if (!selectedTemplateId) {
+      toast.error("Please select a template from the dropdown.");
+      return;
     }
-  };
 
-  const generateSingleCertificate = async (student) => {
     try {
-      // Create a temporary container
-      const tempContainer = document.createElement("div");
-      tempContainer.id = `cert-preview-${student.id}`;
-      tempContainer.style.position = "fixed";
-      tempContainer.style.left = "-9999px";
-      tempContainer.style.top = "-9999px";
-      tempContainer.style.width = "297mm";
-      tempContainer.style.height = "210mm";
-      document.body.appendChild(tempContainer);
+      await issueCertificates({
+        enrollment_ids: selectedEnrollments,
+        template_id: selectedTemplateId
+      }).unwrap();
 
-      // Render the template
-      const SelectedTemplate = selectedTemplate.component;
-      const certificateElement = (
-        <SelectedTemplate
-          studentName={student.name}
-          courseTitle={selectedCourse.title}
-          instructorName={selectedCourse.instructor}
-          directorName="Dr. Abdul Rahman"
-          date={new Date().toLocaleDateString()}
-        />
-      );
-
-      // Use ReactDOM to render temporarily
-      const root = ReactDOM.createRoot(tempContainer);
-      root.render(certificateElement);
-
-      // Wait for render
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Capture canvas
-      const canvas = await html2canvas(tempContainer, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        allowTaint: true,
-      });
-
-      // Create PDF
-      const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * pageWidth) / canvas.width;
-
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-
-      // Save PDF
-      const fileName = `${student.name.replace(/\s+/g, "_")}_Certificate.pdf`;
-      pdf.save(fileName);
-
-      // Clean up
-      root.unmount();
-      document.body.removeChild(tempContainer);
-
-      toast.success(`Certificate generated for ${student.name}!`);
-    } catch (error) {
-      console.error("Error generating certificate:", error);
-      toast.error("Error generating certificate. Please try again.");
+      toast.success(`Successfully issued certificates to ${selectedEnrollments.length} student(s)! Email dispatch has begun.`);
+      setSelectedEnrollments([]);
+    } catch (err) {
+      toast.error(err?.data?.detail || err?.data?.error || "Failed to issue certificates online.");
     }
   };
 
@@ -465,7 +208,7 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
       {/* Back Button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors pl-1"
+        className="flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors pl-1 hover:bg-neutral-200/50 px-3 py-1.5 rounded-xl"
       >
         <ArrowLeft size={20} />
         <span className="text-base font-normal arimo-font">
@@ -474,7 +217,7 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
       </button>
 
       {/* Header & Action */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="text-neutral-800 text-2xl font-bold arimo-font">
             {selectedCourse.title}
@@ -483,9 +226,10 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
             Instructor: {selectedCourse.instructor}
           </p>
         </div>
-        <div className="flex flex-col gap-1 min-w-[280px]">
-          <label className="text-neutral-500 text-xs font-bold uppercase arimo-font">
-            Certificate Template
+        <div className="flex flex-col gap-1 w-full md:min-w-[280px] md:w-auto">
+          <label className="text-neutral-500 text-xs font-bold uppercase arimo-font flex justify-between items-center">
+            <span>Certificate Template</span>
+            {isTemplatesLoading && <div className="w-3 h-3 border-b-2 border-neutral-400 rounded-full animate-spin"></div>}
           </label>
           <div className="flex gap-2">
             <select
@@ -493,15 +237,20 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
               onChange={(e) => setSelectedTemplateId(e.target.value)}
               className="flex-1 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all cursor-pointer"
             >
-              {templates.map((tpl) => (
-                <option key={tpl.id} value={tpl.id}>
-                  {tpl.name}
-                </option>
-              ))}
+              {templatesList.length === 0 ? (
+                <option value="" disabled>No templates available</option>
+              ) : (
+                templatesList.map((tpl) => (
+                  <option key={tpl.id} value={tpl.id}>
+                    {tpl.name}
+                  </option>
+                ))
+              )}
             </select>
             <button
-              onClick={() => setIsPreviewOpen(true)}
-              className="w-11 h-11 flex items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-600 hover:bg-slate-50 hover:text-greenTeal transition-all shadow-sm group active:scale-95"
+              onClick={handlePreviewOpen}
+              disabled={!selectedTemplateId}
+              className="w-11 h-11 flex items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-600 hover:bg-slate-50 hover:text-greenTeal transition-all shadow-sm group active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Preview Template"
             >
               <Eye size={20} />
@@ -517,95 +266,55 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
             <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-white sticky top-0 z-10">
               <div className="flex flex-col">
                 <h3 className="text-neutral-800 text-lg font-bold arimo-font">
-                  Template Preview: {selectedTemplate.name}
+                  Template Preview HTML
                 </h3>
                 <p className="text-neutral-500 text-xs font-normal arimo-font">
-                  Previewing with placeholder data
+                  Review the raw layout structure before issuing.
                 </p>
               </div>
               <button
                 onClick={() => setIsPreviewOpen(false)}
                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-neutral-100 text-neutral-500 transition-colors"
+                title="Close"
               >
                 <X size={24} />
               </button>
             </div>
-            <div className="flex-1 bg-neutral-100 p-4 overflow-auto">
-              <div className="flex justify-center">
-                <div
-                  className="bg-white rounded-lg shadow-lg border"
-                  style={{
-                    width: "297mm",
-                    height: "210mm",
-                    transform: "scale(0.5)",
-                    transformOrigin: "top center",
-                  }}
-                >
-                  <selectedTemplate.component
-                    studentName="Sample Student Name"
-                    courseTitle={selectedCourse.title}
-                    instructorName={selectedCourse.instructor}
-                    directorName="Elzahraa Hossain"
-                    date={new Date().toLocaleDateString()}
-                  />
+
+            <div ref={containerRef} className="flex-1 bg-neutral-200 p-8 overflow-auto flex justify-center items-start">
+              {isFetchingPreview ? (
+                <div className="flex flex-col items-center justify-center h-full text-neutral-500 gap-4">
+                  <div className="w-8 h-8 rounded-full border-2 border-t-greenTeal animate-spin"></div>
+                  <p className="font-bold tracking-wider uppercase text-xs">Loading Template...</p>
                 </div>
-              </div>
+              ) : (
+                <div style={{ width: A4_W * scale, height: A4_H * scale, flexShrink: 0 }}>
+                  <div
+                    className="shadow-2xl bg-white overflow-hidden"
+                    style={{
+                      width: A4_W,
+                      height: A4_H,
+                      transform: `scale(${scale})`,
+                      transformOrigin: "top left",
+                    }}
+                  >
+                    <iframe
+                      title="Certificate Preview"
+                      srcDoc={`<style>body,html{margin:0!important;padding:0!important;box-sizing:border-box;overflow:hidden!important;}</style>\n${previewHtml}`}
+                      style={{ width: A4_W, height: A4_H }}
+                      className="border-none bg-white block"
+                      scrolling="no"
+                      sandbox="allow-same-origin"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="px-6 py-4 border-t border-neutral-100 flex justify-between bg-slate-50">
-              <button
-                onClick={async () => {
-                  const previewDiv = document.querySelector("[style*='297mm']");
-                  if (previewDiv) {
-                    try {
-                      const canvas = await html2canvas(previewDiv, {
-                        scale: 2,
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: "#ffffff",
-                        allowTaint: true,
-                      });
 
-                      const pdf = new jsPDF({
-                        orientation: "landscape",
-                        unit: "mm",
-                        format: "a4",
-                      });
-
-                      const imgData = canvas.toDataURL("image/png");
-                      const pageWidth = pdf.internal.pageSize.getWidth();
-                      const imgHeight =
-                        (canvas.height * pageWidth) / canvas.width;
-
-                      pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
-                      pdf.save("Certificate_Preview.pdf");
-
-                      toast.success("Certificate downloaded successfully!");
-                    } catch (error) {
-                      console.error("Error downloading certificate:", error);
-                      toast.error("Failed to download certificate");
-                    }
-                  }
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
-                Download
-              </button>
+            <div className="px-6 py-4 border-t border-neutral-100 flex justify-end bg-slate-50">
               <button
                 onClick={() => setIsPreviewOpen(false)}
-                className="bg-greenTeal text-white px-8 py-2.5 rounded-xl font-bold hover:bg-greenTeal/80 transition-all active:scale-95"
+                className="bg-neutral-800 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-neutral-700 transition-all active:scale-95"
               >
                 Close Preview
               </button>
@@ -614,45 +323,26 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
         </div>
       )}
 
-      {/* Detailed Stats */}
-      {/* <div className="flex gap-4 w-full">
-        <CourseDetailsStatsCard
-          value={selectedCourse.totalStudents}
-          label="Total Enrolled"
-          color="blue"
-        />
-        <CourseDetailsStatsCard
-          value={selectedCourse.completed}
-          label="Completed Course"
-          color="green"
-        />
-        <CourseDetailsStatsCard
-          value={28}
-          label="Certificates Issued"
-          color="gray"
-        />
-        <CourseDetailsStatsCard
-          value={3}
-          label="Eligible for Certificate"
-          color="yellow"
-        />
-      </div> */}
-
-      {/* Action Bar (Moved) */}
-      {selectedStudents.length > 0 && (
-        <div className="w-full h-16 bg-white rounded-xl shadow-sm border border-neutral-200 px-8 flex items-center justify-between animate-in fade-in duration-200">
+      {/* Action Bar (Only shows when students selected) */}
+      {selectedEnrollments.length > 0 && (
+        <div className="w-full h-auto py-4 bg-white rounded-xl shadow-sm border border-neutral-200 px-6 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in duration-200 sticky top-4 z-50">
           <div className="flex items-center gap-2">
-            <span className="text-neutral-500 text-lg">Selected Students:</span>
+            <span className="text-neutral-500 text-lg">Selected Enrollments:</span>
             <span className="text-neutral-800 text-2xl font-bold">
-              {selectedStudents.length}
+              {selectedEnrollments.length}
             </span>
           </div>
           <button
             onClick={handleGenerateClick}
-            className="bg-greenTeal hover:bg-greenTeal/80 text-white px-6 py-2.5 rounded-[10px] font-bold shadow-sm transition-colors flex items-center gap-2"
+            disabled={isIssuing}
+            className="bg-greenTeal hover:bg-greenTeal/80 disabled:bg-neutral-300 disabled:cursor-not-allowed text-white px-6 py-3 rounded-[10px] font-bold shadow-sm transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
           >
-            <Award size={18} />
-            Generate Certificates
+            {isIssuing ? (
+              <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+            ) : (
+              <Award size={18} />
+            )}
+            {isIssuing ? "Issuing Certificates..." : "Generate Certificates"}
           </button>
         </div>
       )}
@@ -660,30 +350,32 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
       {/* Students List Container */}
       <div className="w-full bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 flex flex-col gap-6">
         {/* Toolbar */}
-        <div className="flex justify-between items-center">
-          <h2 className="text-neutral-800 text-lg font-bold arimo-font">
-            Students
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <h2 className="text-neutral-800 text-lg font-bold arimo-font flex items-center gap-2">
+            Enrolled Students
+            {isEnrollmentsLoading && <div className="w-3.5 h-3.5 border-2 border-b-greenTeal rounded-full animate-spin"></div>}
           </h2>
 
           <div className="flex items-center gap-4 flex-1 justify-end">
-            <div className="relative w-[400px]">
+            {/* Search (visual only currently, real search needs API string 'search' param mapping if backend supports it) */}
+            <div className="relative w-full sm:w-[350px]">
               <Search
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
                 size={18}
               />
               <input
                 type="text"
-                placeholder="Search students by name or email..."
+                placeholder="Filter currently viewed..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-[10px] border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-slate-300"
               />
             </div>
 
-            {selectedStudents.length > 0 && (
+            {selectedEnrollments.length > 0 && (
               <button
                 onClick={handleDeselectAll}
-                className="flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-600 border border-neutral-200 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm active:scale-95"
+                className="hidden sm:flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-600 border border-neutral-200 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm active:scale-95"
               >
                 <RotateCcw size={18} />
                 Deselect
@@ -694,31 +386,39 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
 
         {/* List */}
         <div className="flex flex-col gap-3">
-          {students
-            .filter(
-              (student) =>
-                student.name
-                  .toLowerCase()
-                  .includes(searchQuery.toLowerCase()) ||
-                student.email.toLowerCase().includes(searchQuery.toLowerCase()),
-            )
-            .map((student) => (
-              <StudentRow
-                key={student.id}
-                student={student}
-                isSelected={selectedStudents.includes(student.id)}
-                onSelect={handleSelectStudent}
-              />
-            ))}
+          {enrollmentsList.length === 0 && !isEnrollmentsLoading ? (
+            <div className="p-8 text-center text-neutral-500 rounded-xl bg-neutral-50 border border-neutral-200">
+              No students are currently eligible for certificates in this course.
+            </div>
+          ) : (
+            enrollmentsList
+              .filter((enrollment) => {
+                if (!searchQuery) return true;
+                const name = enrollment.student_name || "";
+                return name.toLowerCase().includes(searchQuery.toLowerCase());
+              })
+              .map((enrollment) => (
+                <StudentRow
+                  key={enrollment.enrollment_id}
+                  enrollment={enrollment}
+                  isSelected={selectedEnrollments.includes(enrollment.enrollment_id)}
+                  onSelect={handleSelectEnrollment}
+                />
+              ))
+          )}
         </div>
-      </div>
 
-      {/* <GenerateCertificateModal
-        isOpen={isGenerateModalOpen}
-        onClose={() => setIsGenerateModalOpen(false)}
-        selectedStudents={selectedStudentObjects}
-        onGenerate={handleGenerateConfirm}
-      /> */}
+        {/* Pagination bounds */}
+        {enrollmentsData?.total_pages > 1 && (
+          <div className="mt-4 border-t border-neutral-100 pt-6">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={enrollmentsData.total_pages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

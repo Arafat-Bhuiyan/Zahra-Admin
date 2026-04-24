@@ -3,70 +3,311 @@ import {
   GripVertical,
   Plus,
   X,
-  Video,
+  Video as VideoIcon,
   FileText,
-  Play,
-  Monitor,
+  HelpCircle,
+  BookOpen,
+  Loader2,
+  ExternalLink,
+  Zap,
+  Save,
+  ChevronDown,
+  ChevronUp,
+  Edit2,
 } from "lucide-react";
 
 import AddContentModal from "./AddLesson";
 import LessonDetailsModal from "./LessonDetailsModal";
-import { HelpCircle, BookOpen } from "lucide-react";
+import {
+  useGetCourseModulesQuery,
+  useCreateCourseModuleMutation,
+  useDeleteCourseModuleMutation,
+  useGetModuleLessonsQuery,
+  useDeleteModuleLessonMutation,
+} from "../../Api/adminApi";
+import Pagination from "../../components/Pagination";
+import toast from "react-hot-toast";
 
-const CourseCurriculum = ({ modules = [], onModulesChange }) => {
+const ModuleItem = ({ mod, courseId, onAddLesson, onEditLesson, onRemoveModule, onLessonDetails }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const [page, setPage] = useState(1);
+  const { data: lessonsResponse, isLoading: isLoadingLessons } = useGetModuleLessonsQuery({
+    course_pk: courseId,
+    module_pk: mod.id,
+    page: page,
+  }, { skip: !isExpanded });
+
+  const lessons = lessonsResponse?.results || [];
+  const [deleteLesson] = useDeleteModuleLessonMutation();
+
+  const handleRemoveLesson = (lessonId) => {
+    toast((t) => (
+      <div className="flex flex-col gap-3 min-w-[250px]">
+        <div className="flex items-center gap-2 text-stone-800">
+          <X className="w-5 h-5 text-red-500" />
+          <span className="font-bold arimo-font text-sm">Delete this lesson?</span>
+        </div>
+        <p className="text-xs text-stone-500 inter-font">This action cannot be undone.</p>
+        <div className="flex justify-end gap-2 mt-2">
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-4 py-2 text-xs font-bold text-stone-400 hover:text-stone-600 transition-all rounded-xl"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                await deleteLesson({
+                  course_pk: courseId,
+                  module_pk: mod.id,
+                  id: lessonId,
+                }).unwrap();
+                toast.success("Lesson deleted");
+              } catch (err) {
+                toast.error("Failed to delete lesson");
+              }
+            }}
+            className="px-4 py-2 text-xs font-bold bg-red-500 text-white hover:bg-red-600 rounded-xl transition-all shadow-lg shadow-red-200 active:scale-95"
+          >
+            Confirm Delete
+          </button>
+        </div>
+      </div>
+    ), { duration: 5000, position: 'top-center' });
+  };
+
+  return (
+    <div className="bg-white rounded-[2rem] border border-stone-200 shadow-sm overflow-hidden animate-in slide-in-from-bottom-2 duration-300">
+      {/* Module Header */}
+      <div 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={`px-8 py-6 border-b border-stone-100 flex items-center justify-between cursor-pointer transition-colors ${
+          isExpanded ? "bg-[#D6CBAF33]" : "bg-white hover:bg-stone-50"
+        }`}
+      >
+        <div className="flex items-center gap-4">
+          <div className="text-stone-400 group-hover:text-teal-600 transition-colors">
+            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          </div>
+          <div className="flex flex-col">
+            <h3 className="text-xl font-bold text-stone-800 arimo-font">
+              {mod.title}
+            </h3>
+            <span className="text-xs font-medium text-stone-400 uppercase tracking-widest mt-1">
+              Modules Lessons
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => onRemoveModule(mod.id)}
+            className="p-2.5 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+            title="Delete Module"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => onAddLesson(mod.id)}
+            className="flex items-center gap-2 bg-greenTeal hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Lesson</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Lessons List - Collapsible */}
+      {isExpanded && (
+        <div className="p-6 space-y-3 animate-in slide-in-from-top-2 duration-300">
+          {isLoadingLessons ? (
+          <div className="flex justify-center py-4">
+            <Loader2 className="w-6 h-6 text-teal-600 animate-spin" />
+          </div>
+        ) : lessons.length > 0 ? (
+          lessons.map((lesson) => (
+            <div
+              key={lesson.id}
+              className="flex items-center gap-4 p-4 bg-white border border-stone-100 rounded-2xl hover:border-teal-200 hover:shadow-md transition-all group"
+            >
+              <GripVertical className="w-4 h-4 text-stone-300 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+              <div
+                onClick={() => onLessonDetails(lesson)}
+                className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center text-stone-400 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors cursor-pointer"
+              >
+                {lesson.content_type === "video" ? (
+                  <VideoIcon className="w-5 h-5" />
+                ) : lesson.content_type === "document" ? (
+                  <FileText className="w-5 h-5" />
+                ) : lesson.content_type === "quiz" ? (
+                  <HelpCircle className="w-5 h-5" />
+                ) : lesson.content_type === "assignment" ? (
+                  <BookOpen className="w-5 h-5" />
+                ) : (
+                  <ExternalLink className="w-5 h-5" />
+                )}
+              </div>
+              <div
+                className="flex-1 cursor-pointer"
+                onClick={() => onLessonDetails(lesson)}
+              >
+                <h4 className="text-sm font-bold text-stone-800 arimo-font">
+                  {lesson.title}
+                </h4>
+                <div className="flex gap-2">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest arimo-font mt-0.5 block">
+                    {lesson.content_type}
+                  </span>
+                  {lesson.duration_in_minutes > 0 && (
+                    <span className="text-[10px] font-bold text-stone-400 arimo-font mt-0.5 block">
+                      • {lesson.duration_in_minutes} mins
+                    </span>
+                  )}
+                  {lesson.is_preview && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full uppercase tracking-tighter mt-0.5 ml-2">
+                      Preview
+                    </span>
+                  )}
+                  {!lesson.is_released && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-stone-100 text-stone-500 rounded-full uppercase tracking-tighter mt-0.5 ml-2">
+                      Draft
+                    </span>
+                  )}
+                  {lesson.content_type === "video" && lesson.bunny_video_status && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter mt-0.5 ml-2 ${
+                      lesson.bunny_video_status === "ready" 
+                        ? "bg-green-50 text-green-600" 
+                        : lesson.bunny_video_status === "failed"
+                        ? "bg-red-50 text-red-600"
+                        : "bg-blue-50 text-blue-600 animate-pulse"
+                    }`}>
+                      {lesson.bunny_video_status}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                <button
+                  onClick={() => onEditLesson(mod.id, lesson.id)}
+                  className="p-2 text-stone-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+                  title="Edit Lesson"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleRemoveLesson(lesson.id)}
+                  className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                  title="Delete Lesson"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="py-8 text-center text-stone-400 text-sm font-medium border-2 border-dashed border-stone-100 rounded-2xl">
+            No lessons added yet. Click Add Lesson to start.
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {lessonsResponse?.total_pages > 1 && (
+          <div className="mt-4 pt-4 border-t border-stone-50">
+            <Pagination
+              currentPage={page}
+              totalPages={lessonsResponse.total_pages}
+              onPageChange={setPage}
+            />
+          </div>
+        )}
+      </div>
+     )}
+    </div>
+  );
+};
+
+const CourseCurriculum = ({ courseId, onInitialize }) => {
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetModuleId, setTargetModuleId] = useState(null);
+  const [editingLessonId, setEditingLessonId] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const addModule = () => {
-    if (newModuleTitle.trim()) {
-      const newModule = {
-        id: Date.now(),
-        title: newModuleTitle,
-        lessons: [],
-      };
-      const updatedModules = [...modules, newModule];
-      onModulesChange(updatedModules);
-      setNewModuleTitle("");
+  // API hooks
+  const { data: modulesResponse, isLoading: isLoadingModules } = useGetCourseModulesQuery(courseId, {
+    skip: !courseId,
+  });
+  const modules = modulesResponse?.results || modulesResponse || []; 
+  
+  const [createModule, { isLoading: isCreatingModule }] = useCreateCourseModuleMutation();
+  const [deleteModule] = useDeleteCourseModuleMutation();
+
+  const addModule = async () => {
+    if (isCreatingModule) return; // Prevent double creation
+    if (newModuleTitle.trim() && courseId) {
+      try {
+        await createModule({
+          course_pk: courseId,
+          body: { title: newModuleTitle.trim() },
+        }).unwrap();
+        setNewModuleTitle("");
+        toast.success("Module added successfully");
+      } catch (err) {
+        toast.error("Failed to add module");
+      }
     }
   };
 
   const openAddContentModal = (moduleId) => {
     setTargetModuleId(moduleId);
+    setEditingLessonId(null);
     setIsModalOpen(true);
   };
 
-  const handleAddContent = (moduleId, newContent) => {
-    const updatedModules = modules.map((mod) => {
-      if (mod.id === moduleId) {
-        return {
-          ...mod,
-          lessons: [...mod.lessons, newContent],
-        };
-      }
-      return mod;
-    });
-    onModulesChange(updatedModules);
+  const openEditContentModal = (moduleId, lessonId) => {
+    setTargetModuleId(moduleId);
+    setEditingLessonId(lessonId);
+    setIsModalOpen(true);
   };
 
-  const removeLesson = (moduleId, lessonId) => {
-    const updatedModules = modules.map((mod) => {
-      if (mod.id === moduleId) {
-        return {
-          ...mod,
-          lessons: mod.lessons.filter((lesson) => lesson.id !== lessonId),
-        };
-      }
-      return mod;
-    });
-    onModulesChange(updatedModules);
-  };
-
-  const removeModule = (moduleId) => {
-    const updatedModules = modules.filter((mod) => mod.id !== moduleId);
-    onModulesChange(updatedModules);
+  const handleRemoveModule = (moduleId) => {
+    toast((t) => (
+      <div className="flex flex-col gap-3 min-w-[300px]">
+        <div className="flex items-center gap-2 text-stone-800">
+          <X className="w-5 h-5 text-red-500" />
+          <span className="font-bold arimo-font text-sm">Delete this module?</span>
+        </div>
+        <p className="text-xs text-stone-500 inter-font">Deleting this module will remove all its lessons. This action cannot be undone.</p>
+        <div className="flex justify-end gap-2 mt-2">
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-4 py-2 text-xs font-bold text-stone-400 hover:text-stone-600 transition-all rounded-xl"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                await deleteModule({
+                  course_pk: courseId,
+                  id: moduleId,
+                }).unwrap();
+                toast.success("Module deleted");
+              } catch (err) {
+                toast.error("Failed to delete module");
+              }
+            }}
+            className="px-4 py-2 text-xs font-bold bg-red-500 text-white hover:bg-red-600 rounded-xl transition-all shadow-lg shadow-red-200 active:scale-95"
+          >
+            Confirm Delete
+          </button>
+        </div>
+      </div>
+    ), { duration: 6000, position: 'top-center' });
   };
 
   const openLessonDetails = (lesson) => {
@@ -74,99 +315,55 @@ const CourseCurriculum = ({ modules = [], onModulesChange }) => {
     setIsDetailsOpen(true);
   };
 
+  if (!courseId) {
+    return (
+      <div className="bg-stone-50 p-12 rounded-[2rem] border border-stone-200 border-dashed text-center space-y-6">
+        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm border border-stone-100">
+          <Zap className="w-8 h-8 text-stone-300" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold text-stone-800 arimo-font">Setup Curriculum</h3>
+          <p className="text-stone-500 text-sm inter-font max-w-sm mx-auto">
+            Before you can add modules and lessons, you need to save the basic course information.
+          </p>
+        </div>
+        
+        <button
+          onClick={onInitialize}
+          className="bg-greenTeal hover:bg-teal-700 text-white px-8 py-3.5 rounded-2xl font-black transition-all flex items-center gap-2 mx-auto shadow-lg shadow-teal-900/10 active:scale-95 inter-font"
+        >
+          <Save className="w-5 h-5" />
+          <span>Save Overview & Start Building</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       {/* Modules List */}
       <div className="space-y-6">
-        {modules.map((mod) => (
-          <div
-            key={mod.id}
-            className="bg-white rounded-[2rem] border border-stone-200 shadow-sm overflow-hidden"
-          >
-            {/* Module Header */}
-            <div className="bg-[#D6CBAF33] px-8 py-6 border-b border-stone-100 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <GripVertical className="w-5 h-5 text-stone-300 cursor-grab" />
-                <div className="flex flex-col">
-                  <h3 className="text-xl font-bold text-stone-800 arimo-font">
-                    {mod.title}
-                  </h3>
-                  <span className="text-xs font-medium text-stone-400 uppercase tracking-widest mt-1">
-                    {mod.lessons.length}{" "}
-                    {mod.lessons.length === 1 ? "lesson" : "lessons"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => removeModule(mod.id)}
-                  className="p-2.5 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                  title="Delete Module"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => openAddContentModal(mod.id)}
-                  className="flex items-center gap-2 bg-greenTeal hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Lesson</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Lessons List */}
-            <div className="p-6 space-y-3">
-              {mod.lessons.length > 0 ? (
-                mod.lessons.map((lesson) => (
-                  <div
-                    key={lesson.id}
-                    className="flex items-center gap-4 p-4 bg-white border border-stone-100 rounded-2xl hover:border-teal-200 hover:shadow-md transition-all group"
-                  >
-                    <GripVertical className="w-4 h-4 text-stone-300 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
-                    <div
-                      onClick={() => openLessonDetails(lesson)}
-                      className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center text-stone-400 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors cursor-pointer"
-                    >
-                      {lesson.type === "video" ? (
-                        <Video className="w-5 h-5" />
-                      ) : lesson.type === "document" ? (
-                        <FileText className="w-5 h-5" />
-                      ) : lesson.type === "quiz" ? (
-                        <HelpCircle className="w-5 h-5" />
-                      ) : (
-                        <BookOpen className="w-5 h-5" />
-                      )}
-                    </div>
-                    <div
-                      className="flex-1 cursor-pointer"
-                      onClick={() => openLessonDetails(lesson)}
-                    >
-                      <h4 className="text-sm font-bold text-stone-800 arimo-font">
-                        {lesson.title}
-                      </h4>
-                      {lesson.duration && (
-                        <span className="text-[10px] font-bold text-stone-400 arimo-font mt-0.5 block">
-                          {lesson.duration}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => removeLesson(mod.id, lesson.id)}
-                      className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <div className="py-8 text-center text-stone-400 text-sm font-medium border-2 border-dashed border-stone-100 rounded-2xl">
-                  No lessons added yet. Click Add Lesson to start.
-                </div>
-              )}
-            </div>
+        {isLoadingModules ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
           </div>
-        ))}
+        ) : modules.length > 0 ? (
+          modules.map((mod) => (
+            <ModuleItem
+              key={mod.id}
+              mod={mod}
+              courseId={courseId}
+              onAddLesson={openAddContentModal}
+              onEditLesson={openEditContentModal}
+              onRemoveModule={handleRemoveModule}
+              onLessonDetails={openLessonDetails}
+            />
+          ))
+        ) : (
+          <div className="py-12 text-center text-stone-400 text-sm font-medium border-2 border-dashed border-stone-100 rounded-[2rem]">
+            No modules added yet. Start by adding a module below.
+          </div>
+        )}
       </div>
 
       {/* Add New Module Section */}
@@ -185,9 +382,14 @@ const CourseCurriculum = ({ modules = [], onModulesChange }) => {
           />
           <button
             onClick={addModule}
-            className="bg-greenTeal hover:bg-teal-700 text-white px-8 py-3.5 rounded-2xl font-black transition-all flex items-center gap-2 shadow-lg shadow-teal-900/10 active:scale-95 inter-font"
+            disabled={isCreatingModule}
+            className="bg-greenTeal hover:bg-teal-700 text-white px-8 py-3.5 rounded-2xl font-black transition-all flex items-center gap-2 shadow-lg shadow-teal-900/10 active:scale-95 inter-font disabled:opacity-50"
           >
-            <Plus className="w-5 h-5" />
+            {isCreatingModule ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Plus className="w-5 h-5" />
+            )}
             <span>Add Module</span>
           </button>
         </div>
@@ -195,9 +397,13 @@ const CourseCurriculum = ({ modules = [], onModulesChange }) => {
 
       <AddContentModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingLessonId(null);
+        }}
         moduleId={targetModuleId}
-        onAdd={handleAddContent}
+        courseId={courseId}
+        lessonId={editingLessonId}
       />
 
       {/* Lesson Details Viewer Modal */}

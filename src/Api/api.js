@@ -51,7 +51,30 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQuery,
-  tagTypes: ["uni_users", "user_profile", "categories", "courses"],
+  tagTypes: [
+    "uni_users",
+    "user_profile",
+    "categories",
+    "courses",
+    "teachers",
+    "students",
+    "email-templates",
+    "sendgrid-api",
+    "purposes",
+    "membership",
+    "bundles",
+    "siteAnnouncements",
+    "siteSettings",
+    "assignmentSubmissions",
+    "courseAnnouncements",
+    "donations",
+    "newsletterSubscribers",
+    "dashboard",
+    "courseModules",
+    "moduleLessons",
+    "rescheduleRequests",
+    "lesson",
+  ],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({

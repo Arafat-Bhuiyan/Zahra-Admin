@@ -8,17 +8,29 @@ import {
   Underline,
 } from "lucide-react";
 
-const TermsAndConditions = () => {
+const TermsAndConditions = ({ value, onChange }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [content, setContent] = useState(`<ul>
-<li>Lorem ipsum dolor sit amet consectetur. Lacus at venenatis gravida vivamus mauris. Quisque mi est vel dis. Donec rhoncus laoreet odio orci sed risus elit accumsan. Mattis ut est tristique amet vitae at aliquet. Ac vel porttitor egestas scelerisque enim quisque senectus. Euismod ultricies vulputate id cras bibendum sollicitudin proin odio bibendum. Velit velit in scelerisque erat etiam rutrum phasellus nunc. Sed lectus sed a at eget. Nunc purus sed quis at risus. Consectetur nibh justo proin placerat condimentum id at adipiscing.</li>
-<li>Vel blandit mi nulla sodales consectetur. Egestas tristique ultrices gravida duis nisl odio. Posuere curabitur eu platea pellentesque ut. Facilisi elementum neque mauris facilisis in. Cursus condimentum ipsum pretium consequat turpis at porttitor nisl.</li>
-<li>Scelerisque tellus praesent condimentum euismod a faucibus. Auctor at ultricies at urna aliquam massa pellentesque. Vitae vulputate nulla diam placerat m.</li>
-</ul>`);
-
-  const [editContent, setEditContent] = useState(content);
+  const [editorContent, setEditorContent] = useState(value || "");
   const [fontSize, setFontSize] = useState("14");
   const editorRef = useRef(null);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setEditorContent(value || "");
+    }
+  }, [value, isEditing]);
+
+  useEffect(() => {
+    if (!isEditing && editorRef.current) {
+      editorRef.current.innerHTML = editorContent || "<p></p>";
+    }
+  }, [isEditing, editorContent]);
+
+  useEffect(() => {
+    if (isEditing && editorRef.current) {
+      editorRef.current.innerHTML = editorContent || "<p></p>";
+    }
+  }, [isEditing]);
 
   useEffect(() => {
     if (isEditing) {
@@ -34,15 +46,10 @@ const TermsAndConditions = () => {
     }
   }, [isEditing]);
 
-  const handleSaveEdit = () => {
-    const html = editorRef.current?.innerHTML ?? editContent;
-    setContent(html);
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setEditContent(content);
-    setIsEditing(false);
+  const handleInput = (e) => {
+    const html = e.currentTarget.innerHTML;
+    setEditorContent(html);
+    if (onChange) onChange(html);
   };
 
   const applyFormat = (command, value) => {
@@ -55,26 +62,30 @@ const TermsAndConditions = () => {
   const handleFontSizeChange = (e) => {
     const newSize = e.target.value;
     setFontSize(newSize);
-    applyFontSizeToSelection(newSize);
-  };
-
-  const applyFontSizeToSelection = (size) => {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-    const range = selection.getRangeAt(0);
-    if (range) {
-      const span = document.createElement("span");
-      span.style.fontSize = `${size}px`;
-      range.surroundContents(span);
-    }
+    applyFormat("fontSize", newSize);
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Edit Header removed - button moved inside content card */}
+    <div className="w-full bg-white rounded-2xl outline outline-1 outline-offset-[-1px] outline-black/10 flex flex-col">
+      <div className="p-6 flex justify-between items-start">
+        <div className="flex flex-col">
+          <h2 className="text-neutral-950 text-base font-normal arimo-font leading-4">
+            Terms & Conditions
+          </h2>
+          <p className="text-gray-500 text-base font-normal arimo-font leading-6 mt-1">
+            Configure the terms and conditions shown to users.
+          </p>
+        </div>
+        <button
+          onClick={() => setIsEditing((prev) => !prev)}
+          className="inline-flex items-center justify-center gap-2 h-9 px-4 py-2 bg-greenTeal rounded-[10px] text-white text-sm font-medium leading-5 hover:bg-greenTeal/90 transition-colors"
+        >
+          {isEditing ? "Done" : "Edit"}
+        </button>
+      </div>
 
       {isEditing && (
-        <div className="flex items-center flex-wrap gap-2 p-2 border border-gray-300 rounded bg-gray-50">
+        <div className="flex items-center flex-wrap gap-2 px-6 pb-3 border-t border-gray-200 bg-gray-50">
           <select
             value={fontSize}
             onChange={handleFontSizeChange}
@@ -137,52 +148,25 @@ const TermsAndConditions = () => {
         </div>
       )}
 
-      {isEditing ? (
-        <>
+      <div className="p-6">
+        {isEditing ? (
           <div
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
-            className="min-h-[400px] p-4 border border-gray-300 rounded focus:outline-none focus:ring-2 text-gray-800 leading-relaxed bg-white"
+            className="min-h-[300px] p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 leading-relaxed bg-white"
             style={{ fontSize: `${fontSize}px` }}
-            dangerouslySetInnerHTML={{
-              __html: (editContent ?? content ?? "").replace(/\n/g, "<br>"),
-            }}
-            onBlur={(e) =>
-              setEditContent(e.currentTarget.innerHTML.replace(/<br>/g, "\n"))
-            }
+            onInput={handleInput}
           />
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={handleSaveEdit}
-              className="px-6 py-2 bg-greenTeal text-white font-semibold rounded hover:bg-opacity-90 transition-colors"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleCancelEdit}
-              className="px-6 py-2 bg-gray-200 text-gray-900 font-semibold rounded hover:bg-gray-300 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      ) : (
-        <div className="prose prose-sm max-w-none bg-white p-6 rounded-2xl outline outline-1 outline-offset-[-1px] outline-black/10 relative">
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="absolute top-6 right-6 px-4 py-2 bg-greenTeal text-white font-semibold rounded hover:bg-opacity-90 transition-colors"
-            >
-              Edit
-            </button>
-          )}
+        ) : (
           <div
-            className="text-gray-700 leading-relaxed max-w-[1440px]"
-            dangerouslySetInnerHTML={{ __html: content }}
+            ref={editorRef}
+            className="min-h-[300px] p-4 border rounded-lg focus:outline-none focus:ring-2 leading-relaxed bg-white border-transparent"
+            style={{ fontSize: `${fontSize}px` }}
+            dangerouslySetInnerHTML={{ __html: editorContent || "<p></p>" }}
           />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

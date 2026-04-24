@@ -9,7 +9,7 @@ const Payments = () => {
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-500 min-h-screen">
       {/* Top Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           {
             title: "Total Earnings",
@@ -58,10 +58,10 @@ const Payments = () => {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Donations Overview Banner */}
-      <div className="w-full bg-gradient-to-r from-pink-50 to-red-50 rounded-2xl shadow-sm outline outline-2 outline-offset-[-2px] outline-pink-200 p-8 flex flex-col gap-8">
+      {/* <div className="w-full bg-gradient-to-r from-pink-50 to-red-50 rounded-2xl shadow-sm outline outline-2 outline-offset-[-2px] outline-pink-200 p-8 flex flex-col gap-8">
         <div className="flex items-center gap-3">
           <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-red-500 rounded-2xl flex justify-center items-center shadow-md shrink-0">
             <svg
@@ -106,7 +106,7 @@ const Payments = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Tabs and Content */}
       <div className="flex flex-col gap-6">

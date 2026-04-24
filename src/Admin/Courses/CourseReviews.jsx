@@ -1,46 +1,7 @@
 import React from "react";
 import { Star } from "lucide-react";
 
-const CourseReviews = () => {
-  const reviews = [
-    {
-      id: 1,
-      name: "Fatima Ahmed",
-      rating: 5,
-      date: "Jan 2024",
-      comment:
-        "This course completely changed my perspective on managing anxiety. The combination of Islamic teachings and modern psychology is brilliant. Highly recommended!",
-      avatar: "https://i.pravatar.cc/150?u=fatima",
-    },
-    {
-      id: 2,
-      name: "Omar Hassan",
-      rating: 5,
-      date: "Jan 2024",
-      comment:
-        "MashAllah, an excellent course. Dr. Sarah explains complex concepts in such an accessible way. The practical exercises have been life-changing.",
-      avatar: "https://i.pravatar.cc/150?u=omar",
-    },
-    {
-      id: 3,
-      name: "Aisha Ibrahim",
-      rating: 5,
-      date: "Dec 2023",
-      comment:
-        "I appreciated the balance between spiritual and scientific approaches. The dhikr practices have become part of my daily routine now.",
-      avatar: "https://i.pravatar.cc/150?u=aisha",
-    },
-    {
-      id: 4,
-      name: "Yusuf Ali",
-      rating: 4,
-      date: "Dec 2023",
-      comment:
-        "Very informative and well-structured. Some lessons could be a bit shorter, but overall excellent content.",
-      avatar: "https://i.pravatar.cc/150?u=yusuf",
-    },
-  ];
-
+const CourseReviews = ({ reviews = [] }) => {
   const StarRating = ({ rating }) => {
     return (
       <div className="flex gap-1">
@@ -63,55 +24,71 @@ const CourseReviews = () => {
         <h2 className="text-2xl font-black text-greenTeal arimo-font">
           Student Reviews
         </h2>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100">
-            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-            <span className="text-lg font-black text-stone-900 arimo-font">
-              4.7
+        {reviews.length > 0 && (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span className="text-lg font-black text-stone-900 arimo-font">
+                {(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)}
+              </span>
+            </div>
+            <span className="text-sm font-medium text-stone-400 inter-font">
+              ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
             </span>
           </div>
-          <span className="text-sm font-medium text-stone-400 inter-font">
-            (245 reviews)
-          </span>
-        </div>
+        )}
       </div>
 
       {/* Reviews List */}
       <div className="space-y-4">
-        {reviews.map((review) => (
-          <div
-            key={review.id}
-            className="p-6 bg-stone-50/50 rounded-2xl border border-stone-100 hover:border-teal-200 hover:bg-white hover:shadow-md transition-all group"
-          >
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
-                <img
-                  src={review.avatar}
-                  alt={review.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 space-y-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="text-base font-bold text-stone-900 arimo-font group-hover:text-teal-700 transition-colors">
-                      {review.name}
-                    </h4>
-                    <div className="mt-1">
-                      <StarRating rating={review.rating} />
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium text-stone-400 inter-font">
-                    {review.date}
-                  </span>
+        {reviews.length > 0 ? (
+          reviews.map((review) => (
+            <div
+              key={review.id}
+              className="p-6 bg-stone-50/50 rounded-2xl border border-stone-100 hover:border-teal-200 hover:bg-white hover:shadow-md transition-all group"
+            >
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+                  <img
+                    src={review.avatar}
+                    alt={review.name}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <p className="text-sm font-medium text-stone-500 leading-relaxed inter-font">
-                  {review.comment}
-                </p>
+                <div className="flex-1 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-base font-bold text-stone-900 arimo-font group-hover:text-teal-700 transition-colors">
+                        {review.name}
+                      </h4>
+                      <div className="mt-1">
+                        <StarRating rating={review.rating} />
+                      </div>
+                    </div>
+                    <span className="text-xs font-medium text-stone-400 inter-font">
+                      {review.date}
+                    </span>
+                  </div>
+                  <p className="text-sm font-medium text-stone-500 leading-relaxed inter-font">
+                    {review.comment}
+                  </p>
+                </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="py-20 text-center space-y-4 bg-stone-50/30 rounded-3xl border-2 border-dashed border-stone-100">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <Star className="w-8 h-8 text-stone-200" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-lg font-bold text-stone-800 arimo-font">No Reviews Yet</h4>
+              <p className="text-stone-400 text-sm inter-font max-w-xs mx-auto">
+                Once students complete this course and leave feedback, their reviews will appear here.
+              </p>
+            </div>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

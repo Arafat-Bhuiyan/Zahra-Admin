@@ -1,45 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { X, Package, Check } from "lucide-react";
+import { useGetCoursesDataQuery, useCreateBundleMutation } from "../../Api/adminApi";
+import toast from "react-hot-toast";
 
-const availableCourses = [
-  {
-    id: 1,
-    title: "Advanced React Patterns",
-    category: "Web Development",
-    price: 299,
-  },
-  {
-    id: 2,
-    title: "Data Science Fundamentals",
-    category: "Data Science",
-    price: 299,
-  },
-  {
-    id: 3,
-    title: "UI/UX Design Masterclass",
-    category: "Design",
-    price: 299,
-  },
-  { id: 4, title: "JavaScript ES6+", category: "Web Development", price: 299 },
-  { id: 5, title: "Python for Beginners", category: "Programming", price: 299 },
-  {
-    id: 6,
-    title: "Node.js Backend Development",
-    category: "Web Development",
-    price: 299,
-  },
-  {
-    id: 7,
-    title: "Machine Learning Basics",
-    category: "Data Science",
-    price: 299,
-  },
-  { id: 8, title: "Figma Design Course", category: "Design", price: 299 },
-  { id: 9, title: "CSS Masterclass", category: "Web Development", price: 299 },
-  { id: 10, title: "MongoDB Database", category: "Database", price: 299 },
-];
+const CreateBundleModal = ({ isOpen, onClose }) => {
+  const { data: coursesData } = useGetCoursesDataQuery();
+  const availableCourses = coursesData?.results || [];
+  const [createBundle, { isLoading }] = useCreateBundleMutation();
 
-const CreateBundleModal = ({ isOpen, onClose, onCreate }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -81,11 +49,11 @@ const CreateBundleModal = ({ isOpen, onClose, onCreate }) => {
   const calculateOriginalValue = () => {
     return formData.selectedCourses.reduce((total, id) => {
       const course = availableCourses.find((c) => c.id === id);
-      return total + (course ? course.price : 0);
+      return total + (course ? parseFloat(course.price || 0) : 0);
     }, 0);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (
       !formData.title ||
       !formData.price ||
@@ -94,34 +62,21 @@ const CreateBundleModal = ({ isOpen, onClose, onCreate }) => {
       return; // Basic validation
     }
 
-    // Get full course objects
-    const courses = formData.selectedCourses.map((id) =>
-      availableCourses.find((c) => c.id === id),
-    );
-    const originalPrice = calculateOriginalValue();
-    const discount =
-      originalPrice > 0
-        ? Math.round(
-            ((originalPrice - parseFloat(formData.price)) / originalPrice) *
-              100,
-          )
-        : 0;
-
-    const newBundle = {
-      id: Date.now(), // Simple ID generation
-      title: formData.title,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      originalPrice,
-      discount: discount > 0 ? discount : 0,
-      status: "Draft",
-      sales: 0,
-      date: new Date().toLocaleDateString(),
-      courses: courses,
-    };
-
-    onCreate(newBundle);
-    onClose();
+    try {
+      const payload = {
+        name: formData.title,
+        description: formData.description,
+        price: formData.price.toString(),
+        course_ids: formData.selectedCourses,
+        is_active: false // typically create as draft first
+      };
+      
+      await createBundle(payload).unwrap();
+      toast.success("Bundle created successfully!");
+      onClose();
+    } catch (err) {
+      toast.error(err?.data?.error || "Failed to create bundle");
+    }
   };
 
   const isFormValid =
@@ -231,7 +186,7 @@ const CreateBundleModal = ({ isOpen, onClose, onCreate }) => {
                           {course.title}
                         </span>
                         <span className="text-neutral-500 text-sm font-normal arimo-font">
-                          {course.category}
+                          {course.category?.name || "Uncategorized"}
                         </span>
                       </div>
                       <span className="text-slate-400 text-sm font-bold arimo-font">
@@ -279,16 +234,16 @@ const CreateBundleModal = ({ isOpen, onClose, onCreate }) => {
             Cancel
           </button>
           <button
-            disabled={!isFormValid}
+            disabled={!isFormValid || isLoading}
             onClick={handleSubmit}
             className={`w-44 h-10 rounded-[10px] text-white text-base font-normal arimo-font flex items-center justify-center gap-2 transition-colors ${
-              isFormValid
+              isFormValid && !isLoading
                 ? "bg-greenTeal hover:bg-opacity-80 shadow-md"
                 : "bg-greenTeal opacity-50 cursor-not-allowed"
             }`}
           >
             <Package size={18} />
-            Create Bundle
+            {isLoading ? "Creating..." : "Create Bundle"}
           </button>
         </div>
       </div>
