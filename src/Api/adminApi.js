@@ -399,6 +399,10 @@ export const adminApi = api.injectEndpoints({
       query: () => "/email-templates/sendgrid-templates/",
       providesTags: ["sendgrid-api"],
     }),
+    getTeacherEarnings: builder.query({
+      query: () => "/dashboard/teacher-earnings/",
+      providesTags: ["dashboard"],
+    }),
 
     // get Purposes
     getPurposes: builder.query({
@@ -1107,4 +1111,5 @@ export const {
   useCreateDiscussionReplyMutation,
   usePatchDiscussionReplyMutation,
   useDeleteDiscussionReplyMutation,
+  useGetTeacherEarningsQuery,
 } = adminApi;
