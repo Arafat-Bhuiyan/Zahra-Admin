@@ -215,7 +215,7 @@ const Announcement = () => {
   const [coursePage, setCoursePage] = useState(1);
   const [courseAnnouncementPage, setCourseAnnouncementPage] = useState(1);
 
-  const { data: coursesData, isLoading: isCoursesLoading } = useGetCoursesDataQuery({ page: coursePage });
+  const { data: coursesData, isLoading: isCoursesLoading } = useGetCoursesDataQuery(coursePage);
   const { data: courseAnnsData, isLoading: isCourseAnnsLoading } = useGetCourseAnnouncementsQuery(
     { course_pk: selectedCourse?.id, page: courseAnnouncementPage },
     { skip: !selectedCourse }

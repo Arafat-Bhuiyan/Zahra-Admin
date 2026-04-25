@@ -63,7 +63,7 @@ const Certificate = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: coursesData, isLoading } = useGetCoursesDataQuery({ page: currentPage });
+  const { data: coursesData, isLoading } = useGetCoursesDataQuery(currentPage);
   const courses = coursesData?.results || [];
 
   if (selectedCourse) {
