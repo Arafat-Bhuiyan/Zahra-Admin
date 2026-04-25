@@ -163,9 +163,9 @@ export default function CourseDetailsPage() {
                   src={course.thumbnail || course.image}
                 />
                 {/* play overlay for any course (visual) */}
-                <button className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-teal-600 text-white p-4 rounded-full shadow-lg">
+                {/* <button className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-teal-600 text-white p-4 rounded-full shadow-lg">
                   <Play size={20} />
-                </button>
+                </button> */}
                 <div className="mt-4">
                   <h1 className="text-3xl text-[#7AA4A5] font-semibold">Course Builder</h1>
                   <p className="">Create comprehensive course content for students</p>

@@ -75,8 +75,8 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
   const [addCourseCategory] = useAddCourseCategoryMutation();
   const [deleteCourseCategory] = useDeleteCourseCategoryMutation();
   const { data: teachersResponse } = useGetTeacherProfilesQuery();
-  const { data: courseDetails, isLoading: isLoadingDetails } = useGetCourseDetailsQuery(course?.id, { 
-    skip: !course?.id 
+  const { data: courseDetails, isLoading: isLoadingDetails } = useGetCourseDetailsQuery(course?.id, {
+    skip: !course?.id
   });
 
   const categories = categoriesResponse?.results || [];
@@ -273,7 +273,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
       if (formData.subtitle) payload.append("subtitle", formData.subtitle);
       if (formData.description) payload.append("description", formData.description);
       payload.append("category", formData.category);
-      payload.append("teacher", formData.teacher);
+      payload.append("teacher_id", formData.teacher);
       payload.append("price", formData.price);
       payload.append("level", formData.level);
       payload.append("status", formData.status);
@@ -339,11 +339,10 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-              activeTab === tab
+            className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${activeTab === tab
                 ? "border-teal-600 text-teal-700"
                 : "border-transparent text-stone-400 hover:text-stone-600"
-            }`}
+              }`}
           >
             {tab}
           </button>
@@ -431,198 +430,197 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                         <option value="advanced">Advanced</option>
                       </select>
                     </FormGroup>
-                  <FormGroup label="Category">
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                        className="w-full h-10 px-4 bg-stone-50 border border-stone-100 rounded-xl flex items-center justify-between text-stone-800 font-medium hover:bg-stone-100 transition-all outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300"
-                      >
-                        <span className="truncate">
-                          {categories.find((c) => c.id.toString() === formData.category.toString())
-                            ?.name || "Select Category"}
-                        </span>
-                        <ChevronDown
-                          className={`w-4 h-4 transition-transform duration-300 ${isCategoryOpen ? "rotate-180" : ""}`}
-                        />
-                      </button>
-
-                      {isCategoryOpen && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-10"
-                            onClick={() => setIsCategoryOpen(false)}
+                    <FormGroup label="Category">
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                          className="w-full h-10 px-4 bg-stone-50 border border-stone-100 rounded-xl flex items-center justify-between text-stone-800 font-medium hover:bg-stone-100 transition-all outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-300"
+                        >
+                          <span className="truncate">
+                            {categories.find((c) => c.id.toString() === formData.category.toString())
+                              ?.name || "Select Category"}
+                          </span>
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform duration-300 ${isCategoryOpen ? "rotate-180" : ""}`}
                           />
-                          <div className="absolute top-12 left-0 mt-2 p-1 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl flex flex-col gap-1 min-w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
-                            <div className="max-h-60 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-stone-200 scrollbar-track-transparent">
-                              {categories.length === 0 ? (
-                                <p className="text-xs text-stone-400 p-4 text-center">No categories found</p>
-                              ) : (
-                                categories.map((cat) => (
-                                  <div
-                                    key={cat.id}
-                                    className={`group flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${
-                                      formData.category.toString() === cat.id.toString()
-                                        ? "bg-teal-50 text-teal-700 font-bold"
-                                        : "text-stone-600 hover:bg-stone-50"
-                                    }`}
-                                    onClick={() => {
-                                      setFormData((prev) => ({ ...prev, category: cat.id.toString() }));
-                                      setIsCategoryOpen(false);
-                                    }}
-                                  >
-                                    <span className="truncate">{cat.name}</span>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => handleDeleteCategory(cat.id, e)}
-                                      className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all ml-2"
+                        </button>
+
+                        {isCategoryOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={() => setIsCategoryOpen(false)}
+                            />
+                            <div className="absolute top-12 left-0 mt-2 p-1 bg-white border border-stone-100 rounded-[1.5rem] shadow-2xl flex flex-col gap-1 min-w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                              <div className="max-h-60 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-stone-200 scrollbar-track-transparent">
+                                {categories.length === 0 ? (
+                                  <p className="text-xs text-stone-400 p-4 text-center">No categories found</p>
+                                ) : (
+                                  categories.map((cat) => (
+                                    <div
+                                      key={cat.id}
+                                      className={`group flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${formData.category.toString() === cat.id.toString()
+                                          ? "bg-teal-50 text-teal-700 font-bold"
+                                          : "text-stone-600 hover:bg-stone-50"
+                                        }`}
+                                      onClick={() => {
+                                        setFormData((prev) => ({ ...prev, category: cat.id.toString() }));
+                                        setIsCategoryOpen(false);
+                                      }}
                                     >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                ))
-                              )}
+                                      <span className="truncate">{cat.name}</span>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => handleDeleteCategory(cat.id, e)}
+                                        className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all ml-2"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+
+                              <div className="p-3 border-t border-stone-50 bg-stone-50/50 flex gap-2">
+                                <input
+                                  type="text"
+                                  placeholder="Add category..."
+                                  value={newCategoryName}
+                                  onChange={(e) => setNewCategoryName(e.target.value)}
+                                  onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
+                                  className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={handleAddCategory}
+                                  className="p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-md active:scale-95"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
+                          </>
+                        )}
+                      </div>
+                    </FormGroup>
+                  </div>
 
-                            <div className="p-3 border-t border-stone-50 bg-stone-50/50 flex gap-2">
-                              <input
-                                type="text"
-                                placeholder="Add category..."
-                                value={newCategoryName}
-                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
-                                className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
-                              />
-                              <button
-                                type="button"
-                                onClick={handleAddCategory}
-                                className="p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-md active:scale-95"
-                              >
-                                <Plus className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </FormGroup>
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <FormGroup label="Status">
+                      <select
+                        name="status"
+                        value={formData.status}
+                        onChange={handleChange}
+                        className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer font-bold text-stone-800"
+                      >
+                        <option value="upcoming">Upcoming</option>
+                        <option value="running">Running</option>
+                        <option value="recorded">Recorded</option>
+                      </select>
+                    </FormGroup>
+                    {formData.status === "upcoming" && (
+                      <FormGroup label="Start Date">
+                        <input
+                          type="date"
+                          name="start_date"
+                          value={formData.start_date}
+                          onChange={handleChange}
+                          placeholder="e.g. 2026-05-10"
+                          className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none font-bold text-stone-800"
+                        />
+                      </FormGroup>
+                    )}
+                    <FormGroup label="Assign Teacher">
+                      <select
+                        name="teacher"
+                        value={formData.teacher}
+                        onChange={handleChange}
+                        className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="">Select Teacher</option>
+                        {teachers.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.user?.first_name} {t.user?.last_name}
+                          </option>
+                        ))}
+                      </select>
+                    </FormGroup>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FormGroup label="Status">
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer font-bold text-stone-800"
-                  >
-                    <option value="upcoming">Upcoming</option>
-                    <option value="running">Running</option>
-                    <option value="recorded">Recorded</option>
-                  </select>
-                </FormGroup>
-                {formData.status === "upcoming" && (
-                  <FormGroup label="Start Date">
-                    <input
-                      type="date"
-                      name="start_date"
-                      value={formData.start_date}
-                      onChange={handleChange}
-                      placeholder="e.g. 2026-05-10"
-                      className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none font-bold text-stone-800"
-                    />
-                  </FormGroup>
-                )}
-                <FormGroup label="Assign Teacher">
-                  <select
-                    name="teacher"
-                    value={formData.teacher}
-                    onChange={handleChange}
-                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="">Select Teacher</option>
-                    {teachers.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.user?.first_name} {t.user?.last_name}
-                      </option>
-                    ))}
-                  </select>
-                </FormGroup>
-              </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormGroup label="Total Hours">
+                      <input
+                        type="text"
+                        name="total_hours"
+                        value={formData.total_hours}
+                        onChange={handleChange}
+                        placeholder="20"
+                        className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
+                      />
+                    </FormGroup>
+                    <FormGroup label="Hours Per Session">
+                      <input
+                        type="text"
+                        name="hours_per_session"
+                        value={formData.hours_per_session}
+                        onChange={handleChange}
+                        placeholder="2"
+                        className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
+                      />
+                    </FormGroup>
+                  </div>
+                </div>
+              </section>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormGroup label="Total Hours">
-                  <input
-                    type="text"
-                    name="total_hours"
-                    value={formData.total_hours}
-                    onChange={handleChange}
-                    placeholder="20"
-                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
+              {/* Course Images & Preview */}
+              <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
+                <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                  Course Images & Preview
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <UploadCard
+                    title="Course Thumbnail"
+                    subtitle="1200x675px (JPG, PNG)"
+                    icon={<ImageIcon className="w-8 h-8 text-stone-400" />}
+                    btnText="Upload Image"
+                    onChange={handleImageUpload}
+                    accept="image/*.jpg,image/*.jpeg,image/*.png"
+                    preview={formData.thumbnailPreview}
                   />
-                </FormGroup>
-                <FormGroup label="Hours Per Session">
-                  <input
-                    type="text"
-                    name="hours_per_session"
-                    value={formData.hours_per_session}
-                    onChange={handleChange}
-                    placeholder="2"
-                    className="w-full bg-stone-50 border border-stone-100 rounded-xl px-4 py-2 outline-none"
+                  <UploadCard
+                    title="Course Preview Video"
+                    subtitle="MP4, MOV (Max 2 min)"
+                    icon={<Play className="w-8 h-8 text-stone-400" />}
+                    btnText="Upload Video"
+                    onChange={handleVideoUpload}
+                    accept="video/*"
+                    preview={formData.videoName}
                   />
-                </FormGroup>
-              </div>
-            </div>
-          </section>
+                </div>
+              </section>
 
-          {/* Course Images & Preview */}
-          <section className="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm space-y-8">
-            <div className="flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs">
-              <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
-              Course Images & Preview
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <UploadCard
-                title="Course Thumbnail"
-                subtitle="1200x675px (JPG, PNG)"
-                icon={<ImageIcon className="w-8 h-8 text-stone-400" />}
-                btnText="Upload Image"
-                onChange={handleImageUpload}
-                accept="image/*.jpg,image/*.jpeg,image/*.png"
-                preview={formData.thumbnailPreview}
-              />
-              <UploadCard
-                title="Course Preview Video"
-                subtitle="MP4, MOV (Max 2 min)"
-                icon={<Play className="w-8 h-8 text-stone-400" />}
-                btnText="Upload Video"
-                onChange={handleVideoUpload}
-                accept="video/*"
-                preview={formData.videoName}
-              />
-            </div>
-          </section>
-
-          {/* Submit Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={handleSubmit}
-              disabled={isCreating || isUpdating}
-              className="flex items-center gap-2 bg-greenTeal text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isCreating || isUpdating ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Submitting...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-5 h-5" />
-                  <span>{courseId ? "Update Course" : "Submit Course"}</span>
-                </>
-              )}
-            </button>
+              {/* Submit Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSubmit}
+                  disabled={isCreating || isUpdating}
+                  className="flex items-center gap-2 bg-greenTeal text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isCreating || isUpdating ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-5 h-5" />
+                      <span>{courseId ? "Update Course" : "Submit Course"}</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           )}
@@ -697,9 +695,9 @@ const UploadCard = ({
           <h4 className="text-greenTeal font-bold inter-font">{title}</h4>
           <p className="text-stone-400 text-xs mt-1 inter-font max-w-[240px] line-clamp-1">
             {preview &&
-            typeof preview === "string" &&
-            !preview.includes("://") &&
-            !preview.startsWith("data:")
+              typeof preview === "string" &&
+              !preview.includes("://") &&
+              !preview.startsWith("data:")
               ? `Selected: ${preview}`
               : subtitle}
           </p>
