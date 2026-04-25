@@ -1000,6 +1000,86 @@ export const adminApi = api.injectEndpoints({
       providesTags: ["teacher"],
 
     }),
+
+    getCourseById: builder.query({
+      query: (id) => `/courses/${id}/`,
+      providesTags: (result, error, id) => [{ type: "courses", id }],
+    }),
+
+    getCourseEnrollments: builder.query({
+      query: ({ courseId, page = 1, pageSize = 20 } = {}) =>
+        `/enrollments/?course=${courseId}&page=${page}&page_size=${pageSize}`,
+      providesTags: ["enrollments"],
+    }),
+
+    getLessonQuizzes: builder.query({
+      query: ({ courseId, moduleId, lessonId }) =>
+        `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/quizzes/`,
+      providesTags: ["quizzes"],
+    }),
+
+    getLessonAssignments: builder.query({
+      query: ({ courseId, moduleId, lessonId }) =>
+        `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/assignments/`,
+      providesTags: ["assignments"],
+    }),
+
+    getCourseReviews: builder.query({
+      query: ({ courseId, page = 1 } = {}) =>
+        `/courses/${courseId}/reviews/?page=${page}`,
+      providesTags: ["reviews"],
+    }),
+
+    getAssignmentSubmissions: builder.query({
+      query: ({ status, assignment, courseId, moduleId, search, page = 1 } = {}) => {
+        const params = new URLSearchParams({ page });
+        if (status) params.append("status", status);
+        if (assignment) params.append("assignment", assignment);
+        if (courseId) params.append("assignment__lesson__module__course", courseId);
+        if (moduleId) params.append("assignment__lesson__module", moduleId);
+        if (search) params.append("search", search);
+        return `/assignment-submissions/?${params.toString()}`;
+      },
+      providesTags: ["assignmentSubmissions"],
+    }),
+
+    reviewAssignmentSubmission: builder.mutation({
+      query: ({ id, status, teacher_feedback, mark }) => ({
+        url: `/assignment-submissions/${id}/review/`,
+        method: "PATCH",
+        body: { status, teacher_feedback, mark },
+      }),
+      invalidatesTags: ["assignmentSubmissions"],
+    }),
+
+    getConsultations: builder.query({
+      query: () => "/consultations/",
+      providesTags: ["consultations"],
+    }),
+
+    getConsultationCalendar: builder.query({
+      query: ({ id, month }) => `/consultations/${id}/calendar/?month=${month}`,
+      providesTags: ["consultationCalendar"],
+    }),
+
+    getConsultationTimeslots: builder.query({
+      query: ({ id, date }) => `/consultations/${id}/timeslots/?date=${date}`,
+      providesTags: ["consultationTimeslots"],
+    }),
+
+    getTeacherUpcomingSessions: builder.query({
+      query: () => "/teacher/consultations/",
+      providesTags: ["teacherSessions"],
+    }),
+
+    getTeacherLiveSessions: builder.query({
+      query: ({ status, page = 1, page_size = 20 } = {}) => {
+        const params = new URLSearchParams({ page, page_size });
+        if (status) params.append("status", status);
+        return `/teacher/live-sessions/?${params.toString()}`;
+      },
+      providesTags: ["teacherLiveSessions"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -1124,4 +1204,16 @@ export const {
   usePatchDiscussionReplyMutation,
   useDeleteDiscussionReplyMutation,
   useGetTeacherEarningsQuery,
+  useGetCourseByIdQuery,
+  useGetCourseEnrollmentsQuery,
+  useGetLessonQuizzesQuery,
+  useGetLessonAssignmentsQuery,
+  useGetCourseReviewsQuery,
+  useGetAssignmentSubmissionsQuery,
+  useReviewAssignmentSubmissionMutation,
+  useGetConsultationsQuery,
+  useGetConsultationCalendarQuery,
+  useGetConsultationTimeslotsQuery,
+  useGetTeacherUpcomingSessionsQuery,
+  useGetTeacherLiveSessionsQuery,
 } = adminApi;

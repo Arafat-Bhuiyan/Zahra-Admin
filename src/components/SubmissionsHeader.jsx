@@ -2,28 +2,29 @@
 
 import { useState } from 'react';
 import { Search, Filter } from 'lucide-react';
+import {
+  useGetCoursesDataQuery,
+  useGetCourseByIdQuery,
+} from '../Api/adminApi';
 
-export default function SubmissionsHeader({ onTypeChange, onSearchChange, onCourseChange, onModuleChange }) {
+export default function SubmissionsHeader({
+  onTypeChange,
+  onSearchChange,
+  onCourseChange,
+  onModuleChange,
+}) {
   const [submissionType, setSubmissionType] = useState('assignment');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedModule, setSelectedModule] = useState('');
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [selectedModuleId, setSelectedModuleId] = useState('');
 
-  const courses = [
-    'Advanced React Patterns',
-    'Python Fundamentals',
-    'Web Development',
-    'Data Science Basics',
-    'JavaScript Mastery'
-  ];
+  const { data: coursesData } = useGetCoursesDataQuery();
+  const courses = coursesData?.results ?? coursesData ?? [];
 
-  const modules = [
-    'Module 1',
-    'Module 2',
-    'Module 3',
-    'Module 4',
-    'Module 5'
-  ];
+  const { data: courseDetail } = useGetCourseByIdQuery(selectedCourseId, {
+    skip: !selectedCourseId,
+  });
+  const modules = courseDetail?.modules ?? [];
 
   const handleTypeChange = (type) => {
     setSubmissionType(type);
@@ -37,66 +38,69 @@ export default function SubmissionsHeader({ onTypeChange, onSearchChange, onCour
   };
 
   const handleCourseChange = (e) => {
-    const value = e.target.value;
-    setSelectedCourse(value);
-    onCourseChange?.(value);
+    const id = e.target.value;
+    setSelectedCourseId(id);
+    setSelectedModuleId('');
+    onCourseChange?.(id);
+    onModuleChange?.('');
   };
 
   const handleModuleChange = (e) => {
-    const value = e.target.value;
-    setSelectedModule(value);
-    onModuleChange?.(value);
+    const id = e.target.value;
+    setSelectedModuleId(id);
+    onModuleChange?.(id);
   };
 
   return (
     <div className="bg-white border-b border-gray-200 p-4">
       <div className="flex items-center gap-3 flex-wrap">
-        {/* Search Field */}
+        {/* Search */}
         <div className="flex-1 min-w-[250px] relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by student name or content title..."
+            placeholder="Search by student name or email..."
             value={searchQuery}
             onChange={handleSearchChange}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
           />
         </div>
 
-        {/* Filter Icon */}
         <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="More filters">
           <Filter className="w-5 h-5 text-gray-600" />
         </button>
 
         {/* Course Dropdown */}
         <select
-          value={selectedCourse}
+          value={selectedCourseId}
           onChange={handleCourseChange}
           className="px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent cursor-pointer"
         >
-          <option value="">Select course</option>
+          <option value="">All Courses</option>
           {courses.map((course) => (
-            <option key={course} value={course}>
-              {course}
+            <option key={course.id} value={course.id}>
+              {course.title}
             </option>
           ))}
         </select>
 
-        {/* Module Dropdown */}
-        <select
-          value={selectedModule}
-          onChange={handleModuleChange}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent cursor-pointer"
-        >
-          <option value="">Select Module</option>
-          {modules.map((module) => (
-            <option key={module} value={module}>
-              {module}
-            </option>
-          ))}
-        </select>
+        {/* Module Dropdown — only shown when a course is selected */}
+        {selectedCourseId && (
+          <select
+            value={selectedModuleId}
+            onChange={handleModuleChange}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent cursor-pointer"
+          >
+            <option value="">All Modules</option>
+            {modules.map((mod) => (
+              <option key={mod.id} value={mod.id}>
+                {mod.title}
+              </option>
+            ))}
+          </select>
+        )}
 
-        {/* Assignment/Quiz Toggle */}
+        {/* Assignment / Quiz Toggle */}
         <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
           <button
             onClick={() => handleTypeChange('assignment')}
