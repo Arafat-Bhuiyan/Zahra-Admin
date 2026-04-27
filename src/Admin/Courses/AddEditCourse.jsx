@@ -79,7 +79,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
     skip: !course?.id
   });
 
-  const categories = categoriesResponse?.results || [];
+  const categories = categoriesResponse || [];
   const teachers = teachersResponse?.results || [];
 
   useEffect(() => {

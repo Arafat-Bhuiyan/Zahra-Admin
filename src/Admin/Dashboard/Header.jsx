@@ -23,28 +23,28 @@ const Header = ({ title, subtitle }) => {
   const displayImage = profileData?.profile_picture || profile;
 
   return (
-    <div className="flex items-center justify-between px-6 py-7 bg-[#FFFFFF]">
-      <div>
+    <div className="flex items-center justify-between px-4 md:px-8 py-5 md:py-7 bg-[#FFFFFF] border-b border-neutral-100 flex-wrap gap-4">
+      <div className="flex-1 min-w-0">
         <h1
-          className={`font-bold text-[30px] text-greenTeal ${location.pathname.includes("teacher") ? "text-primary" : "text-greenTeal"}`}
+          className={`font-black text-2xl md:text-[30px] tracking-tight truncate leading-tight ${location.pathname.includes("teacher") ? "text-primary" : "text-greenTeal"}`}
         >
           {title}
         </h1>
-        <p className="text-base font-normal text-[#4A5565] mt-1">{subtitle}</p>
+        <p className="text-xs md:text-base font-medium text-slate-500 mt-1 truncate">{subtitle}</p>
       </div>
       <div className="flex items-center gap-4">
 
-        <div className="flex items-center gap-3 border-l-2 border-[#0000001A] pl-4">
-          <div className="flex flex-col">
-            <h1 className="text-right justify-start text-neutral-950 text-sm font-semibold inter-font">
+        <div className="flex items-center gap-2 md:gap-3 border-l md:border-l-2 border-slate-100 pl-3 md:pl-4">
+          <div className="hidden sm:flex flex-col">
+            <h1 className="text-right text-neutral-900 text-sm font-bold inter-font truncate max-w-[120px]">
               {displayName}
             </h1>
-            <p className="text-right justify-start text-gray-600 text-xs font-normal inter-font capitalize">
+            <p className="text-right text-slate-400 text-[10px] font-bold inter-font capitalize tracking-widest">
               {role || "User"}
             </p>
           </div>
-          <button className="w-10 h-10 rounded-full overflow-hidden bg-[#F5F3F3] border border-[#093349] font-bold text-base">
-            <img src={displayImage} alt="" className="w-full h-full object-cover" />
+          <button className="w-9 h-9 md:w-11 md:h-11 rounded-xl overflow-hidden bg-slate-50 border border-slate-200 shadow-sm transition-transform active:scale-95 shrink-0">
+            <img src={displayImage} alt="profile" className="w-full h-full object-cover" />
           </button>
         </div>
         <button

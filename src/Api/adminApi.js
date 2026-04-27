@@ -177,6 +177,7 @@ export const adminApi = api.injectEndpoints({
     // Blog Categories
     getBlogCategories: builder.query({
       query: () => "/blogs/categories/",
+      transformResponse: normalizeListResponse,
       providesTags: ["blogs"],
     }),
     addBlogCategory: builder.mutation({
@@ -228,7 +229,13 @@ export const adminApi = api.injectEndpoints({
 
     // Get Courses
     getCoursesData: builder.query({
-      query: (page = 1) => `/courses/?page=${page}`,
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        const page = typeof params === "number" ? params : params?.page || 1;
+        queryParams.append("page", page);
+        if (params?.search) queryParams.append("search", params.search);
+        return `/courses/?${queryParams.toString()}`;
+      },
       providesTags: ["courses"],
     }),
     // Get Course Details
@@ -370,6 +377,7 @@ export const adminApi = api.injectEndpoints({
     // Course Categories
     getCourseCategories: builder.query({
       query: () => "/course-categories/",
+      transformResponse: normalizeListResponse,
       providesTags: ["courses"],
     }),
     addCourseCategory: builder.mutation({
@@ -451,6 +459,9 @@ export const adminApi = api.injectEndpoints({
               "offers_consultations",
               String(params.offers_consultations),
             );
+          }
+          if (params.search) {
+            queryParams.append("search", params.search);
           }
         }
         const queryString = queryParams.toString();
@@ -692,6 +703,7 @@ export const adminApi = api.injectEndpoints({
         const queryParams = new URLSearchParams();
         if (params.page) queryParams.append("page", params.page);
         if (params.status) queryParams.append("status", params.status);
+        if (params.search) queryParams.append("search", params.search);
         const q = queryParams.toString();
         return `/reschedule-requests/${q ? `?${q}` : ""}`;
       },
@@ -760,8 +772,37 @@ export const adminApi = api.injectEndpoints({
     }),
 
     getCertificateTemplates: builder.query({
-      query: () => "/certificate-templates/",
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page_size) queryParams.append("page_size", params.page_size);
+        if (params.page) queryParams.append("page", params.page);
+        const q = queryParams.toString();
+        return `/certificate-templates/${q ? `?${q}` : ""}`;
+      },
       providesTags: ["certificate-templates"],
+    }),
+    addCertificateTemplate: builder.mutation({
+      query: (body) => ({
+        url: "/certificate-templates/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["certificate-templates"],
+    }),
+    updateCertificateTemplate: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/certificate-templates/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["certificate-templates"],
+    }),
+    deleteCertificateTemplate: builder.mutation({
+      query: (id) => ({
+        url: `/certificate-templates/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["certificate-templates"],
     }),
     getCertificateTemplatePreview: builder.query({
       query: (id) => ({
@@ -869,6 +910,7 @@ export const adminApi = api.injectEndpoints({
       query: (params) => {
         const queryParams = new URLSearchParams();
         if (params?.page) queryParams.append("page", params.page);
+        if (params?.search) queryParams.append("search", params.search);
         const q = queryParams.toString();
         return `/announcements/site/${q ? `?${q}` : ""}`;
       },
@@ -900,9 +942,10 @@ export const adminApi = api.injectEndpoints({
 
     // Course Announcements
     getCourseAnnouncements: builder.query({
-      query: ({ course_pk, page }) => {
+      query: ({ course_pk, page, search }) => {
         const queryParams = new URLSearchParams();
         if (page) queryParams.append("page", page);
+        if (search) queryParams.append("search", search);
         const q = queryParams.toString();
         return `/courses/${course_pk}/announcements/${q ? `?${q}` : ""}`;
       },
@@ -1055,6 +1098,21 @@ export const adminApi = api.injectEndpoints({
       invalidatesTags: ["assignmentSubmissions"],
     }),
 
+    getQuizAttempts: builder.query({
+      query: ({ courseId, page = 1 } = {}) => {
+        const params = new URLSearchParams({ page });
+        if (courseId) params.append("quiz__lesson__module__course", courseId);
+        return `/quiz-attempts/?${params.toString()}`;
+      },
+      transformResponse: normalizeListResponse,
+      providesTags: ["quizAttempts"],
+    }),
+
+    getQuizAttemptDetails: builder.query({
+      query: (id) => `/quiz-attempts/${id}/`,
+      providesTags: ["quizAttempts"],
+    }),
+
     getConsultations: builder.query({
       query: () => "/consultations/",
       transformResponse: normalizeListResponse,
@@ -1090,6 +1148,21 @@ export const adminApi = api.injectEndpoints({
     getTeacherDashboard: builder.query({
       query: () => "/teacher/dashboard/",
       providesTags: ["dashboard"],
+    }),
+
+    getSales: builder.query({
+      query: ({ page = 1, search, type, payment_status, date_from, date_to } = {}) => {
+        const params = new URLSearchParams();
+        if (page) params.append("page", page);
+        if (search) params.append("search", search);
+        if (type && type !== "All Types") params.append("type", type);
+        if (payment_status && payment_status !== "All Status") params.append("payment_status", payment_status);
+        if (date_from) params.append("date_from", date_from);
+        if (date_to) params.append("date_to", date_to);
+        
+        return `/orders/sales/?${params.toString()}`;
+      },
+      providesTags: ["sales"],
     }),
   }),
   overrideExisting: false,
@@ -1173,6 +1246,9 @@ export const {
   useDeleteStudentProfileMutation,
   useDeleteTeacherProfileMutation,
   useGetCertificateTemplatesQuery,
+  useAddCertificateTemplateMutation,
+  useUpdateCertificateTemplateMutation,
+  useDeleteCertificateTemplateMutation,
   useGetCompletedStudentsQuery,
   useLazyGetCertificateTemplatePreviewQuery,
   useIssueCertificatesMutation,
@@ -1223,4 +1299,7 @@ export const {
   useDeleteDiscussionReplyMutation,
   useGetTeacherEarningsQuery,
   useGetTeacherDashboardQuery,
+  useGetQuizAttemptsQuery,
+  useGetQuizAttemptDetailsQuery,
+  useGetSalesQuery,
 } = adminApi;

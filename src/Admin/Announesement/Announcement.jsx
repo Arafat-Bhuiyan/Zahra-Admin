@@ -23,7 +23,9 @@ import {
   Image as ImageIcon,
   ChevronLeft,
   BookOpen,
-  Edit2
+  Edit2,
+  Search,
+  X
 } from "lucide-react";
 
 const AnnouncementCard = ({ announcement, onEdit, onDelete }) => {
@@ -204,9 +206,32 @@ const Announcement = () => {
   const [currentPopup, setCurrentPopup] = useState(null);
   
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Debounce search query
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  // Reset pages when search changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+    setCoursePage(1);
+    setCourseAnnouncementPage(1);
+  }, [debouncedSearch]);
 
   // Popups Data
-  const { data: popupsData, isLoading: isPopupsLoading } = useGetSiteAnnouncementsQuery({ page: currentPage });
+  const { data: popupsData, isLoading: isPopupsLoading } = useGetSiteAnnouncementsQuery({ 
+    page: currentPage,
+    search: debouncedSearch
+  });
   const [deleteSiteAnnouncement] = useDeleteSiteAnnouncementMutation();
   const popups = popupsData?.results || [];
 
@@ -215,9 +240,16 @@ const Announcement = () => {
   const [coursePage, setCoursePage] = useState(1);
   const [courseAnnouncementPage, setCourseAnnouncementPage] = useState(1);
 
-  const { data: coursesData, isLoading: isCoursesLoading } = useGetCoursesDataQuery(coursePage);
+  const { data: coursesData, isLoading: isCoursesLoading } = useGetCoursesDataQuery({ 
+    page: coursePage,
+    search: debouncedSearch
+  });
   const { data: courseAnnsData, isLoading: isCourseAnnsLoading } = useGetCourseAnnouncementsQuery(
-    { course_pk: selectedCourse?.id, page: courseAnnouncementPage },
+    { 
+      course_pk: selectedCourse?.id, 
+      page: courseAnnouncementPage,
+      search: debouncedSearch
+    },
     { skip: !selectedCourse }
   );
   const [deleteCourseAnnouncement] = useDeleteCourseAnnouncementMutation();
@@ -317,15 +349,41 @@ const Announcement = () => {
           </button>
         </div>
 
-        {canShowNewButton && (
-          <button
-            onClick={handleNewButtonClick}
-            className="flex items-center gap-2 bg-[#7AA4A5] hover:bg-[#6A8F8F] text-white px-8 py-3.5 rounded-2xl shadow-xl shadow-[#7AA4A5]/20 transition-all active:scale-95 text-xs font-black uppercase tracking-widest"
-          >
-            <Plus size={18} />
-            {activeTab === "announcements" ? "New Course Notice" : "New Popup"}
-          </button>
-        )}
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+          {/* Search Bar */}
+          <div className="relative group w-full sm:w-72 lg:w-96">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-[#7AA4A5] transition-colors" size={18} />
+            <input
+              type="text"
+              placeholder={
+                activeTab === "announcements" 
+                  ? (selectedCourse ? `Search notices...` : "Search courses...") 
+                  : "Search popups..."
+              }
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-10 py-3 bg-white border border-black/5 rounded-2xl shadow-sm focus:outline-none focus:ring-4 focus:ring-[#7AA4A5]/10 focus:border-[#7AA4A5] transition-all text-sm font-medium placeholder:text-neutral-400"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-red-500 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+
+          {canShowNewButton && (
+            <button
+              onClick={handleNewButtonClick}
+              className="flex items-center gap-2 bg-[#7AA4A5] hover:bg-[#6A8F8F] text-white px-8 py-3 rounded-2xl shadow-xl shadow-[#7AA4A5]/20 transition-all active:scale-95 text-xs font-black uppercase tracking-widest shrink-0 w-full sm:w-auto justify-center"
+            >
+              <Plus size={18} />
+              {activeTab === "announcements" ? "New Notice" : "New Popup"}
+            </button>
+          )}
+        </div>
       </div>
 
       <CreateAnnouncementModal
@@ -365,8 +423,16 @@ const Announcement = () => {
                   <div className="py-24 flex flex-col items-center justify-center text-center bg-white rounded-[2.5rem] border border-black/5">
                     <BookOpen className="w-16 h-16 text-gray-200 mb-4" />
                     <p className="text-neutral-400 font-bold">
-                      No courses found.
+                      {debouncedSearch ? `No courses found matching "${debouncedSearch}"` : "No courses found."}
                     </p>
+                    {debouncedSearch && (
+                      <button 
+                        onClick={() => setSearchQuery("")}
+                        className="mt-4 text-[#7AA4A5] text-xs font-bold uppercase tracking-widest hover:underline"
+                      >
+                        Clear Search
+                      </button>
+                    )}
                   </div>
                ) : (
                  <>
@@ -431,14 +497,26 @@ const Announcement = () => {
                   <div className="py-24 flex flex-col items-center justify-center text-center bg-white rounded-[2.5rem] border border-black/5 shadow-sm">
                     <Bell className="w-16 h-16 text-gray-200 mb-4" />
                     <p className="text-neutral-400 font-bold mb-6">
-                      No notices have been posted for this course yet.
+                      {debouncedSearch 
+                        ? `No notices found for "${debouncedSearch}"` 
+                        : "No notices have been posted for this course yet."}
                     </p>
-                    <button 
-                      onClick={() => setIsModalOpen(true)}
-                      className="px-6 py-2.5 bg-[#7AA4A5]/10 text-[#7AA4A5] text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-[#7AA4A5]/20 transition-colors"
-                    >
-                      Create First Notice
-                    </button>
+                    {!debouncedSearch && (
+                      <button 
+                        onClick={() => setIsModalOpen(true)}
+                        className="px-6 py-2.5 bg-[#7AA4A5]/10 text-[#7AA4A5] text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-[#7AA4A5]/20 transition-colors"
+                      >
+                        Create First Notice
+                      </button>
+                    )}
+                    {debouncedSearch && (
+                      <button 
+                        onClick={() => setSearchQuery("")}
+                        className="text-[#7AA4A5] text-xs font-bold uppercase tracking-widest hover:underline"
+                      >
+                        Clear Search
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
@@ -471,8 +549,16 @@ const Announcement = () => {
             <div className="py-24 flex flex-col items-center justify-center text-center bg-white rounded-[2.5rem] border border-black/5">
               <Bell className="w-16 h-16 text-gray-200 mb-4" />
               <p className="text-neutral-400 font-bold">
-                No active popup campaigns found.
+                {debouncedSearch ? `No popups found matching "${debouncedSearch}"` : "No active popup campaigns found."}
               </p>
+              {debouncedSearch && (
+                <button 
+                  onClick={() => setSearchQuery("")}
+                  className="mt-4 text-[#7AA4A5] text-xs font-bold uppercase tracking-widest hover:underline"
+                >
+                  Clear Search
+                </button>
+              )}
             </div>
           ) : (
             <>

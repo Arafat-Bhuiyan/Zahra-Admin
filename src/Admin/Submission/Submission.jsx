@@ -1,10 +1,16 @@
 import React, { useState } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, BookOpen, FileText } from "lucide-react";
 import AssignmentSection from "./AssignmentSection";
 import QuizSection from "./QuizSection";
-import { useGetAssignmentSubmissionsQuery } from "../../Api/adminApi";
+import { 
+  useGetAssignmentSubmissionsQuery,
+  useGetQuizAttemptsQuery,
+  useGetCoursesDataQuery
+} from "../../Api/adminApi";
 
 const Submission = () => {
+  const [activeTab, setActiveTab] = useState("assignment");
+  const [selectedCourseId, setSelectedCourseId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
 
@@ -33,8 +39,16 @@ const Submission = () => {
     data: assignmentSubmissionsData = [],
     isLoading: isAssignmentsLoading,
     isError: assignmentError,
-  } = useGetAssignmentSubmissionsQuery(queryParams);
+  } = useGetAssignmentSubmissionsQuery(queryParams, { skip: activeTab !== "assignment" });
 
+  const { data: coursesData } = useGetCoursesDataQuery({ page: 1 }, { skip: activeTab !== "quiz" });
+  const courses = coursesData?.results || coursesData || [];
+
+  const {
+    data: quizAttemptsData = [],
+    isLoading: isQuizLoading,
+    isError: quizError,
+  } = useGetQuizAttemptsQuery({ courseId: selectedCourseId, page: 1 }, { skip: activeTab !== "quiz" });
   const assignmentSubmissions = assignmentSubmissionsData.map((submission) => {
     const studentName =
       `${submission.user_detail?.first_name || ""} ${submission.user_detail?.last_name || ""}`.trim();
@@ -65,7 +79,7 @@ const Submission = () => {
           : "Pending",
       status:
         submission.status === "pending"
-          ? "Pending Review"
+          ? "Pending"
           : submission.status === "approved"
             ? "Approved"
             : submission.status === "rejected"
@@ -82,75 +96,24 @@ const Submission = () => {
     };
   });
 
-  // Mock data for quizzes
-  const quizSubmissions = [
-    {
-      id: 1,
-      studentName: "Emily Rodriguez",
-      email: "emily.r@email.com",
-      date: "Jan 14, 2026",
-      time: "10:30 AM",
-      timeSpent: "18 minutes",
-      score: "20/30 pts",
-      percentage: "67%",
-      status: "Failed",
+  // Map real quiz data
+  const quizSubmissions = quizAttemptsData.map((quiz) => {
+    return {
+      id: quiz.id,
+      studentName: quiz.student_name,
+      email: quiz.student_email,
+      date: formatDate(quiz.created_at),
+      time: formatTime(quiz.created_at),
+      timeSpent: "", // Not provided by API list endpoint
+      score: `${Number(quiz.score)}% Score`, 
+      percentage: `Passing: ${Number(quiz.passing_score)}%`,
+      status: quiz.passed ? "Passed" : "Failed",
       type: "Quiz",
-      assignmentTitle: "01 Quiz Title Here",
-      questions: [
-        {
-          id: 1,
-          text: "What does useState return?",
-          studentAnswer: "Option 2",
-          points: "10/10",
-          isCorrect: true,
-        },
-        {
-          id: 2,
-          text: "When does useEffect run by default?",
-          studentAnswer: "Option 2",
-          points: "10/10",
-          isCorrect: true,
-        },
-        {
-          id: 3,
-          text: "Which hook is used for side effects?",
-          studentAnswer: "Option 3",
-          correctAnswer: "Option 1",
-          points: "0/10",
-          isCorrect: false,
-        },
-      ],
-    },
-    {
-      id: 2,
-      studentName: "Sarah Chen",
-      email: "sarah.chen@email.com",
-      date: "Jan 13, 2026",
-      time: "09:15 AM",
-      timeSpent: "25 minutes",
-      score: "20/20 pts",
-      percentage: "100%",
-      status: "Passed",
-      type: "Quiz",
-      assignmentTitle: "01 Quiz Title Here",
-      questions: [
-        {
-          id: 1,
-          text: "What is a list in Python?",
-          studentAnswer: "Option 1",
-          points: "10/10",
-          isCorrect: true,
-        },
-        {
-          id: 2,
-          text: "How do you define a function?",
-          studentAnswer: "Option 1",
-          points: "10/10",
-          isCorrect: true,
-        },
-      ],
-    },
-  ];
+      assignmentTitle: quiz.course_title || "Course Quiz",
+      questions: [], 
+      rawSubmission: quiz,
+    };
+  });
 
   // Filter submissions based on search term
   const filteredAssignments = assignmentSubmissions.filter(
@@ -175,6 +138,30 @@ const Submission = () => {
 
   return (
     <div className="p-6 bg-[#FAFAFA] min-h-screen arimo-font">
+      {/* Tabs */}
+      <div className="mb-6 flex gap-6 border-b border-neutral-200">
+        <button
+          className={`pb-3 px-2 font-bold flex items-center gap-2 ${
+            activeTab === "assignment"
+              ? "text-orange-600 border-b-2 border-orange-600"
+              : "text-neutral-500 hover:text-neutral-800"
+          }`}
+          onClick={() => setActiveTab("assignment")}
+        >
+          <BookOpen className="w-5 h-5" /> Assignments
+        </button>
+        <button
+          className={`pb-3 px-2 font-bold flex items-center gap-2 ${
+            activeTab === "quiz"
+              ? "text-purple-600 border-b-2 border-purple-600"
+              : "text-neutral-500 hover:text-neutral-800"
+          }`}
+          onClick={() => setActiveTab("quiz")}
+        >
+          <FileText className="w-5 h-5" /> Quizzes
+        </button>
+      </div>
+
       {/* Search and Filters Bar */}
       <div className="bg-white rounded-2xl p-6 mb-8 shadow-sm border border-neutral-200 flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[300px]">
@@ -189,6 +176,26 @@ const Submission = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          {activeTab === "quiz" && (
+            <div className="relative">
+              <select
+                className="px-4 py-2.5 w-[250px] rounded-[10px] border border-neutral-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-purple-500/20 appearance-none pr-10 text-neutral-950/50"
+                value={selectedCourseId}
+                onChange={(e) => setSelectedCourseId(e.target.value)}
+              >
+                <option value="">Select Course for Quizzes...</option>
+                {courses.map(c => (
+                  <option key={c.id} value={c.id}>{c.title}</option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          )}
+
           <button className="p-2.5 rounded-[10px] border border-neutral-300 hover:bg-neutral-50 transition-colors">
             <Filter className="w-5 h-5 text-neutral-500" />
           </button>
@@ -223,30 +230,49 @@ const Submission = () => {
         </div>
       </div>
 
-      <div className="mb-4 text-sm text-stone-500">
-        {isAssignmentsLoading && "Loading assignment submissions..."}
-        {assignmentError && (
-          <span className="text-red-500">
-            Unable to load assignment submissions. Please refresh.
-          </span>
-        )}
+      <div className="mb-4 text-sm text-stone-500 flex items-center justify-between">
+        <div>
+          {activeTab === "assignment" && isAssignmentsLoading && "Loading assignment submissions..."}
+          {activeTab === "quiz" && isQuizLoading && "Loading quiz attempts..."}
+          {activeTab === "assignment" && assignmentError && (
+            <span className="text-red-500">Unable to load assignment submissions. Please refresh.</span>
+          )}
+          {activeTab === "quiz" && quizError && (
+            <span className="text-red-500">Unable to load quiz attempts. Please refresh.</span>
+          )}
+        </div>
       </div>
 
-      {/* Course Header */}
-      {/* <div className="mb-8">
-        <h1 className="text-[32px] font-bold text-neutral-800 leading-[32px]">
-          Advanced React Patterns
-        </h1>
-        <p className="text-sm text-neutral-500 mt-2">
-          Instructor: Dr. Sarah Johnson
-        </p>
-      </div> */}
-
       {/* Conditional Rendering of Sections */}
-      <AssignmentSection
-        categories={assignmentCategories}
-        submissions={filteredAssignments}
-      />
+      {activeTab === "assignment" && (
+        <AssignmentSection
+          categories={assignmentCategories}
+          submissions={filteredAssignments}
+        />
+      )}
+      
+      {activeTab === "quiz" && (
+        selectedCourseId ? (
+          filteredQuizzes.length > 0 ? (
+            <QuizSection
+              categories={quizCategories}
+              submissions={filteredQuizzes}
+            />
+          ) : (
+            <div className="py-20 text-center border-2 border-dashed border-stone-200 rounded-[2rem] bg-white mt-10">
+              <FileText className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-stone-700">No attempts found</h3>
+              <p className="text-stone-500 mt-2">There are no quiz attempts matching your search criteria.</p>
+            </div>
+          )
+        ) : (
+          <div className="py-20 text-center border-2 border-dashed border-stone-200 rounded-[2rem] bg-white mt-10">
+            <FileText className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+            <h3 className="text-lg font-bold text-stone-700">Select a Course</h3>
+            <p className="text-stone-500 mt-2">Please select a course from the dropdown above to view its quiz attempts.</p>
+          </div>
+        )
+      )}
     </div>
   );
 };

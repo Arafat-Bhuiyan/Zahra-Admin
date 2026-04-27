@@ -83,39 +83,45 @@ const AssignmentDetailsModal = ({ isOpen, onClose, submission, onGrade }) => {
               </h3>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {submission.submissionFile ||
               submission.rawSubmission?.submission_file ? (
-                <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-xl hover:border-[#7AA4A5] transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-[#7AA4A5]/10 rounded-lg flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-[#7AA4A5]" />
+                <>
+                  <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-xl hover:border-[#7AA4A5] transition-colors group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-[#7AA4A5]/10 rounded-lg flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-[#7AA4A5]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-neutral-800 truncate">
+                          {(submission.submissionFile || submission.rawSubmission?.submission_file)?.split("/").pop()}
+                        </p>
+                        <p className="text-xs text-neutral-500 truncate">
+                          {submission.submissionFile || submission.rawSubmission?.submission_file}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-neutral-800 truncate">
-                        {submission.submissionFile?.split("/").pop() ||
-                          submission.rawSubmission?.submission_file
-                            ?.split("/")
-                            .pop()}
-                      </p>
-                      <p className="text-xs text-neutral-500 truncate">
-                        {submission.submissionFile ||
-                          submission.rawSubmission?.submission_file}
-                      </p>
-                    </div>
+                    <a
+                      href={submission.submissionFile || submission.rawSubmission?.submission_file}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-4 py-2 rounded-xl bg-[#7AA4A5] text-white text-sm font-medium hover:bg-[#6b9192] transition-colors"
+                    >
+                      Download
+                    </a>
                   </div>
-                  <a
-                    href={
-                      submission.submissionFile ||
-                      submission.rawSubmission?.submission_file
-                    }
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-4 py-2 rounded-xl bg-[#7AA4A5] text-white text-sm font-medium hover:bg-[#6b9192] transition-colors"
-                  >
-                    Download
-                  </a>
-                </div>
+
+                  {/* Video Preview for mp4 */}
+                  {(submission.submissionFile || submission.rawSubmission?.submission_file)?.toLowerCase().endsWith('.mp4') && (
+                    <div className="mt-4 rounded-xl overflow-hidden border border-neutral-200 bg-black aspect-video flex items-center justify-center">
+                       <video 
+                        src={submission.submissionFile || submission.rawSubmission?.submission_file} 
+                        controls 
+                        className="max-h-full max-w-full"
+                      />
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="p-4 bg-white border border-neutral-200 rounded-xl">
                   <p className="text-sm text-neutral-500">

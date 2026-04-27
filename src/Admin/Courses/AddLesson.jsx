@@ -50,6 +50,7 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
     dueDate: "",
     maxPoints: 100,
     maxFileSize: 10,
+    allowedFileTypes: "pdf, docx",
   });
   const [quizData, setQuizData] = useState({
     timeLimit: 30,
@@ -114,6 +115,7 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
           dueDate: ad.due_date ? ad.due_date.split('T')[0] : "",
           maxPoints: ad.max_points || 100,
           maxFileSize: ad.max_file_size || 10,
+          allowedFileTypes: ad.allowed_file_types || "pdf, docx",
         });
       }
 
@@ -267,7 +269,7 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
       instructions: data.instructions || "",
       due_date: data.dueDate ? `${data.dueDate}T23:59:00Z` : null,
       max_points: parseInt(data.maxPoints) || 100,
-      allowed_file_types: "pdf, docx",
+      allowed_file_types: data.allowedFileTypes || "pdf, docx",
       max_file_size: parseInt(data.maxFileSize) || 10
     };
   };
@@ -433,6 +435,7 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
       dueDate: "",
       maxPoints: 100,
       maxFileSize: 10,
+      allowedFileTypes: "pdf, docx",
     });
     setQuizData({
       timeLimit: 30,
