@@ -124,7 +124,7 @@ const UploadBookModal = ({ onClose, onSave }) => {
       "published_date",
       formData.publishDate || new Date().toISOString().split("T")[0],
     );
-    data.append("number_of_pages", formData.pages);
+    data.append("page_count", formData.pages);
     if (formData.digital_file) data.append("digital_file", formData.digital_file);
     if (formData.sampleFile) data.append("sample_file", formData.sampleFile);
     if (formData.luluCoverPdf) data.append("lulu_cover_pdf", formData.luluCoverPdf);
