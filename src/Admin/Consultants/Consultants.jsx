@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { skipToken } from "@reduxjs/toolkit/query";
+
 import {
   User,
   Mail,
@@ -38,10 +38,18 @@ const Consultants = () => {
 
   // Reschedule state
   const [teacherPage, setTeacherPage] = useState(1);
+  const [consultationPage, setConsultationPage] = useState(1);
   const [reschedulePage, setReschedulePage] = useState(1);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedReschedule, setSelectedReschedule] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Reset pages when search query changes to prevent "out of bounds" pagination on new results
+  React.useEffect(() => {
+    setTeacherPage(1);
+    setConsultationPage(1);
+    setReschedulePage(1);
+  }, [searchQuery]);
 
   // Fetch Teachers (Paginated)
   const {
@@ -52,7 +60,7 @@ const Consultants = () => {
     offers_consultations: true,
     page: teacherPage,
     search: searchQuery,
-  });
+  }, { skip: activeTab !== "Consultations" || activeView === "consultations" });
   const teachers = teachersData?.results || [];
   const totalTeacherPages = teachersData?.total_pages || 1;
 
@@ -62,15 +70,15 @@ const Consultants = () => {
     activeView === "consultations" &&
     activeTab === "Consultations";
   const {
-    data: consultationsData,
+    data: consultationsDataRaw,
     isLoading: isLoadingConsultations,
     isError: isConsultationsError,
   } = useGetConsultationsQuery(
-    shouldFetchConsultations
-      ? { teacher: selectedTeacher.id, search: searchQuery }
-      : skipToken,
+    { teacher: selectedTeacher?.id, search: searchQuery, page: consultationPage },
+    { skip: !shouldFetchConsultations }
   );
-  const consultations = consultationsData || [];
+  const consultations = consultationsDataRaw?.results || (Array.isArray(consultationsDataRaw) ? consultationsDataRaw : []);
+  const totalConsultationPages = consultationsDataRaw?.total_pages || 1;
 
   // Fetch Reschedule Requests
   const {
@@ -150,15 +158,19 @@ const Consultants = () => {
   const handleTeacherClick = (teacher) => {
     setSelectedTeacher(teacher);
     setActiveView("consultations");
+    setSearchQuery("");
+    setConsultationPage(1);
   };
 
   const handleBackToTeachers = () => {
     setActiveView("teachers");
     setSelectedTeacher(null);
+    setSearchQuery("");
   };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setSearchQuery("");
     if (tab === "Consultations") {
       setActiveView("teachers");
       setSelectedTeacher(null);
@@ -219,8 +231,10 @@ const Consultants = () => {
               type="text"
               placeholder={
                 activeTab === "Consultations"
-                  ? "Search teachers..."
-                  : "Search students or emails..."
+                  ? activeView === "teachers" 
+                    ? "Search teachers..." 
+                    : "Search consultation plans..."
+                  : "Search reschedule requests..."
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -354,7 +368,30 @@ const Consultants = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-6">
+                <div className="flex flex-col gap-6">
+                  {/* Filter Header */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-teal-50/50 p-6 rounded-[2rem] border border-teal-100/50">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
+                        <h2 className="text-xl font-black text-stone-900 arimo-font tracking-tight">
+                          Consultation Plans for {selectedTeacher?.user?.first_name} {selectedTeacher?.user?.last_name}
+                        </h2>
+                      </div>
+                      <p className="text-xs text-stone-500 font-medium inter-font ml-4">
+                        {consultationsDataRaw?.count || 0} plans found for this teacher
+                      </p>
+                    </div>
+                    {totalConsultationPages > 1 && (
+                      <div className="bg-white px-4 py-2 rounded-2xl border border-stone-100 shadow-sm flex items-center gap-3">
+                         <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest">
+                           Page {consultationPage} of {totalConsultationPages}
+                         </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-6">
                   {isLoadingConsultations ? (
                     <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
                       <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center border-2 border-dashed border-stone-200">
@@ -363,6 +400,18 @@ const Consultants = () => {
                       <h3 className="text-xl font-bold text-stone-900">
                         Loading consultations...
                       </h3>
+                    </div>
+                  ) : isConsultationsError ? (
+                    <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
+                      <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center border-2 border-dashed border-rose-200">
+                        <AlertCircle className="w-10 h-10 text-rose-300" />
+                      </div>
+                      <h3 className="text-xl font-bold text-stone-900">
+                        Failed to load consultations
+                      </h3>
+                      <p className="text-sm text-stone-500 max-w-xs mx-auto">
+                        There was an error connecting to the server. Please try again.
+                      </p>
                     </div>
                   ) : consultations.length > 0 ? (
                     consultations.map((consultation) => {
@@ -455,10 +504,21 @@ const Consultants = () => {
                       </p>
                     </div>
                   )}
+                  {/* Pagination for Consultations */}
+                  {consultations.length > 0 && (
+                    <div className="mt-auto pt-8 border-t border-stone-50">
+                      <Pagination
+                        currentPage={consultationPage}
+                        totalPages={totalConsultationPages}
+                        onPageChange={setConsultationPage}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
-            </>
-          ) : (
+              </div>
+            )}
+          </>
+        ) : (
             /* Reschedule Requests Tab Content */
             <div className="flex-1 flex flex-col">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 content-start">

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { X, Video, User, Package, DollarSign, CircleAlert } from "lucide-react";
+import { X, Video, User, Package, DollarSign, CircleAlert, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   useGetTeacherProfilesQuery,
@@ -21,8 +21,15 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
     ],
   });
 
-  const { data: teacherData, isError: isTeacherError } =
-    useGetTeacherProfilesQuery({ page: 1, offers_consultations: true });
+  const [teacherSearch, setTeacherSearch] = useState("");
+  const [teacherPage, setTeacherPage] = useState(1);
+
+  const { data: teacherData, isError: isTeacherError, isFetching: isFetchingTeachers } =
+    useGetTeacherProfilesQuery({ 
+      page: teacherPage, 
+      search: teacherSearch,
+      offers_consultations: true 
+    }, { skip: !isOpen });
 
   const [createConsultation, { isLoading: isCreatingConsultation }] =
     useCreateConsultationMutation();
@@ -37,6 +44,7 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
     () => teacherData?.results || [],
     [teacherData],
   );
+  const totalTeacherPages = teacherData?.total_pages || 1;
 
   const days = [
     "Monday",
@@ -89,9 +97,9 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
       ...formData,
       teacherId,
       teacherName: selectedTeacher
-        ? `${selectedTeacher.first_name || ""} ${selectedTeacher.last_name || ""}`.trim()
+        ? `${selectedTeacher.user?.first_name || ""} ${selectedTeacher.user?.last_name || ""}`.trim()
         : "",
-      teacherEmail: selectedTeacher?.email || "",
+      teacherEmail: selectedTeacher?.user?.email || "",
     });
   };
 
@@ -204,30 +212,84 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
           onSubmit={handleSubmit}
           className="p-8 space-y-6 max-h-[75vh] overflow-y-auto no-scrollbar"
         >
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
-              <User className="w-4 h-4 text-stone-400" />
-              Select Teacher <span className="text-red-500">*</span>
-            </label>
-            <select
-              required
-              value={formData.teacherId}
-              onChange={(e) => handleTeacherChange(e.target.value)}
-              className="w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font appearance-none"
-            >
-              <option value="">Choose a teacher...</option>
-              {isTeacherError && (
-                <option value="" disabled>
-                  Failed to load teachers
-                </option>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
+                <User className="w-4 h-4 text-stone-400" />
+                Select Teacher <span className="text-red-500">*</span>
+              </label>
+              {formData.teacherName && (
+                <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg">
+                  Selected: {formData.teacherName}
+                </span>
               )}
-              {teacherProfiles.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {`${teacher.user.first_name || ""} ${teacher.user.last_name || ""}`.trim()}{" "}
-                  ({teacher.user.email})
-                </option>
-              ))}
-            </select>
+            </div>
+
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-300 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search teachers by name or email..."
+                value={teacherSearch}
+                onChange={(e) => {
+                  setTeacherSearch(e.target.value);
+                  setTeacherPage(1);
+                }}
+                className="w-full pl-11 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder:text-stone-300"
+              />
+            </div>
+
+            <div className="relative">
+              <select
+                required
+                value={formData.teacherId}
+                onChange={(e) => handleTeacherChange(e.target.value)}
+                className={`w-full bg-stone-100/50 border border-transparent rounded-xl px-4 py-3 outline-none focus:bg-white focus:border-teal-500 transition-all font-medium text-stone-800 inter-font appearance-none ${isFetchingTeachers ? 'opacity-50 pointer-events-none' : ''}`}
+              >
+                <option value="">{isFetchingTeachers ? "Loading..." : "Choose a teacher..."}</option>
+                {isTeacherError && (
+                  <option value="" disabled>
+                    Failed to load teachers
+                  </option>
+                )}
+                {!isFetchingTeachers && teacherProfiles.length === 0 && (
+                   <option value="" disabled>No teachers found</option>
+                )}
+                {teacherProfiles.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {`${teacher.user.first_name || ""} ${teacher.user.last_name || ""}`.trim()}{" "}
+                    ({teacher.user.email})
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                 {/* Lucide icon doesn't work well inside select, so we just use default arrow or custom if overlayed */}
+              </div>
+            </div>
+
+            {totalTeacherPages > 1 && (
+              <div className="flex items-center justify-center gap-4 pt-1">
+                <button
+                  type="button"
+                  disabled={teacherPage === 1 || isFetchingTeachers}
+                  onClick={() => setTeacherPage(p => p - 1)}
+                  className="p-1.5 rounded-lg border border-stone-200 text-stone-400 hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-xs font-bold text-stone-400">
+                  Page {teacherPage} of {totalTeacherPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={teacherPage === totalTeacherPages || isFetchingTeachers}
+                  onClick={() => setTeacherPage(p => p + 1)}
+                  className="p-1.5 rounded-lg border border-stone-200 text-stone-400 hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-4">

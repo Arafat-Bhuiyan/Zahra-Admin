@@ -471,17 +471,14 @@ export const adminApi = api.injectEndpoints({
         if (page) queryParams.append("page", page);
         if (params && typeof params !== "number") {
           if (params.offers_consultations !== undefined) {
-            queryParams.append(
-              "offers_consultations",
-              String(params.offers_consultations),
-            );
+            queryParams.append("offers_consultations", String(params.offers_consultations));
           }
           if (params.search) {
             queryParams.append("search", params.search);
           }
         }
-        const queryString = queryParams.toString();
-        return `/teacher-profiles/${queryString ? `?${queryString}` : ""}`;
+        const q = queryParams.toString();
+        return `/teacher-profiles/${q ? `?${q}` : ""}`;
       },
       providesTags: ["teachers"],
     }),
@@ -565,16 +562,14 @@ export const adminApi = api.injectEndpoints({
         if (params.page_size) queryParams.append("page_size", params.page_size);
         if (params.search) queryParams.append("search", params.search);
         if (params.teacher) queryParams.append("teacher", params.teacher);
-        if (params["teacher__user__email"])
-          queryParams.append(
-            "teacher__user__email",
-            params["teacher__user__email"],
-          );
-        if (params["teacher__user__email__icontains"])
-          queryParams.append(
-            "teacher__user__email__icontains",
-            params["teacher__user__email__icontains"],
-          );
+        
+        if (params["teacher__user__email"]) {
+          queryParams.append("teacher__user__email", params["teacher__user__email"]);
+        }
+        if (params["teacher__user__email__icontains"]) {
+          queryParams.append("teacher__user__email__icontains", params["teacher__user__email__icontains"]);
+        }
+
         const q = queryParams.toString();
         return `/consultations/${q ? `?${q}` : ""}`;
       },
@@ -1155,22 +1150,6 @@ export const adminApi = api.injectEndpoints({
     getQuizAttemptDetails: builder.query({
       query: (id) => `/quiz-attempts/${id}/`,
       providesTags: ["quizAttempts"],
-    }),
-
-    getConsultations: builder.query({
-      query: () => "/consultations/",
-      transformResponse: normalizeListResponse,
-      providesTags: ["consultations"],
-    }),
-
-    getConsultationCalendar: builder.query({
-      query: ({ id, month }) => `/consultations/${id}/calendar/?month=${month}`,
-      providesTags: ["consultationCalendar"],
-    }),
-
-    getConsultationTimeslots: builder.query({
-      query: ({ id, date }) => `/consultations/${id}/timeslots/?date=${date}`,
-      providesTags: ["consultationTimeslots"],
     }),
 
     getTeacherUpcomingSessions: builder.query({
