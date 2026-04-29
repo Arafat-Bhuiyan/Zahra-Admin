@@ -8,6 +8,7 @@ import {
   Plus,
   Clock,
   ChevronRight,
+  ChevronLeft,
   ArrowLeft,
   MoreHorizontal,
   CheckCircle2,
@@ -16,6 +17,7 @@ import {
   ChevronDown,
   ArrowRight,
   Search,
+  Layout,
 } from "lucide-react";
 import ScheduleConsultationModal from "./ScheduleConsultationModal";
 import ConsultationDetailsModal from "./ConsultationDetailsModal";
@@ -34,6 +36,7 @@ const Consultants = () => {
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [activeMonths, setActiveMonths] = useState({});
   const [selectedConsultation, setSelectedConsultation] = useState(null);
 
   // Reschedule state
@@ -141,12 +144,14 @@ const Consultants = () => {
     );
 
     return sortedSlots.reduce((groups, slot) => {
+      const date = new Date(slot.day || slot.scheduled_start);
       const dateLabel = formatSlotDate(slot);
+      const monthYear = date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
       const start = formatTime(slot.scheduled_start);
       const end = formatTime(slot.scheduled_end);
 
       if (!groups[dateLabel]) {
-        groups[dateLabel] = { dateLabel, firstStart: start, lastEnd: end };
+        groups[dateLabel] = { dateLabel, monthYear, firstStart: start, lastEnd: end };
       } else {
         groups[dateLabel].lastEnd = end;
       }
@@ -418,75 +423,136 @@ const Consultants = () => {
                       const slotSummaries = buildSlotSummaries(
                         consultation.timeslots,
                       );
-                      return (
-                        <div
-                          key={consultation.id}
-                          className="group bg-white rounded-[1.5rem] md:rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:border-teal-200 transition-all duration-500 p-1 overflow-hidden"
-                        >
-                          <div className="p-6 flex flex-col md:flex-row md:items-center gap-6">
-                            <div className="relative shrink-0">
-                              <div className="w-16 h-16 bg-stone-50 rounded-2xl flex items-center justify-center border border-stone-100 shadow-inner group-hover:bg-teal-50 group-hover:border-teal-100 transition-colors duration-500">
-                                <Calendar className="w-7 h-7 text-stone-400 group-hover:text-teal-600 transition-colors duration-500" />
-                              </div>
-                              <div className="absolute -top-2 -left-2 bg-white border border-stone-100 shadow-sm rounded-lg px-2 py-0.5 text-[10px] font-black text-stone-400 tracking-tighter uppercase">
-                                #{consultation.id}
-                              </div>
-                            </div>
+                      const slotSummariesList = Object.values(slotSummaries);
+                      const uniqueMonths = [...new Set(slotSummariesList.map(s => s.monthYear))];
+                      const currentActiveMonth = activeMonths[consultation.id] || uniqueMonths[0];
+                      const filteredSlots = slotSummariesList.filter(s => s.monthYear === currentActiveMonth);
+                      
+                      const currentIndex = uniqueMonths.indexOf(currentActiveMonth);
+                      const canGoPrev = currentIndex > 0;
+                      const canGoNext = currentIndex < uniqueMonths.length - 1;
 
-                            <div className="flex-1 space-y-4">
+                      const goToPrev = () => {
+                        if (canGoPrev) {
+                          setActiveMonths({ ...activeMonths, [consultation.id]: uniqueMonths[currentIndex - 1] });
+                        }
+                      };
+
+                      const goToNext = () => {
+                        if (canGoNext) {
+                          setActiveMonths({ ...activeMonths, [consultation.id]: uniqueMonths[currentIndex + 1] });
+                        }
+                      };
+
+                      return (
+                        <div key={consultation.id} className="space-y-8">
+                          {/* Precise Plan Header */}
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-stone-100/50 pb-8 mt-12 first:mt-4">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 border border-teal-100/50 shadow-sm">
+                                <Layout className="w-7 h-7" />
+                              </div>
                               <div className="space-y-1">
-                                <h3 className="text-xl font-black text-stone-900 arimo-font tracking-tight group-hover:text-teal-900 transition-colors">
-                                  {consultation.teacher?.user?.first_name}'s
-                                  Plan
+                                <h3 className="text-2xl font-black text-stone-900 arimo-font tracking-tight leading-none">
+                                  {consultation.title || `${consultation.teacher?.user?.first_name}'s Plan`}
                                 </h3>
-                                <div className="flex items-center gap-2 text-stone-400 font-medium text-xs inter-font">
-                                  <Clock className="w-3.5 h-3.5 text-stone-300" />
-                                  Active Plan with{" "}
-                                  {consultation.timeslots?.length || 0} slots
+                                <div className="flex items-center gap-2 text-[10px] font-black text-stone-400 uppercase tracking-[0.1em]">
+                                  <span className="text-teal-600">
+                                    {consultation.teacher?.user?.first_name} {consultation.teacher?.user?.last_name}
+                                  </span>
+                                  <span className="text-stone-300">•</span>
+                                  <span>ID: #{consultation.id}</span>
+                                  <span className="text-stone-300">•</span>
+                                  <span className="bg-stone-100 px-2 py-0.5 rounded text-stone-600">
+                                    {consultation.timeslots?.length || 0} Slots
+                                  </span>
                                 </div>
                               </div>
-
-                              <div className="flex flex-wrap gap-3">
-                                {Object.values(slotSummaries).length > 0 ? (
-                                  Object.values(slotSummaries).map(
-                                    (group, idx) => (
-                                      <div
-                                        key={idx}
-                                        className="bg-stone-50/50 rounded-2xl p-3 border border-stone-100 group-hover:bg-teal-50/30 group-hover:border-teal-50 transition-colors duration-500"
-                                      >
-                                        <span className="text-[10px] font-black text-stone-400 uppercase tracking-widest block mb-2 opacity-70">
-                                          {group.dateLabel}
-                                        </span>
-                                        <div className="inline-flex items-center gap-1.5 bg-white text-teal-700 px-3 py-1.5 rounded-xl text-xs font-bold border border-stone-100 shadow-sm">
-                                          <Clock className="w-3.5 h-3.5 text-teal-500" />
-                                          <span>
-                                            {group.firstStart} - {group.lastEnd}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    ),
-                                  )
-                                ) : (
-                                  <div className="text-stone-400 text-xs font-medium italic flex items-center gap-2">
-                                    <Calendar className="w-4 h-4" />
-                                    No active timeslots
-                                  </div>
-                                )}
-                              </div>
                             </div>
+                            <button
+                              onClick={() => {
+                                setSelectedConsultation(consultation);
+                                setIsDetailsModalOpen(true);
+                              }}
+                              className="flex items-center gap-3 bg-stone-900 hover:bg-teal-700 text-white px-6 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl shadow-stone-900/10 active:scale-95 shrink-0"
+                            >
+                              <span>Manage Consultation</span>
+                              <ChevronRight className="w-4 h-4 opacity-50" />
+                            </button>
+                          </div>
 
-                            <div className="flex items-center gap-2 shrink-0 border-t md:border-t-0 md:border-l border-stone-100 pt-6 md:pt-0 md:pl-6">
+                          {/* Precise Discrete Month Navigator */}
+                          {uniqueMonths.length > 1 && (
+                            <div className="flex items-center justify-between bg-stone-50/50 p-2.5 rounded-full border border-stone-100 w-full max-w-2xl mx-auto shadow-sm mb-10">
                               <button
-                                onClick={() => {
-                                  setSelectedConsultation(consultation);
-                                  setIsDetailsModalOpen(true);
-                                }}
-                                className="flex items-center justify-center gap-2 bg-stone-900 hover:bg-teal-700 text-white px-6 py-4 md:py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-stone-900/10 active:scale-95 group/btn w-full md:w-auto"
+                                onClick={goToPrev}
+                                disabled={!canGoPrev}
+                                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+                                  canGoPrev 
+                                    ? "bg-white text-stone-900 shadow-xl shadow-stone-900/5 hover:bg-stone-900 hover:text-white active:scale-95" 
+                                    : "bg-transparent text-stone-200 cursor-not-allowed"
+                                }`}
                               >
-                                <span>View Details</span>
-                                <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                                <ChevronLeft className="w-6 h-6" />
+                              </button>
+                              
+                              <div className="flex flex-col items-center justify-center text-center px-8 min-w-[200px]">
+                                <span className="text-[10px] font-black text-stone-300 uppercase tracking-[0.4em] mb-2 block leading-none">
+                                  Navigation • {currentIndex + 1}/{uniqueMonths.length}
+                                </span>
+                                <h4 className="text-xl font-black text-stone-900 uppercase tracking-[0.15em] arimo-font leading-none">
+                                  {currentActiveMonth}
+                                </h4>
+                              </div>
+
+                              <button
+                                onClick={goToNext}
+                                disabled={!canGoNext}
+                                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+                                  canGoNext 
+                                    ? "bg-white text-stone-900 shadow-xl shadow-stone-900/5 hover:bg-stone-900 hover:text-white active:scale-95" 
+                                    : "bg-transparent text-stone-200 cursor-not-allowed"
+                                }`}
+                              >
+                                <ChevronRight className="w-6 h-6" />
                               </button>
                             </div>
+                          )}
+
+                          {/* Precise Slots Grid */}
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                            {filteredSlots.length > 0 ? (
+                              filteredSlots.map((group, idx) => (
+                                <div
+                                  key={idx}
+                                  className="group/slot bg-white rounded-[2rem] border border-stone-100 p-6 flex flex-col gap-5 shadow-sm hover:shadow-2xl hover:shadow-stone-900/5 transition-all duration-500 border-t-2 border-t-transparent hover:border-t-teal-500"
+                                >
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em] block leading-none">
+                                      Availability
+                                    </span>
+                                    <span className="text-[11px] font-black text-stone-900 uppercase tracking-wider block">
+                                      {group.dateLabel}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-3 bg-stone-50 border border-stone-100 rounded-2xl px-4 py-3 text-stone-600 font-bold text-xs group-hover/slot:bg-teal-50 group-hover/slot:border-teal-100 group-hover/slot:text-teal-700 transition-colors">
+                                    <Clock className="w-4 h-4 text-stone-300 group-hover/slot:text-teal-500" />
+                                    <span className="font-black text-[11px] tracking-tight">
+                                      {group.firstStart} - {group.lastEnd}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-stone-50/30 rounded-[3rem] border-2 border-dashed border-stone-100">
+                                <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-sm mb-6">
+                                  <Calendar className="w-10 h-10 text-stone-100" />
+                                </div>
+                                <p className="text-stone-400 text-xs font-black uppercase tracking-[0.2em]">
+                                  No slots for {currentActiveMonth}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
