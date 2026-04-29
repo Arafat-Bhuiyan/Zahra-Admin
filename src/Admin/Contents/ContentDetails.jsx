@@ -9,13 +9,18 @@ import {
   Maximize2,
   X,
 } from "lucide-react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import { useGetBlogDetailsQuery, useGetBlogCategoriesQuery, useGetVideoDetailsQuery } from "../../Api/adminApi";
 
 const ContentDetails = () => {
   const navigate = useNavigate();
   const { id: slug } = useParams();
   const [searchParams] = useSearchParams();
+  const { pathname } = useLocation();
+  const isTeacher = pathname.startsWith("/teacher");
+  const basePath = isTeacher ? "/teacher/content-upload" : "/admin/contents";
+  const detailPath = isTeacher ? "/teacher/content-details" : "/admin/contents";
+  
   const type = searchParams.get("type") || "Article";
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -57,7 +62,7 @@ const ContentDetails = () => {
       <div className="min-h-screen flex items-center justify-center bg-white flex-col gap-4">
         <p className="text-stone-600 text-lg">Error loading {type.toLowerCase()} details.</p>
         <button
-          onClick={() => navigate("/admin/contents")}
+          onClick={() => navigate(basePath)}
           className="text-[#7AA4A5] hover:underline"
         >
           Go back to contents
@@ -71,6 +76,7 @@ const ContentDetails = () => {
     subtitle: data.author_detail?.professional_title || "Islamic Psychology Expert",
     author: data.author_detail?.full_name || "Admin",
     authorInitial: data.author_detail?.full_name?.[0] || "A",
+    authorImage: data.author_detail?.profile_picture,
     date: new Date(data.published_at).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -94,11 +100,11 @@ const ContentDetails = () => {
     <div className="min-h-screen bg-white pb-20 arimo-font animate-in fade-in duration-500">
       {/* Back Button */}
       <button
-        onClick={() => navigate("/admin/contents")}
+        onClick={() => navigate(basePath)}
         className="flex items-center gap-2 px-4 py-2 text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors mb-4"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span className="text-base font-normal">Back to Content</span>
+        <span className="text-base font-normal">Back to {isTeacher ? "Uploads" : "Content"}</span>
       </button>
 
       {/* Hero Section */}
@@ -119,8 +125,14 @@ const ContentDetails = () => {
           </h1>
 
           <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white text-2xl font-normal shadow-inner">
-              {content.authorInitial}
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-white text-2xl font-normal shadow-inner overflow-hidden border border-stone-200">
+              {content.authorImage ? (
+                <img src={content.authorImage} alt={content.author} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-slate-600 flex items-center justify-center">
+                  {content.authorInitial}
+                </div>
+              )}
             </div>
 
             <div className="flex-1 space-y-3">
@@ -157,12 +169,28 @@ const ContentDetails = () => {
       </div>
 
       {/* Article Content */}
-      <div className="max-w-[932px] mx-auto mt-14 px-4 md:px-0 mb-20">
+      <div className="max-w-[932px] mx-auto mt-14 px-4 md:px-0 mb-10">
         <div
           className="prose prose-stone max-w-none text-stone-700 text-base leading-relaxed quill-content"
           dangerouslySetInnerHTML={{ __html: content.body }}
         />
       </div>
+
+      {/* Tags */}
+      {data.tags && data.tags.length > 0 && (
+        <div className="max-w-[932px] mx-auto px-4 md:px-0 mb-20">
+          <div className="flex flex-wrap gap-2">
+            {data.tags.map((tag) => (
+              <span
+                key={tag}
+                className="px-3 py-1 bg-stone-100 text-stone-600 text-sm rounded-full border border-stone-200"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Video Section Card (Conditional - only if video data exists) */}
       {content.videoUrl && (
@@ -180,7 +208,7 @@ const ContentDetails = () => {
               </div>
               {isPlaying && (
                 <button
-                  onClick={() => navigate(`/admin/contents/${slug}?type=${type}`)}
+                  onClick={() => navigate(`${detailPath}/${slug}?type=${type}`)}
                   className="p-2 border border-slate-400 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
                 >
                   <Eye className="w-5 h-4" />
@@ -231,6 +259,45 @@ const ContentDetails = () => {
                 <Maximize2 className="w-4 h-4" />
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Related Blogs */}
+      {type === "Article" && data.related_blogs && data.related_blogs.length > 0 && (
+        <div className="max-w-[932px] mx-auto mt-20 px-4 md:px-0">
+          <h2 className="text-stone-900 text-2xl font-bold mb-8">Related Articles</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {data.related_blogs.map((related) => (
+              <div
+                key={related.id}
+                onClick={() => {
+                  navigate(`${detailPath}/${related.slug}?type=Article`);
+                  window.scrollTo(0, 0);
+                }}
+                className="group cursor-pointer bg-stone-50 rounded-2xl border border-stone-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+              >
+                <div className="aspect-[16/9] overflow-hidden bg-stone-200">
+                  <img
+                    src={related.cover_image || "/placeholder.svg"}
+                    alt={related.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-6 space-y-3">
+                  <span className="text-teal-600 text-xs font-bold uppercase tracking-tight">
+                    {related.category?.name || "Uncategorized"}
+                  </span>
+                  <h3 className="text-stone-900 text-lg font-bold line-clamp-2">
+                    {related.title}
+                  </h3>
+                  <div className="flex items-center gap-2 text-stone-500 text-sm">
+                    <Clock className="w-4 h-4" />
+                    <span>{related.reading_time || 5} min read</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

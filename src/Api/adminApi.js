@@ -126,7 +126,17 @@ export const adminApi = api.injectEndpoints({
 
     // Get Blogs
     getBlogsData: builder.query({
-      query: () => "/blogs/",
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page);
+        if (params.search) queryParams.append("search", params.search);
+        if (params.status) queryParams.append("status", params.status);
+        if (params.category__slug) queryParams.append("category__slug", params.category__slug);
+        if (params.ordering) queryParams.append("ordering", params.ordering);
+        if (params.page_size) queryParams.append("page_size", params.page_size);
+
+        return `/blogs/my-blogs/?${queryParams.toString()}`;
+      },
       providesTags: ["blogs"],
     }),
 
@@ -562,7 +572,7 @@ export const adminApi = api.injectEndpoints({
         if (params.page_size) queryParams.append("page_size", params.page_size);
         if (params.search) queryParams.append("search", params.search);
         if (params.teacher) queryParams.append("teacher", params.teacher);
-        
+
         if (params["teacher__user__email"]) {
           queryParams.append("teacher__user__email", params["teacher__user__email"]);
         }

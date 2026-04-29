@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { X, Send, Type } from "lucide-react";
 import { useCreateCourseAnnouncementMutation } from "../../Api/adminApi";
 import toast from "react-hot-toast";
+import TextEditor from "../../components/Editor";
 
 const CreateAnnouncementModal = ({ isOpen, onClose, coursePk }) => {
   const [formData, setFormData] = useState({
@@ -94,15 +95,15 @@ const CreateAnnouncementModal = ({ isOpen, onClose, coursePk }) => {
               <label className="text-xs font-bold text-neutral-500 ml-1">
                 Body <span className="text-red-500">*</span>
               </label>
-              <textarea
-                name="body"
-                value={formData.body}
-                onChange={handleChange}
-                rows={5}
-                placeholder="Type your announcement here..."
-                className="w-full px-4 py-3 bg-gray-50 border border-black/5 rounded-xl focus:ring-2 focus:ring-[#7AA4A5]/20 focus:border-[#7AA4A5] outline-none transition-all text-sm font-medium resize-none"
-                required
-              />
+              <div className="bg-white rounded-xl border border-black/5 overflow-hidden">
+                <TextEditor
+                  htmlElement={formData.body}
+                  onChange={(data) =>
+                    setFormData((prev) => ({ ...prev, body: data }))
+                  }
+                  isEditable={true}
+                />
+              </div>
             </div>
           </div>
         </form>
