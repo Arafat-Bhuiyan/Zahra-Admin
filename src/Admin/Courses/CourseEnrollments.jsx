@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, Calendar, CheckCircle2, XCircle, Search, Mail, Loader2, Award } from "lucide-react";
+import { User, Calendar, CheckCircle2, XCircle, Search, Mail, Loader2, Award, Phone } from "lucide-react";
 import { useGetCourseEnrollmentsQuery } from "../../Api/adminApi";
 import Pagination from "../../components/Pagination";
 
@@ -115,11 +115,23 @@ const CourseEnrollments = ({ courseId }) => {
                             {enrollment.student?.first_name || "Unknown"}{" "}
                             {enrollment.student?.last_name || ""}
                           </p>
-                          <div className="flex items-center gap-1.5 text-stone-500 mt-1">
-                            <Mail className="w-3.5 h-3.5" />
-                            <span className="text-xs truncate">
-                              {enrollment.student?.email}
-                            </span>
+                          <div className="flex flex-col items-start gap-1.5 text-stone-500 mt-1">
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3.5 h-3.5" />
+                              <span className="text-xs truncate">
+                                {enrollment.student?.email}
+                              </span>
+                            </div>
+                            {
+                              enrollment.student?.phone_number && (
+                                <div className="flex items-center gap-1.5">
+                                  <Phone className="w-3.5 h-3.5" />
+                                  <span className="text-xs truncate">
+                                    {enrollment.student?.phone_number}
+                                  </span>
+                                </div>
+                              )
+                            }
                           </div>
                         </div>
                       </td>
@@ -131,11 +143,10 @@ const CourseEnrollments = ({ courseId }) => {
                       </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold ${
-                            enrollment.is_completed
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                              : "bg-amber-50 text-amber-700 border border-amber-100"
-                          }`}
+                          className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold ${enrollment.is_completed
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                            : "bg-amber-50 text-amber-700 border border-amber-100"
+                            }`}
                         >
                           {enrollment.is_completed ? "Completed" : "In Progress"}
                         </span>

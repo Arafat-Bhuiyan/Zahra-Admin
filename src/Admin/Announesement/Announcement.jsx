@@ -190,9 +190,10 @@ const CourseAnnouncementCard = ({ announcement, onDelete }) => {
           <Trash2 size={16} />
         </button>
       </div>
-      <p className="text-neutral-600 text-sm font-medium leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-black/5 whitespace-pre-wrap">
-        {announcement.body}
-      </p>
+      <div 
+        className="text-neutral-600 text-sm font-medium leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-black/5 quill-content"
+        dangerouslySetInnerHTML={{ __html: announcement.body }}
+      />
     </div>
   );
 };

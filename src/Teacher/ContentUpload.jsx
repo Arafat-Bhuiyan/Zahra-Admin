@@ -1,25 +1,31 @@
 import { useState } from 'react';
 import { Eye, X, Play, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  useGetBlogsDataQuery, 
-  useAddBlogMutation, 
+import {
+  useGetBlogsDataQuery,
+  useAddBlogMutation,
   useGetBlogCategoriesQuery,
   useGetTeacherProfileMeQuery
 } from '../Api/adminApi';
 import TextEditor from '../components/Editor';
+import Pagination from '../components/Pagination';
+import { Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ContentUpload() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('my-content');
 
-  const { data: blogsResponse, isLoading: blogsLoading } = useGetBlogsDataQuery();
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+
+  const { data: blogsResponse, isLoading: blogsLoading } = useGetBlogsDataQuery({ search, page });
   const { data: categoriesData } = useGetBlogCategoriesQuery();
   const { data: teacherProfile } = useGetTeacherProfileMeQuery();
   const [addBlog, { isLoading: isAdding }] = useAddBlogMutation();
 
   const blogs = blogsResponse?.results || [];
+  const totalPages = blogsResponse?.total_pages || 1;
   const categories = categoriesData || [];
 
   const [formData, setFormData] = useState({
@@ -46,8 +52,8 @@ export default function ContentUpload() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setFormData(prev => ({ 
-          ...prev, 
+        setFormData(prev => ({
+          ...prev,
           coverImagePreview: event.target.result,
           coverImageFile: file
         }));
@@ -73,23 +79,23 @@ export default function ContentUpload() {
       if (!formData.title || !formData.content) {
         return toast.error("Title and Content are required.");
       }
-      
+
       const payload = new FormData();
       payload.append("title", formData.title);
       payload.append("content", formData.content);
       payload.append("excerpt", formData.excerpt);
       payload.append("category_id", parseInt(formData.category_id) || 0);
-      
+
       if (formData.coverImageFile) {
         payload.append("cover_image", formData.coverImageFile);
       }
-      
+
       formData.tags.forEach(tag => {
-         payload.append("tags", tag);
+        payload.append("tags", tag);
       });
 
       await addBlog(payload).unwrap();
-      
+
       toast.success('Content published successfully!');
       setFormData({ title: '', content: '', coverImagePreview: null, coverImageFile: null, tags: [], excerpt: '', category_id: '' });
       setActiveTab('my-content');
@@ -101,7 +107,7 @@ export default function ContentUpload() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-  
+
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Tabs */}
@@ -126,18 +132,37 @@ export default function ContentUpload() {
           </button>
         </div>
 
+        {/* Search Bar */}
+        {activeTab === 'my-content' && (
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search your content..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+              />
+            </div>
+          </div>
+        )}
+
         {/* My Content Tab */}
         {activeTab === 'my-content' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {blogsLoading ? (
-               <p className="text-gray-500">Loading your content...</p>
+              <p className="text-gray-500">Loading your content...</p>
             ) : blogs.length === 0 ? (
-               <p className="text-gray-500">No content published yet.</p>
+              <p className="text-gray-500">No content published yet.</p>
             ) : (
               blogs.map(card => {
                 const dateRaw = new Date(card.created_at);
                 const formattedDate = dateRaw.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-                
+
                 return (
                   <div key={card.id} className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow">
                     {/* Image */}
@@ -158,11 +183,11 @@ export default function ContentUpload() {
 
                       <div className="flex items-center gap-2 mb-4">
                         {card.author_detail?.profile_picture ? (
-                           <img src={card.author_detail.profile_picture} alt={card.author_detail.full_name} className="w-6 h-6 rounded-full" />
+                          <img src={card.author_detail.profile_picture} alt={card.author_detail.full_name} className="w-6 h-6 rounded-full" />
                         ) : (
-                           <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center">
-                             <span className="text-xs font-bold text-teal-600">{card.author_detail?.full_name?.charAt(0) || "T"}</span>
-                           </div>
+                          <div className="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-bold text-teal-600">{card.author_detail?.full_name?.charAt(0) || "T"}</span>
+                          </div>
                         )}
                         <span className="text-sm text-gray-700 truncate">{card.author_detail?.full_name || "Unknown Author"}</span>
                       </div>
@@ -170,17 +195,16 @@ export default function ContentUpload() {
                       {/* Actions */}
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => navigate(`/teacher/content-details/${card.slug || card.id}`, { state: { content: card } })}
+                          onClick={() => navigate(`/teacher/content-details/${card.slug || card.id}?type=Article`)}
                           className="flex items-center justify-center w-10 h-10 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
                         >
                           <Eye className="w-5 h-5" />
                         </button>
-                        <button className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors capitalize ${
-                          card.status === 'published' ? 'bg-teal-100 text-teal-700' :
+                        <button className={`flex-1 px-3 py-2 rounded text-sm font-medium transition-colors capitalize ${card.status === 'published' ? 'bg-teal-100 text-teal-700' :
                           card.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                          card.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
+                            card.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                              'bg-gray-100 text-gray-700'
+                          }`}>
                           {card.status || "Draft"}
                         </button>
                       </div>
@@ -188,6 +212,17 @@ export default function ContentUpload() {
                   </div>
                 );
               })
+            )}
+
+            {/* Pagination */}
+            {!blogsLoading && totalPages > 1 && (
+              <div className="col-span-full mt-8 flex justify-center">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                />
+              </div>
             )}
           </div>
         )}
@@ -239,16 +274,16 @@ export default function ContentUpload() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                 />
               </div>
-         
+
 
               {/* Blog Content */}
               <div className="bg-white p-6 rounded-lg border border-gray-200">
                 <label className="block text-sm font-semibold text-gray-900 mb-2">Blog Content</label>
-                  <TextEditor
-                    htmlElement={formData.content}
-                    onChange={(data) => setFormData(prev => ({ ...prev, content: data }))}
-                    isEditable={true}
-                  />
+                <TextEditor
+                  htmlElement={formData.content}
+                  onChange={(data) => setFormData(prev => ({ ...prev, content: data }))}
+                  isEditable={true}
+                />
               </div>
 
               {/* Additional Media */}
