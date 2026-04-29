@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { X, Video, User, Package, DollarSign, CircleAlert, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Video, User, Package, DollarSign, CircleAlert, Search, ChevronLeft, ChevronRight, Copy, Layout } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   useGetTeacherProfilesQuery,
@@ -13,6 +13,7 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
     teacherId: "",
     teacherName: "",
     teacherEmail: "",
+    title: "",
     standardPrice: "",
     bundleSessions: "",
     discount: "",
@@ -108,6 +109,7 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
       teacherId: "",
       teacherName: "",
       teacherEmail: "",
+      title: "",
       standardPrice: "",
       bundleSessions: "",
       discount: "",
@@ -115,6 +117,17 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
         { id: Date.now(), day: "", startTime: "", endTime: "", validFrom: "", validUntil: "" }
       ],
     });
+  };
+
+  const duplicateSchedule = (index) => {
+    const scheduleToCopy = formData.schedules[index];
+    const newSchedule = {
+      ...scheduleToCopy,
+      id: Date.now() + Math.random(),
+    };
+    const newSchedules = [...formData.schedules];
+    newSchedules.splice(index + 1, 0, newSchedule);
+    setFormData({ ...formData, schedules: newSchedules });
   };
 
   const handleSubmit = async (e) => {
@@ -135,6 +148,7 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
     try {
       const consultationBody = {
         teacher_id: Number(formData.teacherId),
+        title: formData.title,
       };
       if (formData.standardPrice) {
         consultationBody.standard_price = formData.standardPrice;
@@ -225,17 +239,20 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
               )}
             </div>
 
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-300 w-4 h-4" />
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-stone-700 inter-font">
+                <Layout className="w-4 h-4 text-stone-400" />
+                Consultation Title <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
-                placeholder="Search teachers by name or email..."
-                value={teacherSearch}
-                onChange={(e) => {
-                  setTeacherSearch(e.target.value);
-                  setTeacherPage(1);
-                }}
-                className="w-full pl-11 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder:text-stone-300"
+                required
+                placeholder="e.g. Weekly Quran Memorization"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all font-medium text-stone-800"
               />
             </div>
 
@@ -314,19 +331,29 @@ const ScheduleConsultationModal = ({ isOpen, onClose, onSchedule }) => {
 
           {formData.schedules.map((schedule, index) => (
             <div key={schedule.id} className="p-6 bg-teal-50/20 rounded-2xl border-2 border-teal-500/30 space-y-6 relative group">
-              {formData.schedules.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newSchedules = formData.schedules.filter(s => s.id !== schedule.id);
-                    setFormData({ ...formData, schedules: newSchedules });
-                  }}
-                  className="absolute right-4 top-4 p-1 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors opacity-0 group-hover:opacity-100"
-                  title="Remove this schedule"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+                  <div className="absolute right-4 top-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => duplicateSchedule(index)}
+                      className="p-1.5 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors"
+                      title="Duplicate this schedule"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    {formData.schedules.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newSchedules = formData.schedules.filter(s => s.id !== schedule.id);
+                          setFormData({ ...formData, schedules: newSchedules });
+                        }}
+                        className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                        title="Remove this schedule"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
               <h3 className="text-sm font-black text-teal-800 tracking-wider">Schedule #{index + 1}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
