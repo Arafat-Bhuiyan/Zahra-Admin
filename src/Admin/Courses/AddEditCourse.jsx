@@ -41,7 +41,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
     hours_per_session: "",
     thumbnail: null,
     thumbnailPreview: null,
-    video: null,
+    preview_video: null,
     videoName: "",
     learningObjectives: [],
     requirements: [],
@@ -139,7 +139,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        video: file,
+        preview_video: file,
         videoName: file.name,
       }));
     }
@@ -297,9 +297,47 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
         toast.success("Course updated successfully!");
       } else {
         const response = await createCourse(payload).unwrap();
-        setCourseId(response.id);
         toast.success("Course created successfully!");
       }
+
+      // Clear the form on success
+      setFormData({
+        title: "",
+        subtitle: "",
+        description: "",
+        teacher: "",
+        category: "",
+        status: "upcoming",
+        price: "",
+        duration_in_weeks: "",
+        level: "beginner",
+        total_hours: "",
+        hours_per_session: "",
+        thumbnail: null,
+        thumbnailPreview: null,
+        preview_video: null,
+        videoName: "",
+        learningObjectives: [],
+        requirements: [],
+        curriculum: [
+          {
+            id: 1,
+            title: "Getting Started",
+            lessons: [
+              {
+                id: 101,
+                title: "Course Overview & Welcome",
+                type: "video",
+                duration: "05:45",
+              },
+            ],
+          },
+        ],
+        start_date: "",
+        is_active: true,
+      });
+      setCourseId(null);
+      if (onSave) onSave(); // Notify parent to refresh list if needed
     } catch (err) {
       console.error("Failed to save course:", err);
       const errorMsg = err?.data
