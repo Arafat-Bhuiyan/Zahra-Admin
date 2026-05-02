@@ -40,18 +40,9 @@ export default function Login() {
       });
       const meData = meRes.ok ? await meRes.json() : {};
 
-      let role = "unknown";
-      if (meData.is_staff || meData.is_superuser) {
-        role = "admin";
-      } else {
-        // Check for teacher profile
-        const teacherRes = await fetch(`${import.meta.env.VITE_API_URL || "https://api.sakeenapress.org"}/teacher-profiles/me/`, {
-          headers: { Authorization: `JWT ${result.access}` },
-        });
-        if (teacherRes.ok) role = "teacher";
-      }
+      const role = meData.role; // "admin" or "teacher" from the API
 
-      if (role === "unknown") {
+      if (role !== "admin" && role !== "teacher") {
         toast.error("Access denied. This portal is for admins and teachers only.");
         return;
       }
