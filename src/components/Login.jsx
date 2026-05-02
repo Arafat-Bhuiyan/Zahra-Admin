@@ -33,41 +33,46 @@ export default function Login() {
     e.preventDefault();
     try {
       const result = await login({ email, password }).unwrap();
-      // Determine role based on email
-      let role = "user"; // default
-      if (email.includes("admin")) {
+
+      // Fetch user profile to determine actual role
+      const meRes = await fetch(`${import.meta.env.VITE_API_URL || "https://api.sakeenapress.org"}/auth/users/me/`, {
+        headers: { Authorization: `JWT ${result.access}` },
+      });
+      const meData = meRes.ok ? await meRes.json() : {};
+
+      let role = "unknown";
+      if (meData.is_staff || meData.is_superuser) {
         role = "admin";
-      } else if (email.includes("teacher")) {
-        role = "teacher";
+      } else {
+        // Check for teacher profile
+        const teacherRes = await fetch(`${import.meta.env.VITE_API_URL || "https://api.sakeenapress.org"}/teacher-profiles/me/`, {
+          headers: { Authorization: `JWT ${result.access}` },
+        });
+        if (teacherRes.ok) role = "teacher";
       }
-      dispatch(
-        setAuth({ access: result.access, refresh: result.refresh, role }),
-      );
+
+      if (role === "unknown") {
+        toast.error("Access denied. This portal is for admins and teachers only.");
+        return;
+      }
+
+      dispatch(setAuth({ access: result.access, refresh: result.refresh, role }));
       toast.success("Login successful!");
     } catch (error) {
       console.error("Login failed:", error);
 
-      // Extract error message from API response
       let errorMessage = "Login failed. Please try again.";
-
       if (error?.data?.detail) {
         errorMessage = error.data.detail;
       } else if (error?.status === 401) {
         errorMessage = "No active account found with the given credentials";
-      } else if (error?.data?.email) {
-        errorMessage = "Invalid email address";
-      } else if (error?.data?.password) {
-        errorMessage = "Invalid password";
       } else if (error?.data?.non_field_errors) {
         errorMessage = error.data.non_field_errors[0];
       } else if (error?.status === 400) {
         errorMessage = "Invalid email or password";
       }
 
-      toast.error(errorMessage, {
-        duration: 4000,
-        position: "top-center",
-      });
+      toast.error(errorMessage, { duration: 4000, position: "top-center" });
     }
   };
 
