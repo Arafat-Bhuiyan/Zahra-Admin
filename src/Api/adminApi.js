@@ -1210,6 +1210,13 @@ export const adminApi = api.injectEndpoints({
       },
       providesTags: ["sales"],
     }),
+    changePassword: builder.mutation({
+      query: (body) => ({
+        url: "/auth/users/set_password/",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -1348,4 +1355,5 @@ export const {
   useGetQuizAttemptsQuery,
   useGetQuizAttemptDetailsQuery,
   useGetSalesQuery,
+  useChangePasswordMutation,
 } = adminApi;
