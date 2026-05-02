@@ -46,7 +46,7 @@ export const Sidebar = ({ onClose }) => {
       { icon: FileText, label: "Content", slug: "contents" },
       { icon: DoorOpenIcon, label: "Doors", slug: "doors" },
       { icon: Library, label: "Book Library", slug: "book-library" },
-      { icon: ShoppingCart, label: "Book Sales", slug: "book-sales" },
+      { icon: ShoppingCart, label: "Sales", slug: "sales" },
       { icon: Megaphone, label: "Announcements", slug: "announcements" },
       { icon: Newspaper, label: "Newsletter", slug: "newsletter" },
       { icon: Mail, label: "Email Templates", slug: "email-templates" },
@@ -164,11 +164,10 @@ export const Sidebar = ({ onClose }) => {
                         ? "bg-primary rounded-full"
                         : "bg-greenTeal rounded-xl";
 
-                      return `flex items-center h-12 pl-6 py-3 text-start text-base font-normal transition-colors mx-4 mb-1 gap-3 ${
-                        isActive
-                          ? `${activeClasses} text-[#FFFFFF] shadow-lg backdrop-blur-md`
-                          : "text-[#4A5565] rounded-sm"
-                      }`;
+                      return `flex items-center h-12 pl-6 py-3 text-start text-base font-normal transition-colors mx-4 mb-1 gap-3 ${isActive
+                        ? `${activeClasses} text-[#FFFFFF] shadow-lg backdrop-blur-md`
+                        : "text-[#4A5565] rounded-sm"
+                        }`;
                     }}
                   >
                     <Icon className="w-5 h-5" />

@@ -68,15 +68,47 @@ const AssignmentForm = ({ data, onChange }) => {
         <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
           Allowed File Types
         </label>
-        <div className="flex gap-2">
-          {["pdf", "docx"].map((type) => (
-            <div
-              key={type}
-              className="px-4 py-1.5 bg-orange-50 border border-orange-200 rounded-xl text-orange-700 text-sm font-bold arimo-font"
-            >
-              {type}
-            </div>
-          ))}
+        <div className="flex flex-wrap gap-2">
+          {["pdf", "docx", "mp4"].map((type) => {
+            const currentTypes = data.allowedFileTypes 
+              ? data.allowedFileTypes.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) 
+              : [];
+            const isSelected = currentTypes.includes(type.toLowerCase());
+            
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => {
+                  let newTypes;
+                  if (isSelected) {
+                    newTypes = currentTypes.filter(t => t !== type.toLowerCase());
+                  } else {
+                    newTypes = [...currentTypes, type.toLowerCase()];
+                  }
+                  // Sort and format for display
+                  handleChange("allowedFileTypes", newTypes.join(', '));
+                }}
+                className={`px-4 py-1.5 rounded-xl text-sm font-bold transition-all ${
+                  isSelected
+                    ? "bg-orange-500 text-white shadow-md scale-105"
+                    : "bg-stone-50 border border-stone-200 text-stone-500 hover:border-stone-400"
+                }`}
+              >
+                {type}
+              </button>
+            );
+          })}
+        </div>
+        
+        <div className="mt-2">
+          <input
+            type="text"
+            placeholder="Other types (comma separated), e.g., txt, mp3"
+            value={data.allowedFileTypes || ""}
+            onChange={(e) => handleChange("allowedFileTypes", e.target.value)}
+            className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-3 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-medium text-stone-800 inter-font text-sm"
+          />
         </div>
       </div>
 
@@ -85,12 +117,14 @@ const AssignmentForm = ({ data, onChange }) => {
         <label className="text-sm font-bold text-stone-700 ml-1 inter-font">
           Max File Size (MB)
         </label>
-        <input
-          type="number"
-          value={data.maxFileSize || 10}
-          onChange={(e) => handleChange("maxFileSize", e.target.value)}
-          className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-bold text-stone-800 inter-font"
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="number"
+            value={data.maxFileSize || 10}
+            onChange={(e) => handleChange("maxFileSize", e.target.value)}
+            className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 transition-all font-bold text-stone-800 inter-font"
+          />
+        </div>
       </div>
     </div>
   );

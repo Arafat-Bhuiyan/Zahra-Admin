@@ -15,6 +15,7 @@ import {
   useIssueCertificatesMutation
 } from "../../Api/adminApi";
 import Pagination from "../../components/Pagination";
+import ManageTemplatesModal from "./ManageTemplatesModal";
 
 const StudentRow = ({ enrollment, isSelected, onSelect }) => {
   const statusStyles = {
@@ -100,6 +101,7 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [previewHtml, setPreviewHtml] = useState("");
   const [isFetchingPreview, setIsFetchingPreview] = useState(false);
 
@@ -121,7 +123,7 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
 
   // Queries
   const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetCompletedStudentsQuery({ course: selectedCourse.id, page: currentPage });
-  const { data: templatesData, isLoading: isTemplatesLoading } = useGetCertificateTemplatesQuery();
+  const { data: templatesData, isLoading: isTemplatesLoading } = useGetCertificateTemplatesQuery({ page_size: 1000 });
   const [fetchPreview] = useLazyGetCertificateTemplatePreviewQuery();
   const [issueCertificates, { isLoading: isIssuing }] = useIssueCertificatesMutation();
 
@@ -256,6 +258,12 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
               <Eye size={20} />
             </button>
           </div>
+          <button
+            onClick={() => setIsManageModalOpen(true)}
+            className="text-greenTeal text-xs font-bold uppercase tracking-widest hover:underline mt-1 text-left w-fit"
+          >
+            Manage Templates
+          </button>
         </div>
       </div>
 
@@ -419,6 +427,11 @@ const CertificateDetails = ({ selectedCourse, onBack }) => {
           </div>
         )}
       </div>
+
+      <ManageTemplatesModal
+        isOpen={isManageModalOpen}
+        onClose={() => setIsManageModalOpen(false)}
+      />
     </div>
   );
 };

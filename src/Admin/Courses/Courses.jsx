@@ -48,7 +48,7 @@ const Courses = () => {
   const [addCategory] = useAddCourseCategoryMutation();
   const [deleteCategory] = useDeleteCourseCategoryMutation();
 
-  const categories = categoriesResponse?.results || [];
+  const categories = categoriesResponse || [];
   const statuses = ["All", "Running", "Recorded", "Upcoming"];
 
   const getStatusLabel = (status) => {

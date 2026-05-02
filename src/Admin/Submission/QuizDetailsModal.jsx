@@ -115,7 +115,7 @@ const QuizDetailsModal = ({ isOpen, onClose, submission }) => {
           </div>
 
           {/* Answers Review Section */}
-          <div className="space-y-6 pt-2">
+          {/* <div className="space-y-6 pt-2">
             <h3 className="text-[20px] font-bold text-neutral-800 font-['Arimo']">
               Answers Review
             </h3>
@@ -176,7 +176,7 @@ const QuizDetailsModal = ({ isOpen, onClose, submission }) => {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Footer */}

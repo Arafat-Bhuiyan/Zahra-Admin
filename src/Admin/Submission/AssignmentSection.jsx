@@ -8,6 +8,7 @@ import {
   Edit3,
   CheckCircle2,
   Clock,
+  X,
 } from "lucide-react";
 import AssignmentDetailsModal from "./AssignmentDetailsModal";
 import GradeAssignmentModal from "./GradeAssignmentModal";
@@ -55,16 +56,20 @@ const AssignmentSection = ({ categories, submissions }) => {
                     <div className="flex items-center gap-3">
                       <div
                         className={`px-4 py-1 rounded-[32px] text-xs font-bold inline-flex items-center gap-1.5 border ${
-                          submission.status === "Graded"
+                          submission.status === "Approved"
                             ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                            : submission.status === "Rejected"
+                              ? "bg-red-50 text-red-700 border-red-200"
+                              : "bg-yellow-50 text-yellow-700 border-yellow-200"
                         }`}
                       >
-                        {submission.status === "Graded" ? (
+                        {submission.status === "Approved" ? (
                           <CheckCircle2
                             className="w-3.5 h-3.5"
                             strokeWidth={2.5}
                           />
+                        ) : submission.status === "Rejected" ? (
+                          <X className="w-3.5 h-3.5" strokeWidth={2.5} />
                         ) : (
                           <Clock className="w-3.5 h-3.5" strokeWidth={2.5} />
                         )}

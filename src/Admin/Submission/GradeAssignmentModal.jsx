@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, CheckCircle2 } from "lucide-react";
 import { useReviewAssignmentSubmissionMutation } from "../../Api/adminApi";
+import toast from "react-hot-toast";
 
 const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
   const [score, setScore] = useState("");
@@ -33,18 +34,26 @@ const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
     ? Math.round((Number(score) / totalPoints) * 100)
     : 0;
 
-  const handleSave = async () => {
-    const body = {
-      status: "approved",
-      teacher_feedback: feedback,
-      mark: Number(score),
-    };
+  const handleSaveReview = async (status) => {
+    if (!feedback.trim()) {
+      return toast.error("Please provide feedback.");
+    }
+    if (status === "approved" && !score) {
+      return toast.error("Please provide a score for approval.");
+    }
 
     try {
-      await reviewAssignmentSubmission({ id: submission.id, body }).unwrap();
+      await reviewAssignmentSubmission({ 
+        id: submission.id, 
+        status, 
+        teacher_feedback: feedback, 
+        mark: status === "approved" ? Number(score) : null 
+      }).unwrap();
+      toast.success(status === "approved" ? "Assignment approved and graded" : "Assignment rejected");
       onClose();
     } catch (error) {
-      console.error("Failed to save grade:", error);
+      console.error("Failed to save review:", error);
+      toast.error("Failed to save review");
     }
   };
 
@@ -64,7 +73,7 @@ const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
         <div className="px-8 py-6 bg-gradient-to-r from-[#7AA4A5] to-[#8eb3b4] text-white flex justify-between items-start">
           <div>
             <h2 className="text-2xl font-bold font-['Arimo'] mb-1">
-              Grade Assignment
+              Review Assignment
             </h2>
             <p className="text-white/90 text-base font-normal font-['Arimo']">
               {submission.assignmentTitle || "Build a Custom Hook"}
@@ -98,7 +107,7 @@ const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
           {/* Score Input */}
           <div className="space-y-3">
             <label className="text-sm font-normal text-neutral-700 font-['Arimo'] flex items-center gap-1">
-              Score <span className="text-red-500">*</span>
+              Score <span className="text-xs text-neutral-400 font-normal">(Required for Approval)</span>
             </label>
             <div className="flex items-center gap-4">
               <div className="w-32">
@@ -141,7 +150,7 @@ const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-6 bg-neutral-50 border-t border-neutral-200 flex items-center justify-end gap-3">
+        <div className="px-8 py-6 bg-neutral-50 border-t border-neutral-200 flex items-center justify-between">
           <button
             onClick={onClose}
             className="px-8 py-2.5 border border-neutral-300 rounded-xl text-neutral-700 font-medium hover:bg-neutral-100 transition-colors"
@@ -149,13 +158,22 @@ const GradeAssignmentModal = ({ isOpen, onClose, submission }) => {
             Cancel
           </button>
 
-          <button
-            onClick={handleSave}
-            className="px-8 py-2.5 bg-[#7AA4A5] text-white rounded-xl font-bold flex items-center gap-2 hover:bg-[#6b9192] transition-colors shadow-lg shadow-[#7AA4A5]/20"
-          >
-            <CheckCircle2 className="w-5 h-5 font-bold" />
-            Save Grade
-          </button>
+          <div className="flex gap-3">
+             <button
+              onClick={() => handleSaveReview("rejected")}
+              disabled={isSaving}
+              className="px-8 py-2.5 border border-red-200 text-red-600 bg-red-50 rounded-xl font-bold flex items-center gap-2 hover:bg-red-100 transition-colors"
+            >
+              Reject
+            </button>
+            <button
+              onClick={() => handleSaveReview("approved")}
+              disabled={isSaving}
+              className="px-8 py-2.5 bg-[#7AA4A5] text-white rounded-xl font-bold flex items-center gap-2 hover:bg-[#6b9192] transition-colors shadow-lg shadow-[#7AA4A5]/20 disabled:opacity-50"
+            >
+              {isSaving ? "Saving..." : <><CheckCircle2 className="w-5 h-5 font-bold" /> Approve & Score</>}
+            </button>
+          </div>
         </div>
       </div>
     </div>

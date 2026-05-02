@@ -11,20 +11,35 @@ import {
   ClipboardList,
   ChevronDown,
 } from "lucide-react";
-import { useGetBookSalesDataQuery } from "../../Api/adminApi";
+import { useGetSalesQuery } from "../../Api/adminApi";
 import Pagination from "../../components/Pagination";
 
 const BookSales = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("All Types");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+
+  const filterOptions = [
+    { label: "All Types", value: "All Types" },
+    { label: "Course", value: "course" },
+    { label: "Bundle", value: "bundle" },
+    { label: "Physical Book", value: "physical_book" },
+    { label: "Digital Book", value: "digital_book" },
+    { label: "Consultation", value: "consultation" },
+    { label: "Donation", value: "donation" },
+    { label: "Membership", value: "membership" },
+  ];
   const [currentPage, setCurrentPage] = useState(1);
 
   const {
     data: apiResponse,
     isLoading,
     isError,
-  } = useGetBookSalesDataQuery(currentPage);
+  } = useGetSalesQuery({
+    page: currentPage,
+    search: searchQuery,
+    type: filterType !== "All Types" ? filterType : undefined,
+  });
 
   // Transform API data to component format
   const transformedSalesData = useMemo(() => {
@@ -44,9 +59,13 @@ const BookSales = () => {
 
       // Map type from API format
       const typeMap = {
-        physical_book: "Physical",
-        digital_book: "Digital",
-        both: "Both",
+        course: "Course",
+        bundle: "Bundle",
+        digital_book: "Digital Book",
+        physical_book: "Physical Book",
+        consultation: "Consultation",
+        donation: "Donation",
+        membership: "Membership"
       };
 
       // Map payment status to display values
@@ -57,29 +76,26 @@ const BookSales = () => {
       };
 
       return {
-        id: `#ORD-${order.order_id}`,
+        id: order.id,
         student: {
           name: order.student_name,
           email: order.student_email,
-          phone: order.shipping_address?.phone || "N/A",
+          phone: "N/A",
         },
         book: {
-          title: order.book_title,
-          author: "Author Unknown",
-          image: order.cover_image || "https://placehold.co/133x200",
+          title: order.product_name,
+          author: "", // Reusing book object for generic product display
+          image: "https://placehold.co/133x200",
         },
-        type: typeMap[order.type] || "Unknown",
+        typeDisplay: typeMap[order.type] || order.type,
+        typeRaw: order.type,
         quantity: order.quantity,
         amount: parseFloat(order.amount),
-        address: {
-          line1: order.shipping_address?.address_line || "N/A",
-          city: order.shipping_address?.city || "N/A",
-          country: order.shipping_address?.country || "N/A",
-        },
+        address: order.shipping_address || "N/A",
         payment: paymentStatusMap[order.payment_status] || "Unknown",
         status:
           order.payment_status === "completed"
-            ? "Delivered"
+            ? "Completed"
             : order.payment_status === "pending"
               ? "Pending"
               : "Failed",
@@ -107,7 +123,7 @@ const BookSales = () => {
     {
       label: "Digital Sales",
       value:
-        apiResponse?.results?.filter((o) => o.type === "digital_book").length ||
+        apiResponse?.results?.filter((o) => o.type === "digital_book" || o.type === "course" || o.type === "bundle" || o.type === "membership").length ||
         "0",
       icon: Download,
       color: "bg-blue-600",
@@ -155,14 +171,22 @@ const BookSales = () => {
     },
   ];
 
-  const getTypeStyle = (type) => {
-    switch (type) {
-      case "Physical":
+  const getTypeStyle = (typeDisplay) => {
+    switch (typeDisplay) {
+      case "Physical Book":
         return "bg-purple-50 text-purple-700 outline-purple-300";
-      case "Digital":
+      case "Digital Book":
         return "bg-blue-50 text-blue-700 outline-blue-300";
-      case "Both":
+      case "Course":
         return "bg-teal-50 text-teal-700 outline-teal-300";
+      case "Bundle":
+        return "bg-orange-50 text-orange-700 outline-orange-300";
+      case "Consultation":
+        return "bg-indigo-50 text-indigo-700 outline-indigo-300";
+      case "Donation":
+        return "bg-rose-50 text-rose-700 outline-rose-300";
+      case "Membership":
+        return "bg-amber-50 text-amber-700 outline-amber-300";
       default:
         return "bg-gray-50 text-gray-700 outline-gray-300";
     }
@@ -181,19 +205,8 @@ const BookSales = () => {
     }
   };
 
-  const filteredData = useMemo(() => {
-    return transformedSalesData.filter((order) => {
-      const matchesSearch =
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.book.title.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesFilter =
-        filterType === "All Types" || order.type === filterType;
-
-      return matchesSearch && matchesFilter;
-    });
-  }, [transformedSalesData, searchQuery, filterType]);
+  // We rely fully on the backend API for search and type filtering since it is paginated
+  const filteredData = transformedSalesData;
 
   return (
     <div className="pt-2 flex flex-col gap-8 animate-in fade-in duration-500 pb-10 arimo-font">
@@ -238,7 +251,7 @@ const BookSales = () => {
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-gray-500" />
                 <span className="text-neutral-950 font-medium">
-                  {filterType}
+                  {filterOptions.find(o => o.value === filterType)?.label || "All Types"}
                 </span>
               </div>
               <ChevronDown
@@ -252,21 +265,21 @@ const BookSales = () => {
                   className="fixed inset-0 z-10"
                   onClick={() => setShowFilterDropdown(false)}
                 ></div>
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-black/10 rounded-xl shadow-xl z-20 py-1 overflow-hidden animate-in fade-in zoom-in duration-200">
-                  {["All Types", "Physical", "Digital"].map((type) => (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-black/10 rounded-xl shadow-xl z-20 py-1 overflow-hidden animate-in fade-in zoom-in duration-200 h-64 overflow-y-auto">
+                  {filterOptions.map((option) => (
                     <div
-                      key={type}
+                      key={option.value}
                       onClick={() => {
-                        setFilterType(type);
+                        setFilterType(option.value);
+                        setCurrentPage(1); // Reset to first page
                         setShowFilterDropdown(false);
                       }}
-                      className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
-                        filterType === type
-                          ? "bg-teal-50 text-teal-700 font-medium"
-                          : "text-gray-600 hover:bg-gray-50"
-                      }`}
+                      className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${filterType === option.value
+                        ? "bg-teal-50 text-teal-700 font-medium"
+                        : "text-gray-600 hover:bg-gray-50"
+                        }`}
                     >
-                      {type}
+                      {option.label}
                     </div>
                   ))}
                 </div>
@@ -361,11 +374,11 @@ const BookSales = () => {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-4">
-                        <img
+                        {/* <img
                           src={order.book.image}
                           alt={order.book.title}
                           className="w-12 h-16 rounded-lg object-cover shadow-sm"
-                        />
+                        /> */}
                         <div className="flex flex-col">
                           <span className="text-neutral-950 font-bold text-base line-clamp-1 w-48">
                             {order.book.title}
@@ -378,9 +391,9 @@ const BookSales = () => {
                     </td>
                     <td className="px-6 py-5">
                       <span
-                        className={`px-3 py-1 rounded-xl outline outline-1 outline-offset-[-1px] text-sm font-bold ${getTypeStyle(order.type)}`}
+                        className={`inline-block whitespace-nowrap px-3 py-1 rounded-xl outline outline-1 outline-offset-[-1px] text-sm font-bold ${getTypeStyle(order.typeDisplay)}`}
                       >
-                        {order.type}
+                        {order.typeDisplay}
                       </span>
                     </td>
                     <td className="px-6 py-5 text-neutral-950 font-medium text-lg">
