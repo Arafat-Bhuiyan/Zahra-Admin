@@ -7,7 +7,8 @@ const normalizeBaseUrl = (value) => {
 
 const API_BASE_URL =
   normalizeBaseUrl(import.meta.env.VITE_API_URL) ||
-  "https://api.sakeenapress.org/";
+  "http://10.10.13.8:8000/";
+// "https://api.sakeenapress.org/";
 
 export const normalizeListResponse = (response) => {
   if (Array.isArray(response)) return response;
@@ -101,11 +102,11 @@ export const api = createApi({
       providesTags: (result = []) =>
         result.length
           ? [
-              ...result
-                .filter((item) => item?.id != null)
-                .map(({ id }) => ({ type: "categories", id })),
-              { type: "categories", id: "LIST" },
-            ]
+            ...result
+              .filter((item) => item?.id != null)
+              .map(({ id }) => ({ type: "categories", id })),
+            { type: "categories", id: "LIST" },
+          ]
           : [{ type: "categories", id: "LIST" }],
     }),
     getCourses: builder.query({
@@ -124,11 +125,11 @@ export const api = createApi({
       providesTags: (result = []) =>
         result.length
           ? [
-              ...result
-                .filter((item) => item?.id != null)
-                .map(({ id }) => ({ type: "courses", id })),
-              { type: "courses", id: "LIST" },
-            ]
+            ...result
+              .filter((item) => item?.id != null)
+              .map(({ id }) => ({ type: "courses", id })),
+            { type: "courses", id: "LIST" },
+          ]
           : [{ type: "courses", id: "LIST" }],
     }),
     setPassword: builder.mutation({

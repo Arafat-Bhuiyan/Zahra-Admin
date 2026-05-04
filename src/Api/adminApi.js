@@ -1085,6 +1085,14 @@ export const adminApi = api.injectEndpoints({
       query: () => "/teacher-profiles/me/",
       providesTags: ["teacher"],
     }),
+    updateTeacherProfile: builder.mutation({
+      query: ({ id, data, body, method = "PATCH" }) => ({
+        url: `/teacher-profiles/${id}/`,
+        method: method,
+        body: body || data,
+      }),
+      invalidatesTags: ["teacher"],
+    }),
 
     getCourseById: builder.query({
       query: (id) => `/courses/${id}/`,

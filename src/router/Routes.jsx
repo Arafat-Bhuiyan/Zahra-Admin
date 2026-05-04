@@ -22,6 +22,7 @@ import Scholarships from "../Admin/Scholarships/Scholarships";
 import Payments from "../Admin/Payments/Payments";
 import Memberships from "../Admin/Memberships/Memberships";
 import Courses from "../Admin/Courses/Courses";
+import AddEditCourse from "../Admin/Courses/AddEditCourse";
 import Contents from "../Admin/Contents/Contents";
 import ContentDetails from "../Admin/Contents/ContentDetails";
 import BookLibrary from "../Admin/BookLibrary/BookLibrary";
@@ -73,6 +74,8 @@ const router = createBrowserRouter([
       },
       { path: "users-management", element: <User /> },
       { path: "courses-management", element: <Courses /> },
+      { path: "courses-management/add", element: <AddEditCourse /> },
+      { path: "courses-management/edit/:id", element: <AddEditCourse /> },
       { path: "submissions", element: <Submission /> },
       { path: "consultants", element: <Consultants /> },
       { path: "settings", element: <TermsAndPolicies /> },

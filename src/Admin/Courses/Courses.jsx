@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Plus,
@@ -22,12 +23,12 @@ import {
   useAddCourseCategoryMutation,
   useDeleteCourseCategoryMutation,
 } from "../../Api/adminApi";
-import AddEditCourse from "./AddEditCourse";
 import CourseBuilder from "./CourseBuilder";
 import LiveSessions from "./LiveSessions";
 import Pagination from "../../components/Pagination";
 
 const Courses = () => {
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -88,13 +89,11 @@ const Courses = () => {
   };
 
   const handleAddCourse = () => {
-    setCourseToEdit(null);
-    setActiveView("add-edit");
+    navigate("add");
   };
 
   const handleEditCourse = (course) => {
-    setCourseToEdit(course);
-    setActiveView("add-edit");
+    navigate(`edit/${course.id}`);
   };
 
   const handleOpenBuilder = (course) => {
@@ -172,18 +171,7 @@ const Courses = () => {
   const handleSaveCourse = (formData) => {
     // API integration for saving would go here
     setActiveView("listing");
-    setCourseToEdit(null);
   };
-
-  if (activeView === "add-edit") {
-    return (
-      <AddEditCourse
-        course={courseToEdit}
-        onBack={() => setActiveView("listing")}
-        onSave={handleSaveCourse}
-      />
-    );
-  }
 
   if (activeView === "builder") {
     return (

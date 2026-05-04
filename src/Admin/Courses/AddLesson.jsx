@@ -34,11 +34,11 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
   const [contentType, setContentType] = useState("video");
   const [link, setLink] = useState("");
   const [file, setFile] = useState(null);
-  
+
   // New fields for Live
   const [liveDate, setLiveDate] = useState("");
   const [liveTime, setLiveTime] = useState("");
-  
+
   // New fields from backend schema
   const [duration, setDuration] = useState("");
   const [isPreview, setIsPreview] = useState(false);
@@ -75,7 +75,7 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
     module_pk: moduleId,
     id: lessonId
   }, { skip: !lessonId || !isOpen, refetchOnMountOrArgChange: true });
-  
+
   const [getVideoStatus] = useLazyGetVideoStatusQuery();
   const [createQuiz] = useCreateLessonQuizMutation();
   const [updateQuiz] = useUpdateLessonQuizMutation();
@@ -94,7 +94,7 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
       setIsPreview(lessonDetails.is_preview || false);
       setIsReleased(lessonDetails.is_released ?? true);
       setIsDownloadable(lessonDetails.is_downloadable || false);
-      
+
       if (lessonDetails.content_type === "video") {
         setExistingFileUrl(lessonDetails.video_content || null);
       } else if (lessonDetails.content_type === "document") {
@@ -222,10 +222,10 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
     setVideoStatus('processing');
     pollingIntervalRef.current = setInterval(async () => {
       try {
-        const { data } = await getVideoStatus({ 
-          course_pk: courseId, 
-          module_pk: moduleId, 
-          id: lessonId 
+        const { data } = await getVideoStatus({
+          course_pk: courseId,
+          module_pk: moduleId,
+          id: lessonId
         });
         if (data?.bunny_video_status === "ready") {
           setVideoStatus('ready');
@@ -294,7 +294,7 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
       payload.append("duration_in_minutes", duration || 0);
       payload.append("is_preview", isPreview);
       payload.append("is_released", isReleased);
-      
+
       if (contentType === "document") {
         payload.append("is_downloadable", isDownloadable);
       }
@@ -306,23 +306,23 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
       } else if (file) {
         payload.append("file_content", file);
       } else if (existingFileUrl && (contentType === "video" || contentType === "document")) {
-         // If we have an existing URL and no new file, we don't append file_content
-         // unless the backend requires it. Usually PATCH only updates what's provided.
+        // If we have an existing URL and no new file, we don't append file_content
+        // unless the backend requires it. Usually PATCH only updates what's provided.
       }
 
       let resLesson;
       if (lessonId) {
-        resLesson = await updateLesson({ 
-          course_pk: courseId, 
-          module_pk: moduleId, 
-          id: lessonId, 
-          body: payload 
+        resLesson = await updateLesson({
+          course_pk: courseId,
+          module_pk: moduleId,
+          id: lessonId,
+          body: payload
         }).unwrap();
       } else {
-        resLesson = await createLesson({ 
-          course_pk: courseId, 
-          module_pk: moduleId, 
-          body: payload 
+        resLesson = await createLesson({
+          course_pk: courseId,
+          module_pk: moduleId,
+          body: payload
         }).unwrap();
       }
 
@@ -339,12 +339,12 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
 
         if (lessonId && lessonDetails?.quiz_details) {
           const quizPk = lessonDetails.quiz_details.id;
-          await updateQuiz({ 
-            course_pk: courseId, 
-            module_pk: moduleId, 
-            lesson_pk: activeLessonId, 
-            id: quizPk, 
-            body: quizPayload 
+          await updateQuiz({
+            course_pk: courseId,
+            module_pk: moduleId,
+            lesson_pk: activeLessonId,
+            id: quizPk,
+            body: quizPayload
           }).unwrap();
 
           // Process questions separately
@@ -375,29 +375,29 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
           // For fresh creation, we can still use the nested approach if the backend supports it,
           // or create quiz first then questions. Existing createQuiz mapper handles nested.
           const fullQuizPayload = mapQuizDataToBackend(quizData, title);
-          await createQuiz({ 
-            course_pk: courseId, 
-            module_pk: moduleId, 
-            lesson_pk: activeLessonId, 
-            body: fullQuizPayload 
+          await createQuiz({
+            course_pk: courseId,
+            module_pk: moduleId,
+            lesson_pk: activeLessonId,
+            body: fullQuizPayload
           }).unwrap();
         }
       } else if (contentType === "assignment") {
         const assignmentPayload = mapAssignmentDataToBackend(assignmentData);
         if (lessonId && lessonDetails?.assignment_details) {
-          await updateAssignment({ 
-            course_pk: courseId, 
-            module_pk: moduleId, 
-            lesson_pk: activeLessonId, 
-            id: lessonDetails.assignment_details.id, 
-            body: assignmentPayload 
+          await updateAssignment({
+            course_pk: courseId,
+            module_pk: moduleId,
+            lesson_pk: activeLessonId,
+            id: lessonDetails.assignment_details.id,
+            body: assignmentPayload
           }).unwrap();
         } else {
-          await createAssignment({ 
-            course_pk: courseId, 
-            module_pk: moduleId, 
-            lesson_pk: activeLessonId, 
-            body: assignmentPayload 
+          await createAssignment({
+            course_pk: courseId,
+            module_pk: moduleId,
+            lesson_pk: activeLessonId,
+            body: assignmentPayload
           }).unwrap();
         }
       } else if (contentType === "video" && file && !lessonId) {
@@ -481,20 +481,19 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
         {/* Form Body */}
         <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
           {isLoadingDetails && (
-             <div className="flex flex-col items-center justify-center py-20 gap-4">
-               <Loader2 className="w-10 h-10 text-teal-600 animate-spin" />
-               <p className="text-stone-500 font-medium animate-pulse">Fetching lesson details...</p>
-             </div>
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="w-10 h-10 text-teal-600 animate-spin" />
+              <p className="text-stone-500 font-medium animate-pulse">Fetching lesson details...</p>
+            </div>
           )}
-          
+
           {!isLoadingDetails && (
             <>
               {/* Status Alert for processing video */}
               {videoStatus && (
-                <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-2 ${
-                  videoStatus === 'ready' ? 'bg-green-50 text-green-700' : 
-                  videoStatus === 'error' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'
-                }`}>
+                <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-2 ${videoStatus === 'ready' ? 'bg-green-50 text-green-700' :
+                    videoStatus === 'error' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'
+                  }`}>
                   {videoStatus === 'processing' || videoStatus === 'uploading' ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : videoStatus === 'ready' ? (
@@ -606,12 +605,11 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
                     <button
                       key={type.id}
                       onClick={() => setContentType(type.id)}
-                      className={`flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all group ${
-                        contentType === type.id
+                      className={`flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all group ${contentType === type.id
                           ? type.activeClass
                           : type.baseClass +
-                            " hover:border-stone-300 hover:bg-stone-50"
-                      }`}
+                          " hover:border-stone-300 hover:bg-stone-50"
+                        }`}
                     >
                       <div
                         className={`p-3 rounded-xl transition-transform group-active:scale-90 ${contentType === type.id ? "bg-white" : "bg-stone-100"}`}
@@ -705,7 +703,7 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
                           </a>
                         </div>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setExistingFileUrl(null)}
                         className="flex items-center gap-2 px-5 py-2.5 bg-white border border-teal-200 text-teal-600 rounded-xl text-xs font-bold hover:bg-teal-50 transition-all shadow-sm active:scale-95"
                       >
@@ -719,11 +717,10 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
-                      className={`flex flex-col items-center justify-center gap-4 p-12 border-2 border-dashed rounded-[2rem] transition-all group cursor-pointer relative ${
-                        isDragging 
-                          ? "border-teal-500 bg-teal-50/20 scale-[1.02]" 
+                      className={`flex flex-col items-center justify-center gap-4 p-12 border-2 border-dashed rounded-[2rem] transition-all group cursor-pointer relative ${isDragging
+                          ? "border-teal-500 bg-teal-50/20 scale-[1.02]"
                           : "border-stone-200 hover:border-teal-400 hover:bg-teal-50/10"
-                      }`}
+                        }`}
                     >
                       <input
                         type="file"
@@ -733,12 +730,10 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
                         className="hidden"
                       />
                       <div className="flex flex-col items-center text-center">
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform mb-4 shadow-sm border ${
-                          isDragging ? "bg-white border-teal-200 scale-110" : "bg-stone-50 border-stone-100 group-hover:scale-110"
-                        }`}>
-                          <UploadCloud className={`w-8 h-8 transition-colors ${
-                            isDragging ? "text-teal-500" : "text-stone-400 group-hover:text-teal-500"
-                          }`} />
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform mb-4 shadow-sm border ${isDragging ? "bg-white border-teal-200 scale-110" : "bg-stone-50 border-stone-100 group-hover:scale-110"
+                          }`}>
+                          <UploadCloud className={`w-8 h-8 transition-colors ${isDragging ? "text-teal-500" : "text-stone-400 group-hover:text-teal-500"
+                            }`} />
                         </div>
                         <div className="space-y-1">
                           <h4 className="text-stone-900 font-bold arimo-font">
@@ -746,8 +741,8 @@ const AddLesson = ({ isOpen, onClose, courseId, moduleId, lessonId }) => {
                           </h4>
                           <p className="text-stone-400 text-sm font-medium inter-font">
                             {contentType === "video"
-                              ? "MP4, MOV (max 500MB)"
-                              : "PDF, DOCX, PPTX (max 10MB)"}
+                              ? "MP4, MOV"
+                              : "PDF, DOCX, PPTX"}
                           </p>
                         </div>
                       </div>

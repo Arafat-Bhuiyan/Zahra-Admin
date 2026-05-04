@@ -9,6 +9,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import TextEditor from "../../components/Editor";
 import CourseCurriculum from "./CourseCurriculum";
@@ -22,9 +23,11 @@ import {
   useGetTeacherProfilesQuery,
 } from "../../Api/adminApi";
 
-const AddEditCourse = ({ course, onBack, onSave }) => {
+const AddEditCourse = ({ onSave }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Course Overview");
-  const [courseId, setCourseId] = useState(course?.id || null);
+  const [courseId, setCourseId] = useState(id || null);
   const tabs = ["Course Overview", "Course Curriculum"];
 
   const [formData, setFormData] = useState({
@@ -75,40 +78,65 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
   const [addCourseCategory] = useAddCourseCategoryMutation();
   const [deleteCourseCategory] = useDeleteCourseCategoryMutation();
   const { data: teachersResponse } = useGetTeacherProfilesQuery();
-  const { data: courseDetails, isLoading: isLoadingDetails } = useGetCourseDetailsQuery(course?.id, {
-    skip: !course?.id
+  const { data: courseDetails, isLoading: isLoadingDetails } = useGetCourseDetailsQuery(id, {
+    skip: !id
   });
 
   const categories = categoriesResponse || [];
   const teachers = teachersResponse?.results || [];
 
   useEffect(() => {
-    const dataToUse = courseDetails || course;
-    if (dataToUse) {
-      setCourseId(dataToUse.id);
+    const cleanHtml = (html) => {
+      if (!html) return "";
+
+      // 1. Unescape common entities that might have been escaped
+      let cleaned = html
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+
+      // 2. Fix nested double quotes in style attributes
+      cleaned = cleaned.replace(/style="([^"]*)"/g, (match, styleContent) => {
+        return `style="${styleContent.replace(/"/g, "'")}"`;
+      });
+
+      // 3. Remove Microsoft Office tags (o:p) - handle potential spaces
+      cleaned = cleaned.replace(/<\s*\/?\s*o:p[^>]*>/g, "");
+
+      // 4. Remove <hr> tags with data attributes (unprofessional markers)
+      // but keep normal <hr> tags if they exist
+      cleaned = cleaned.replace(/<hr\s+data-[^>]*>/g, "");
+
+      return cleaned;
+    };
+
+    if (courseDetails) {
+      setCourseId(courseDetails.id);
       setFormData((prev) => ({
         ...prev,
-        title: dataToUse.title || "",
-        subtitle: dataToUse.subtitle || "",
-        description: dataToUse.description || "",
-        teacher: dataToUse.teacher?.id || "",
-        category: dataToUse.category?.id || "",
-        status: dataToUse.status || "upcoming",
-        price: dataToUse.price || "",
-        duration_in_weeks: dataToUse.duration_in_weeks || "",
-        level: dataToUse.level || "beginner",
-        total_hours: dataToUse.total_hours || "",
-        hours_per_session: dataToUse.hours_per_session || "",
-        thumbnailPreview: dataToUse.thumbnail || null,
-        videoName: dataToUse.videoName || (dataToUse.preview_video ? "Preview Video Exists" : ""),
-        learningObjectives: dataToUse.learningObjectives || [],
-        requirements: dataToUse.requirements || [],
-        curriculum: dataToUse.curriculum || [],
-        start_date: dataToUse.start_date || "",
-        is_active: dataToUse.is_active !== undefined ? dataToUse.is_active : true,
+        title: courseDetails.title || "",
+        subtitle: courseDetails.subtitle || "",
+        description: cleanHtml(courseDetails.description || ""),
+        teacher: courseDetails.teacher?.id || "",
+        category: courseDetails.category?.id || "",
+        status: courseDetails.status || "upcoming",
+        price: courseDetails.price || "",
+        duration_in_weeks: courseDetails.duration_in_weeks || "",
+        level: courseDetails.level || "beginner",
+        total_hours: courseDetails.total_hours || "",
+        hours_per_session: courseDetails.hours_per_session || "",
+        thumbnailPreview: courseDetails.thumbnail || null,
+        videoName: courseDetails.videoName || (courseDetails.preview_video ? "Preview Video Exists" : ""),
+        learningObjectives: courseDetails.learningObjectives || [],
+        requirements: courseDetails.requirements || [],
+        curriculum: courseDetails.curriculum || [],
+        start_date: courseDetails.start_date || "",
+        is_active: courseDetails.is_active !== undefined ? courseDetails.is_active : true,
       }));
     }
-  }, [courseDetails, course]);
+  }, [courseDetails]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -272,7 +300,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
       payload.append("title", formData.title);
       if (formData.subtitle) payload.append("subtitle", formData.subtitle);
       if (formData.description) payload.append("description", formData.description);
-      payload.append("category", formData.category);
+      payload.append("category_id", formData.category);
       payload.append("teacher_id", formData.teacher);
       payload.append("price", formData.price);
       payload.append("level", formData.level);
@@ -299,6 +327,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
         const response = await createCourse(payload).unwrap();
         setCourseId(response.id);
         toast.success("Course created! Now add your curriculum.");
+        navigate(`/admin/courses-management/edit/${response.id}`);
         setActiveTab("Course Curriculum");
       }
 
@@ -355,17 +384,17 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-stone-100 shadow-sm">
         <div className="flex items-center gap-4">
           <button
-            onClick={onBack}
+            onClick={() => navigate(-1)}
             className="p-2 hover:bg-stone-50 rounded-xl text-stone-500 transition-all border border-transparent hover:border-stone-200"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <div className="space-y-1">
             <h1 className="text-2xl font-black text-greenTeal tracking-tight font-['Arimo']">
-              {course ? "Edit Course" : "Course Builder"}
+              {id ? "Edit Course" : "Course Builder"}
             </h1>
             <p className="text-stone-500 font-medium tracking-wide text-sm font-['Arimo']">
-              {course
+              {id
                 ? "Update existing course content"
                 : "Create comprehensive course content"}
             </p>
@@ -643,7 +672,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
                   />
                   <UploadCard
                     title="Course Preview Video"
-                    subtitle="MP4, MOV (Max 2 min)"
+                    subtitle="MP4, MOV"
                     icon={<Play className="w-8 h-8 text-stone-400" />}
                     btnText="Upload Video"
                     onChange={handleVideoUpload}
@@ -692,7 +721,7 @@ const AddEditCourse = ({ course, onBack, onSave }) => {
               {courseId && (
                 <div className="flex justify-end pt-2">
                   <button
-                    onClick={onBack}
+                    onClick={() => navigate("/admin/courses-management")}
                     className="flex items-center gap-2 bg-greenTeal text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95"
                   >
                     Done — Back to Courses
