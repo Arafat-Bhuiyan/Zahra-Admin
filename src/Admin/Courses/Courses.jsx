@@ -458,7 +458,7 @@ const Courses = () => {
                     className="bg-white rounded-[2rem] border border-stone-200 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300"
                   >
                     <div className="relative h-64 w-full p-4">
-                      <div className="absolute top-6 right-8 z-10 px-4 py-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl text-stone-700 text-xs font-medium shadow-sm">
+                      <div className="absolute bottom-6 right-6 z-10 px-4 py-1.5 bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl text-stone-700 text-xs font-medium shadow-sm">
                         {c.category?.name || "Uncategorized"}
                       </div>
                       <img

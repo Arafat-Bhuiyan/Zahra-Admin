@@ -359,18 +359,20 @@ export default function TextEditor(
 .editor-container {
   border: none !important;
 }
-  ..ck.ck-editor__editable_inline > *:first-child
-Specificity: (0,3,0)
-			  {margin:0 !important;}
+
+.ck.ck-editor__editable_inline > *:first-child {
+  margin: 0 !important;
+}
 
 .ck.ck-editor__editable.ck-focused:not(.ck-editor__nested-editable) {
   outline: none;
   border: none;
   box-shadow: var(--ck-inner-shadow), 0 0;
 }
-  .editor-container__editor{
-  padding:0 !important;
-  }
+
+.editor-container__editor {
+  padding: 0 !important;
+}
 
 .ck-content {
   color: black;
@@ -382,7 +384,7 @@ Specificity: (0,3,0)
 
 .main-container {
   width: 100%;
-//   padding: 1rem;
+  /* padding: 1rem; */
 }
 
 .editor-container {

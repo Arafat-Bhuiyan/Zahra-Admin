@@ -100,7 +100,7 @@ const UploadContent = ({ onSave, onBack }) => {
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 inter-font">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 inter-font w-full max-w-[1600px] mx-auto px-4 md:px-8">
       {/* Header with Navigation */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <button
@@ -114,7 +114,7 @@ const UploadContent = ({ onSave, onBack }) => {
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Form Section */}
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 min-w-0 space-y-6">
           {/* Cover Image Upload */}
           <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm flex flex-col gap-6">
             <h3 className="text-neutral-950 text-lg font-medium">
@@ -217,7 +217,7 @@ const UploadContent = ({ onSave, onBack }) => {
         </div>
 
         {/* Sidebar Section */}
-        <div className="w-full lg:w-96 flex flex-col gap-6">
+        <div className="w-full lg:w-80 xl:w-96 flex flex-col gap-6">
           <div className="space-y-6">
             {/* Category Selection */}
             <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">
