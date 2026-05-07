@@ -249,6 +249,26 @@ export const adminApi = api.injectEndpoints({
       },
       providesTags: ["courses"],
     }),
+    // Get all courses unpaginated (for reorder UI)
+    getAllCoursesUnpaginated: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams({ no_page: "1" });
+        if (params?.search) queryParams.append("search", params.search);
+        if (params?.category) queryParams.append("category", params.category);
+        if (params?.status) queryParams.append("status", params.status);
+        return `/courses/?${queryParams.toString()}`;
+      },
+      providesTags: ["courses"],
+    }),
+    // Reorder courses
+    reorderCourses: builder.mutation({
+      query: (items) => ({
+        url: "/courses/reorder/",
+        method: "PATCH",
+        body: items,
+      }),
+      invalidatesTags: ["courses"],
+    }),
     // Get Course Details
     getCourseDetails: builder.query({
       query: (id) => `/courses/${id}/`,
@@ -1281,6 +1301,8 @@ export const {
   useDeleteVideoMutation,
   useGetVideoDetailsQuery,
   useGetCoursesDataQuery,
+  useGetAllCoursesUnpaginatedQuery,
+  useReorderCoursesMutation,
   useGetCourseDetailsQuery,
   useGetCourseCategoriesQuery,
   useAddCourseCategoryMutation,

@@ -1,11 +1,24 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Search,
   Plus,
   BookOpen,
   Users,
-  Video,
   Eye,
   Pencil,
   Calendar,
@@ -15,10 +28,14 @@ import {
   ChevronDown,
   Filter,
   Trash2,
+  GripVertical,
+  ArrowUpDown,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import {
   useGetCoursesDataQuery,
+  useGetAllCoursesUnpaginatedQuery,
+  useReorderCoursesMutation,
   useGetCourseCategoriesQuery,
   useAddCourseCategoryMutation,
   useDeleteCourseCategoryMutation,
@@ -26,6 +43,61 @@ import {
 import CourseBuilder from "./CourseBuilder";
 import LiveSessions from "./LiveSessions";
 import Pagination from "../../components/Pagination";
+
+// Sortable row for drag-and-drop reorder mode
+const SortableCourseRow = ({ course, getInstructorName, getStatusLabel }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: course.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  const instructorName = getInstructorName(course.teacher);
+  const statusLabel = getStatusLabel(course.status);
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-4 bg-white px-5 py-3 rounded-2xl border border-stone-100 shadow-sm select-none ${isDragging ? "shadow-xl ring-2 ring-teal-400" : ""}`}
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        className="p-2 text-stone-300 hover:text-teal-500 cursor-grab active:cursor-grabbing rounded-lg hover:bg-stone-50 transition-colors"
+      >
+        <GripVertical className="w-5 h-5" />
+      </button>
+      <span className="w-6 text-xs font-bold text-stone-400 text-right shrink-0">
+        {course.display_order ?? "—"}
+      </span>
+      <img
+        src={course.thumbnail || "https://placehold.co/48x32"}
+        className="w-14 h-10 rounded-xl object-cover border border-stone-100 shrink-0"
+      />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-stone-900 truncate">{course.title}</p>
+        <p className="text-xs text-stone-400">{instructorName}</p>
+      </div>
+      <span
+        className={`hidden sm:inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase shrink-0 ${
+          statusLabel === "Upcoming"
+            ? "bg-lime-100 text-lime-700"
+            : statusLabel === "Running"
+            ? "bg-red-100 text-red-700"
+            : "bg-sky-100 text-sky-700"
+        }`}
+      >
+        {statusLabel}
+      </span>
+      <span className="text-sm font-black text-teal-700 shrink-0">${course.price}</span>
+    </div>
+  );
+};
 
 const Courses = () => {
   const navigate = useNavigate();
@@ -38,16 +110,34 @@ const Courses = () => {
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [activeView, setActiveView] = useState("listing"); // listing, add-edit, builder, live-sessions
+  const [activeView, setActiveView] = useState("listing"); // listing, add-edit, builder, live-sessions, reorder
   const [courseToEdit, setCourseToEdit] = useState(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Reorder state
+  const [isReorderMode, setIsReorderMode] = useState(false);
+  const [reorderedCourses, setReorderedCourses] = useState(null); // local optimistic order
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
   const { data: apiResponse, isLoading, isError } = useGetCoursesDataQuery(currentPage);
+  const { data: allCoursesRaw, isLoading: isLoadingAll } = useGetAllCoursesUnpaginatedQuery(
+    {},
+    { skip: !isReorderMode }
+  );
+  const [reorderCourses, { isLoading: isSavingOrder }] = useReorderCoursesMutation();
   const { data: categoriesResponse } = useGetCourseCategoriesQuery();
   const [addCategory] = useAddCourseCategoryMutation();
   const [deleteCategory] = useDeleteCourseCategoryMutation();
+
+  // When allCoursesRaw loads for the first time in reorder mode, seed local state
+  useEffect(() => {
+    if (allCoursesRaw && reorderedCourses === null) {
+      setReorderedCourses(allCoursesRaw);
+    }
+  }, [allCoursesRaw]);
 
   const categories = categoriesResponse || [];
   const statuses = ["All", "Running", "Recorded", "Upcoming"];
@@ -173,6 +263,90 @@ const Courses = () => {
     setActiveView("listing");
   };
 
+  // Sync allCoursesRaw into reorderedCourses when reorder mode activates
+  const enterReorderMode = () => {
+    setIsReorderMode(true);
+    setReorderedCourses(null); // will be set once allCoursesRaw loads
+  };
+
+  const exitReorderMode = () => {
+    setIsReorderMode(false);
+    setReorderedCourses(null);
+  };
+
+  // Keep reorderedCourses in sync with fresh API data when it first loads
+  const displayCourses = reorderedCourses ?? (allCoursesRaw || []);
+
+  const handleDragEnd = useCallback(
+    async (event) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const oldIndex = displayCourses.findIndex((c) => c.id === active.id);
+      const newIndex = displayCourses.findIndex((c) => c.id === over.id);
+      const newOrder = arrayMove(displayCourses, oldIndex, newIndex);
+
+      // Optimistic update
+      setReorderedCourses(newOrder);
+
+      const payload = newOrder.map((c, idx) => ({ id: c.id, order: idx + 1 }));
+      try {
+        await reorderCourses(payload).unwrap();
+        toast.success("Course order saved");
+      } catch (err) {
+        // Revert
+        setReorderedCourses(displayCourses);
+        toast.error(err?.data?.detail || "Failed to save order");
+      }
+    },
+    [displayCourses, reorderCourses]
+  );
+
+  if (isReorderMode) {
+    const courses = reorderedCourses ?? (allCoursesRaw || []);
+    return (
+      <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-black text-stone-900 arimo-font">Reorder Courses</h2>
+            <p className="text-sm text-stone-400 mt-0.5">Drag rows to change display order. Changes save automatically.</p>
+          </div>
+          <button
+            onClick={exitReorderMode}
+            className="px-6 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-bold text-sm transition-all arimo-font"
+          >
+            ← Back to Courses
+          </button>
+        </div>
+
+        {isLoadingAll ? (
+          <div className="flex items-center justify-center py-20 gap-3">
+            <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-stone-500 text-sm animate-pulse">Loading courses…</p>
+          </div>
+        ) : (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={courses.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+              <div className="flex flex-col gap-2">
+                {isSavingOrder && (
+                  <p className="text-xs text-teal-600 font-bold text-center animate-pulse pb-1">Saving new order…</p>
+                )}
+                {courses.map((c) => (
+                  <SortableCourseRow
+                    key={c.id}
+                    course={c}
+                    getInstructorName={getInstructorName}
+                    getStatusLabel={getStatusLabel}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+      </div>
+    );
+  }
+
   if (activeView === "builder") {
     return (
       <CourseBuilder
@@ -190,13 +364,13 @@ const Courses = () => {
     <div className="pt-2 flex flex-col gap-6 animate-in fade-in duration-500 pb-10">
       {/* Header Actions */}
       <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
-        {/* <button
-          onClick={() => setActiveView("live-sessions")}
-          className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold arimo-font transition-all shadow-lg active:scale-95 flex items-center gap-2"
+        <button
+          onClick={enterReorderMode}
+          className="border border-stone-200 hover:border-teal-500 hover:text-teal-600 text-stone-500 px-6 py-2.5 rounded-xl text-sm font-bold arimo-font transition-all flex items-center gap-2"
         >
-          <Video className="w-5 h-5" />
-          Live
-        </button> */}
+          <ArrowUpDown className="w-4 h-4" />
+          Reorder
+        </button>
         <button
           onClick={handleAddCourse}
           className="bg-greenTeal hover:opacity-90 text-white px-6 py-2.5 rounded-xl text-sm font-semibold arimo-font transition-all shadow-lg active:scale-95 flex items-center gap-2"
