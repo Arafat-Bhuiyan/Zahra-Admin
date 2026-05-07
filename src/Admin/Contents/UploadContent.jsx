@@ -12,6 +12,7 @@ import {
   useGetBlogCategoriesQuery,
 } from "../../Api/adminApi";
 import TextEditor from "../../components/Editor";
+import toast from "react-hot-toast";
 
 const UploadContent = ({ onSave, onBack }) => {
   const [formData, setFormData] = useState({
@@ -74,7 +75,7 @@ const UploadContent = ({ onSave, onBack }) => {
 
   const handleUpload = async () => {
     if (!formData.title || !formData.category || !formData.content) {
-      alert("Please fill in title, category, and content.");
+      toast.error("Please fill in title, category, and content.");
       return;
     }
 
@@ -95,7 +96,7 @@ const UploadContent = ({ onSave, onBack }) => {
       onBack();
     } catch (err) {
       console.error("Failed to add blog:", err);
-      alert("Error adding blog: " + (err.data?.detail || err.message || "Unknown error"));
+      toast.error("Error adding blog: " + (err.data?.detail || err.message || "Unknown error"));
     }
   };
 

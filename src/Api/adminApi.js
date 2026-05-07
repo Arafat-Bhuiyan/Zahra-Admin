@@ -96,6 +96,7 @@ export const adminApi = api.injectEndpoints({
     // Book Categories
     getBookCategories: builder.query({
       query: () => "/book-categories/",
+      transformResponse: normalizeListResponse,
       providesTags: ["books"],
     }),
     getLuluPackages: builder.query({

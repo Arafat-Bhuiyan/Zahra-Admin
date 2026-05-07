@@ -4,14 +4,18 @@ import {
   EyeOff,
   FileText,
   Image as ImageIcon,
+  Plus,
+  Trash2,
   Upload,
   X
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
+  useAddBookCategoryMutation,
   useAddBookGalleryImageMutation,
   useAddBookMutation,
+  useDeleteBookCategoryMutation,
   useGetBookCategoriesQuery,
   useGetLuluPackagesQuery,
 } from "../../Api/adminApi";
@@ -49,8 +53,14 @@ const UploadBookModal = ({ onClose, onSave }) => {
   const [addBook, { isLoading: isCreating }] = useAddBookMutation();
   const [addGalleryImage, { isLoading: isUploadingGallery }] =
     useAddBookGalleryImageMutation();
-  const { data: categories } = useGetBookCategoriesQuery();
+  const { data: categoriesResponse } = useGetBookCategoriesQuery();
+  const [addBookCategory] = useAddBookCategoryMutation();
+  const [deleteBookCategory] = useDeleteBookCategoryMutation();
   const { data: luluPackages } = useGetLuluPackagesQuery();
+
+  const categories = categoriesResponse || [];
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
     if (categories?.length > 0) {
@@ -100,6 +110,73 @@ const UploadBookModal = ({ onClose, onSave }) => {
     } else if (type === "lulu_cover") {
       setFormData((prev) => ({ ...prev, luluCoverPdf: file }));
     }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      await addBookCategory(newCategoryName.trim()).unwrap();
+      setNewCategoryName("");
+      toast.success("Category added successfully");
+    } catch (err) {
+      console.error("Failed to add category:", err);
+      toast.error("Failed to add category");
+    }
+  };
+
+  const handleDeleteCategory = async (id, e) => {
+    e.stopPropagation();
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4 p-1">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-neutral-800 inter-font">
+              Confirm Delete
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Are you sure you want to remove this category?
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await deleteBookCategory(id).unwrap();
+                  toast.success("Category deleted");
+                  if (formData.category === id.toString()) {
+                    setFormData((prev) => ({ ...prev, category: "" }));
+                  }
+                } catch (err) {
+                  console.error("Failed to delete category:", err);
+                  toast.error("Failed to delete category");
+                }
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          minWidth: "350px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        },
+      }
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -354,19 +431,76 @@ const UploadBookModal = ({ onClose, onSave }) => {
                       Category *
                     </label>
                     <div className="relative">
-                      <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleChange}
-                        className="w-full h-10 px-3 bg-zinc-100 rounded-lg outline-none appearance-none text-sm text-neutral-950"
+                      <button
+                        type="button"
+                        onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                        className="w-full h-10 px-3 bg-zinc-100 rounded-lg flex items-center justify-between text-neutral-950 text-sm outline-none focus:ring-2 focus:ring-teal-600/10 transition-all"
                       >
-                        {categories?.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        <span className="truncate">
+                          {categories.find((c) => c.id.toString() === formData.category.toString())
+                            ?.name || "Select Category"}
+                        </span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-300 ${isCategoryOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+
+                      {isCategoryOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setIsCategoryOpen(false)}
+                          />
+                          <div className="absolute top-11 left-0 mt-2 p-1 bg-white border border-stone-100 rounded-2xl shadow-2xl flex flex-col gap-1 min-w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                            <div className="max-h-60 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-stone-200 scrollbar-track-transparent">
+                              {categories.length === 0 ? (
+                                <p className="text-xs text-stone-400 p-4 text-center">No categories found</p>
+                              ) : (
+                                categories.map((cat) => (
+                                  <div
+                                    key={cat.id}
+                                    className={`group flex items-center justify-between px-4 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${formData.category.toString() === cat.id.toString()
+                                      ? "bg-teal-50 text-teal-700 font-bold"
+                                      : "text-stone-600 hover:bg-stone-50"
+                                      }`}
+                                    onClick={() => {
+                                      setFormData((prev) => ({ ...prev, category: cat.id.toString() }));
+                                      setIsCategoryOpen(false);
+                                    }}
+                                  >
+                                    <span className="truncate">{cat.name}</span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => handleDeleteCategory(cat.id, e)}
+                                      className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all ml-2"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+
+                            <div className="p-3 border-t border-stone-50 bg-stone-50/50 flex gap-2">
+                              <input
+                                type="text"
+                                placeholder="Add category..."
+                                value={newCategoryName}
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
+                                className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleAddCategory}
+                                className="p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-md active:scale-95"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1.5">
