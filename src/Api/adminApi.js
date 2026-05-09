@@ -237,6 +237,27 @@ export const adminApi = api.injectEndpoints({
       query: (slug) => `/videos/${slug}/`,
       providesTags: ["videos"],
     }),
+    // Video Categories
+    getVideoCategories: builder.query({
+      query: () => "/videos/categories/",
+      transformResponse: normalizeListResponse,
+      providesTags: ["videos"],
+    }),
+    addVideoCategory: builder.mutation({
+      query: (name) => ({
+        url: "/videos/categories/",
+        method: "POST",
+        body: { name },
+      }),
+      invalidatesTags: ["videos"],
+    }),
+    deleteVideoCategory: builder.mutation({
+      query: (slug) => ({
+        url: `/videos/categories/${slug}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["videos"],
+    }),
 
     // Get Courses
     getCoursesData: builder.query({
@@ -1300,6 +1321,9 @@ export const {
   useAddVideoMutation,
   useDeleteVideoMutation,
   useGetVideoDetailsQuery,
+  useGetVideoCategoriesQuery,
+  useAddVideoCategoryMutation,
+  useDeleteVideoCategoryMutation,
   useGetCoursesDataQuery,
   useGetAllCoursesUnpaginatedQuery,
   useReorderCoursesMutation,

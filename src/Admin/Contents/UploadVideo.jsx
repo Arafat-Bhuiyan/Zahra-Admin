@@ -10,8 +10,14 @@ import {
   ArrowLeft,
   Trash2,
   ExternalLink,
+  ChevronDown,
 } from "lucide-react";
-import { useAddVideoMutation, useGetBlogCategoriesQuery } from "../../Api/adminApi";
+import {
+  useAddVideoMutation,
+  useGetVideoCategoriesQuery,
+  useAddVideoCategoryMutation,
+  useDeleteVideoCategoryMutation,
+} from "../../Api/adminApi";
 import toast from "react-hot-toast";
 import TextEditor from "../../components/Editor";
 
@@ -27,12 +33,17 @@ const UploadVideo = ({ onSave, onBack }) => {
     videoUrl: "", // For external links
   });
 
-  const { data: categoriesResponse } = useGetBlogCategoriesQuery();
-  const [addVideo, { isLoading: isUploading }] = useAddVideoMutation();
-  const categories = categoriesResponse || [];
-
   const [tagInput, setTagInput] = useState("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const fileInputRef = useRef(null);
+
+  const { data: categoriesResponse } = useGetVideoCategoriesQuery();
+  const [addVideo, { isLoading: isUploading }] = useAddVideoMutation();
+  const [addVideoCategory] = useAddVideoCategoryMutation();
+  const [deleteVideoCategory] = useDeleteVideoCategoryMutation();
+
+  const categories = categoriesResponse || [];
 
   const stripHtml = (html) => {
     const tmp = document.createElement("DIV");
@@ -43,6 +54,72 @@ const UploadVideo = ({ onSave, onBack }) => {
   const wordCount = stripHtml(formData.content).trim()
     ? stripHtml(formData.content).trim().split(/\s+/).length
     : 0;
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      await addVideoCategory(newCategoryName.trim()).unwrap();
+      setNewCategoryName("");
+      toast.success("Category added successfully");
+    } catch (err) {
+      console.error("Failed to add category:", err);
+      toast.error("Failed to add category");
+    }
+  };
+
+  const handleDeleteCategory = async (slug, id, e) => {
+    e.stopPropagation();
+    toast(
+      (t) => (
+        <div className="flex items-center gap-4 p-1">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-neutral-800 inter-font">
+              Confirm Delete
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Are you sure you want to remove this category?
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await deleteVideoCategory(slug).unwrap();
+                  toast.success("Category deleted");
+                  if (formData.category.toString() === id.toString()) {
+                    setFormData((prev) => ({ ...prev, category: "" }));
+                  }
+                } catch (err) {
+                  console.error("Failed to delete category:", err);
+                  toast.error("Failed to delete category");
+                }
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          minWidth: "350px",
+          borderRadius: "16px",
+          border: "1px solid rgba(0,0,0,0.05)",
+          boxShadow:
+            "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        },
+      }
+    );
+  };
 
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
@@ -154,20 +231,78 @@ const UploadVideo = ({ onSave, onBack }) => {
           <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-sm space-y-6">
             <div className="space-y-4">
               <h3 className="text-neutral-950 text-lg font-medium">Category</h3>
-              <select
-                value={formData.category}
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
-                className="w-full px-4 py-3 bg-zinc-100 rounded-lg text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#7AA4A5]/20 font-medium"
-              >
-                <option value="">Select Category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  className="w-full h-11 px-4 bg-zinc-100 rounded-lg flex items-center justify-between text-neutral-900 text-sm font-medium hover:bg-zinc-200 transition-all outline-none focus:ring-2 focus:ring-[#7AA4A5]/20"
+                >
+                  <span className="truncate">
+                    {categories.find((c) => c.id.toString() === formData.category.toString())
+                      ?.name || "Select Category"}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-300 ${isCategoryOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {isCategoryOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsCategoryOpen(false)}
+                    />
+                    <div className="absolute top-12 left-0 mt-2 p-1 bg-white border border-stone-100 rounded-xl shadow-2xl flex flex-col gap-1 min-w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                      <div className="max-h-60 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-stone-200 scrollbar-track-transparent">
+                        {categories.length === 0 ? (
+                          <p className="text-xs text-stone-400 p-4 text-center">No categories found</p>
+                        ) : (
+                          categories.map((cat) => (
+                            <div
+                              key={cat.id}
+                              className={`group flex items-center justify-between px-4 py-2.5 rounded-lg text-sm transition-all cursor-pointer ${formData.category.toString() === cat.id.toString()
+                                ? "bg-teal-50 text-teal-700 font-bold"
+                                : "text-stone-600 hover:bg-stone-50"
+                                }`}
+                              onClick={() => {
+                                setFormData((prev) => ({ ...prev, category: cat.id.toString() }));
+                                setIsCategoryOpen(false);
+                              }}
+                            >
+                              <span className="truncate">{cat.name}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteCategory(cat.slug, cat.id, e)}
+                                className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all ml-2"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      <div className="p-3 border-t border-stone-50 bg-stone-50/50 flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Add category..."
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          onKeyPress={(e) => e.key === "Enter" && handleAddCategory()}
+                          className="flex-1 h-9 px-3 text-xs bg-white border border-stone-200 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition-all shadow-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCategory}
+                          className="p-2 bg-[#7AA4A5] text-white rounded-md hover:bg-[#6b9192] transition-colors shadow-md active:scale-95"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">
