@@ -27,7 +27,7 @@ const UploadVideo = ({ onSave, onBack }) => {
     excerpt: "",
     content: "",
     category: "",
-    tags: ["Islamic Spirituality", "Mental Health", "Mindfulness"],
+    tags: [],
     coverImage: null, // This will store the preview URL
     coverImageFile: null, // This will store the actual File object
     videoUrl: "", // For external links
@@ -153,11 +153,12 @@ const UploadVideo = ({ onSave, onBack }) => {
       toast.error("Title and Category are required");
       return;
     }
+    
 
     try {
       const data = new FormData();
       data.append("title", formData.title);
-      data.append("category", formData.category);
+      data.append("category_id", formData.category);
       data.append("video_url", formData.videoUrl);
       data.append("excerpt", formData.excerpt);
       data.append("content", formData.content);
