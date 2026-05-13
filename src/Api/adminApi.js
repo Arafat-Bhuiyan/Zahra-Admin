@@ -1289,6 +1289,39 @@ export const adminApi = api.injectEndpoints({
       },
       providesTags: ["sales"],
     }),
+    getCoupons: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append("page", params.page);
+        if (params.search) queryParams.append("search", params.search);
+        const q = queryParams.toString();
+        return `/coupons/${q ? `?${q}` : ""}`;
+      },
+      providesTags: ["coupons"],
+    }),
+    addCoupon: builder.mutation({
+      query: (body) => ({
+        url: "/coupons/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["coupons"],
+    }),
+    updateCoupon: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/coupons/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["coupons"],
+    }),
+    deleteCoupon: builder.mutation({
+      query: (id) => ({
+        url: `/coupons/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["coupons"],
+    }),
     changePassword: builder.mutation({
       query: (body) => ({
         url: "/auth/users/set_password/",
@@ -1443,5 +1476,9 @@ export const {
   useGetQuizAttemptsQuery,
   useGetQuizAttemptDetailsQuery,
   useGetSalesQuery,
+  useGetCouponsQuery,
+  useAddCouponMutation,
+  useUpdateCouponMutation,
+  useDeleteCouponMutation,
   useChangePasswordMutation,
 } = adminApi;

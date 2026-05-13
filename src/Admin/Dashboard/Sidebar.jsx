@@ -23,6 +23,7 @@ import {
   MessageSquare,
   Mail,
   DoorOpenIcon,
+  Ticket,
   X,
 } from "lucide-react";
 import logo from "../../assets/img/logo.png";
@@ -53,6 +54,7 @@ export const Sidebar = ({ onClose }) => {
       { icon: GraduationCap, label: "Scholarships", slug: "scholarships" },
       { icon: Award, label: "Certificates", slug: "certificates" },
       { icon: UserCheck, label: "Memberships", slug: "memberships" },
+      { icon: Ticket, label: "Coupons", slug: "coupons" },
       { icon: CreditCard, label: "Payments", slug: "payments" },
       { icon: Settings, label: "Settings", slug: "settings" },
     ];

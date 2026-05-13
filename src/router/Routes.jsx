@@ -36,6 +36,7 @@ import Certificate from "../Admin/Certificate/Certificate";
 import EmailTemplates from "../Admin/EmailTemp/EmailTemp";
 import Doors from "../Admin/Doors/Doors";
 import Consultants from "../Admin/Consultants/Consultants";
+import Coupons from "../Admin/Coupons/Coupons";
 
 const permissions = false; // This should be replaced with actual permission logic
 
@@ -92,6 +93,7 @@ const router = createBrowserRouter([
       { path: "scholarships", element: <Scholarships /> },
       { path: "certificates", element: <Certificate /> },
       { path: "memberships", element: <Memberships /> },
+      { path: "coupons", element: <Coupons /> },
       { path: "payments", element: <Payments /> },
       { path: "doors", element: <Doors /> },
     ],
