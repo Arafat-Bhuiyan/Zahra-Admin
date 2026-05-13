@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import defaultProfileImg from "../assets/img/profile_teacher.png";
+import defaultProfileImg from "../assets/images/profile.jpg";
+
 import { CircleCheckBig, Loader2 } from "lucide-react";
 import { useGetTeacherProfileMeQuery } from "../Api/adminApi";
 
