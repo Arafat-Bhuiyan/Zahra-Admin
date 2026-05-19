@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, Clock, Video, ChevronLeft, ChevronRight, X, Loader2, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, Video, ChevronLeft, ChevronRight, X, Loader2, AlertCircle, DollarSign } from 'lucide-react';
 import {
   useGetConsultationsQuery,
   useGetConsultationCalendarQuery,
   useGetConsultationTimeslotsQuery,
   useGetTeacherUpcomingSessionsQuery,
+  useGetTeacherProfileMeQuery,
+  useGetConsultationEarningsQuery,
 } from '../Api/adminApi';
 
 function formatLocal(utcStr, opts = {}) {
@@ -447,6 +449,9 @@ export default function Consultations() {
   const { data: consultations } = useGetConsultationsQuery();
   const consultation = consultations?.results?.[0] ?? consultations?.[0] ?? null;
 
+  const { data: teacherProfileMe } = useGetTeacherProfileMeQuery();
+  const { data: earningsData, isLoading: earningsLoading } = useGetConsultationEarningsQuery();
+
   const {
     data: upcomingSessions,
     isLoading: sessionsLoading,
@@ -458,7 +463,7 @@ export default function Consultations() {
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
@@ -478,7 +483,7 @@ export default function Consultations() {
             <div>
               <p className="text-gray-600 text-sm font-medium">Standard Price</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">
-                {consultation ? `$${parseFloat(consultation.standard_price).toFixed(0)}` : '—'}
+                {teacherProfileMe?.consultation_rate ? `$${parseFloat(teacherProfileMe.consultation_rate).toFixed(0)}` : '—'}
               </p>
               <p className="text-xs text-gray-500 mt-2">Set by admin</p>
             </div>
@@ -492,13 +497,30 @@ export default function Consultations() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-600 text-sm font-medium">Consultation</p>
-              <p className="text-lg font-bold text-gray-900 mt-2 truncate max-w-[140px]">
-                {consultation?.title ?? '—'}
+              <p className="text-lg font-bold text-gray-900 mt-2 truncate max-w-[140px]" title={teacherProfileMe?.consultations?.[0]?.title ?? consultation?.title}>
+                {teacherProfileMe?.consultations?.[0]?.title ?? consultation?.title ?? '—'}
               </p>
               <p className="text-xs text-gray-500 mt-1">Read-only</p>
             </div>
             <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
               <Calendar className="w-6 h-6 text-emerald-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Consultation Earnings</p>
+              <p className="text-3xl font-bold text-teal-600 mt-2">
+                {earningsLoading ? '—' : `$${earningsData?.earnings ?? 0}`}
+              </p>
+              <p className="text-xs text-gray-500 mt-2">
+                {earningsData?.sessions ?? 0} sessions this month
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-teal-600" />
             </div>
           </div>
         </div>
@@ -541,7 +563,7 @@ export default function Consultations() {
 
           {/* Availability Calendar */}
           {activeTab === 'availability' && (
-            !consultation ? (
+            !(teacherProfileMe?.consultations?.[0] ?? consultation) ? (
               <div className="text-center py-16 text-gray-400">
                 <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p className="font-medium">No consultation profile found</p>
@@ -550,7 +572,7 @@ export default function Consultations() {
                 </p>
               </div>
             ) : (
-              <AvailabilityCalendar consultationId={consultation.id} />
+              <AvailabilityCalendar consultationId={(teacherProfileMe?.consultations?.[0] ?? consultation).id} />
             )
           )}
         </div>
